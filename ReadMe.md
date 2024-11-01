@@ -76,6 +76,7 @@ The API should now be running at `http://localhost:5000`.
 ---
 
 ## 📁 Project Structure
+not yet organized
 
 ```
 /src

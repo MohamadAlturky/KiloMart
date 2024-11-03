@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using System;
 using KiloMart.Api.Authentication;
+using Microsoft.AspNetCore.SignalR;
+
 
 [ApiController]
 [Route("api/[controller]")]

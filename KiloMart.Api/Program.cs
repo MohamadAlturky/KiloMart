@@ -1,3 +1,4 @@
+using BasicChat;
 using KiloMart.Api.Authentication;
 using KiloMart.DataAccess.Configurations;
 using Microsoft.AspNetCore.Identity;
@@ -12,6 +13,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddDataAccess(builder.Configuration);
+builder.Services.AddSignalR();
 
 //#region Authentication
 //builder.Services.AddAuthentication()
@@ -46,6 +48,7 @@ builder.Services.AddIdentityCore<MemberShipUser>(options =>
 var app = builder.Build();
 
 app.MapIdentityApi<MemberShipUser>();
+app.MapHub<NotificationHub>("/notificationHub");
 
 if (app.Environment.IsDevelopment())
 {

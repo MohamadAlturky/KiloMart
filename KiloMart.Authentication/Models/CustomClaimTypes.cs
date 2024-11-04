@@ -1,4 +1,4 @@
-namespace KiloMart.Authentication.Handlers;
+namespace KiloMart.Authentication.Models;
 
 public class CustomClaimTypes
 {

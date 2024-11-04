@@ -3,11 +3,12 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using KiloMart.Authentication.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace KiloMart.Authentication.Handlers;
 public static class JwtTokenHandler
 {
-    public static string GenerateAccessToken(MembershipUser user)
+    public static string GenerateAccessToken(MembershipUser user, IConfiguration configuration)
     {
         var claims = new[]
         {
@@ -16,15 +17,19 @@ public static class JwtTokenHandler
             new Claim(CustomClaimTypes.Role, user.Role.ToString()),
             new Claim(CustomClaimTypes.Party, user.Party.ToString())
         };
+        var secretKey = configuration["Jwt:Key"]!;
+        var issuer = configuration["Jwt:Issuer"];
+        var audience = configuration["Jwt:Audience"];
+        int expiryTime = int.Parse(configuration["Jwt:ExpiryTimeInMinutes"]!);
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your-secret-key-here"));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
-            issuer: "KiloMart",
-            audience: "KiloMart",
+            issuer: issuer,
+            audience: audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(1),
+            expires: DateTime.UtcNow.AddMinutes(expiryTime),
             signingCredentials: credentials
         );
 

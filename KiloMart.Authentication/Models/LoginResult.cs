@@ -1,4 +1,4 @@
-namespace KiloMart.Authentication.Services;
+namespace KiloMart.Authentication.Models;
 
 public record LoginResult
 {

@@ -1,9 +1,9 @@
-using System.Data;
 using Dapper;
 using KiloMart.Authentication.Handlers;
 using KiloMart.Authentication.Models;
 using KiloMart.Authentication.Utils;
 using KiloMart.DataAccess.Contracts;
+using Microsoft.Extensions.Configuration;
 
 namespace KiloMart.Authentication.Services;
 
@@ -11,6 +11,7 @@ public static class LoginService
 {
     public static async Task<LoginResult> Login(
         IDbFactory dbFactory,
+        IConfiguration configuration,
         string email,
         string password)
     {
@@ -47,7 +48,7 @@ public static class LoginService
             };
         }
 
-        var token = new JwtToken(JwtTokenHandler.GenerateAccessToken(user));
+        var token = new JwtToken(JwtTokenHandler.GenerateAccessToken(user,configuration));
 
         return new LoginResult
         {

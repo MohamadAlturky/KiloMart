@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KiloMart.Api", "KiloMart.Ap
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KiloMart.Domain", "KiloMart.Domain\KiloMart.Domain.csproj", "{5765E7AC-7A6B-42C5-8AC8-7AEF8B4B621F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KiloMart.Authentication", "KiloMart.Authentication\KiloMart.Authentication.csproj", "{47EA4949-C6CD-47F8-8CAA-F2E81DE2D311}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{5765E7AC-7A6B-42C5-8AC8-7AEF8B4B621F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5765E7AC-7A6B-42C5-8AC8-7AEF8B4B621F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5765E7AC-7A6B-42C5-8AC8-7AEF8B4B621F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{47EA4949-C6CD-47F8-8CAA-F2E81DE2D311}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47EA4949-C6CD-47F8-8CAA-F2E81DE2D311}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47EA4949-C6CD-47F8-8CAA-F2E81DE2D311}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47EA4949-C6CD-47F8-8CAA-F2E81DE2D311}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

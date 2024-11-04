@@ -1,53 +1,69 @@
 using BasicChat;
-using KiloMart.Api.Authentication;
 using KiloMart.DataAccess.Configurations;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.OpenApi.Models;
 var builder = WebApplication.CreateBuilder(args);
 
-
-
+#region Authentication
+// Add JWT Authentication configuration
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+    };
+});
+#endregion
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 builder.Services.AddDataAccess(builder.Configuration);
 builder.Services.AddSignalR();
 
-//#region Authentication
-//builder.Services.AddAuthentication()
-//    .AddBearerToken(IdentityConstants.BearerScheme);
-//builder.Services.AddAuthorizationBuilder();
-//#endregion
 
-#region Authentication
-builder.Services.AddAuthentication().AddBearerToken(IdentityConstants.BearerScheme, options =>
-{
-    options.BearerTokenExpiration = TimeSpan.FromMinutes(3600);
-});
-builder.Services.AddAuthorization();
-#endregion
-
-#region DbContext
-builder.Services.AddDbContext<MemberShipDataContext>(config =>
-{
-    config.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")!);
-});
-#endregion
-
-#region Identity
-builder.Services.AddIdentityCore<MemberShipUser>(options =>
-{
-    options.SignIn.RequireConfirmedEmail = true;
-})
-.AddEntityFrameworkStores<MemberShipDataContext>()
-.AddApiEndpoints();
-#endregion
 
 var app = builder.Build();
 
-app.MapIdentityApi<MemberShipUser>();
 app.MapHub<NotificationHub>("/notificationHub");
 
 if (app.Environment.IsDevelopment())

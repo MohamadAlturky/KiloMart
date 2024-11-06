@@ -35,7 +35,7 @@ public class CustomerController : ControllerBase
             return BadRequest(errors);
         }
         
-        var result = await RegisterCustomerService.Register(_dbFactory,
+        var result = await new RegisterCustomerService().Register(_dbFactory,
                             _configuration,
                             dto.Email,
                             dto.Password, 

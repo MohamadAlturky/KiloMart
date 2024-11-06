@@ -36,7 +36,7 @@ public class DeliveryController : ControllerBase
             return BadRequest(errors);
         }
         
-        var result = await RegisterDeliveryService.Register(
+        var result = await new RegisterDeliveryService().Register(
             _dbFactory,
             _configuration,
             dto.Email,

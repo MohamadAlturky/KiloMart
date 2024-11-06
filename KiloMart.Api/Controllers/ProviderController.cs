@@ -36,7 +36,7 @@ public class ProviderController : ControllerBase
             return BadRequest(errors);
         }
         
-        var result = await RegisterProviderService.Register(
+        var result = await new RegisterProviderService().Register(
             _dbFactory,
             _configuration,
             dto.Email,

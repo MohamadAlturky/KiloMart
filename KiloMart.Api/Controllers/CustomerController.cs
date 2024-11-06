@@ -1,5 +1,4 @@
 using KiloMart.DataAccess.Contracts;
-using KiloMart.Domain.Customers.List.Services;
 using KiloMart.Domain.Register.Customer.Models;
 using KiloMart.Domain.Register.Customer.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -17,14 +16,6 @@ public class CustomerController : ControllerBase
         _dbFactory = dbFactory;
         _configuration = configuration;
     }
-
-    [HttpGet]
-    public async Task<IActionResult> List()
-    {
-        var customers = await CustomerService.List(_dbFactory);
-        return Ok(customers);
-    }
-
     // register a customer
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterCustomerDto dto)

@@ -1,18 +1,18 @@
 using KiloMart.DataAccess.Contracts;
 using KiloMart.Domain.Customers.List.Services;
-using KiloMart.Domain.Register.Customer.Models;
-using KiloMart.Domain.Register.Customer.Services;
+using KiloMart.Domain.Register.Delivery.Models;
+using KiloMart.Domain.Register.Delivery.Services;
 using Microsoft.AspNetCore.Mvc;
 
 
 [ApiController]
-[Route("api/customer")]
-public class CustomerController : ControllerBase
+[Route("api/provider")]
+public class DeliveryController : ControllerBase
 {
     private readonly IDbFactory _dbFactory;
     private readonly IConfiguration _configuration;
 
-    public CustomerController(IDbFactory dbFactory, IConfiguration configuration)
+    public DeliveryController(IDbFactory dbFactory, IConfiguration configuration)
     {
         _dbFactory = dbFactory;
         _configuration = configuration;
@@ -25,22 +25,24 @@ public class CustomerController : ControllerBase
         return Ok(customers);
     }
 
-    // register a customer
+    // register a provider
     [HttpPost("register")]
-    public async Task<IActionResult> Register(RegisterCustomerDto dto)
+    public async Task<IActionResult> Register(RegisterDeliveryDto dto)
     {
         var (success, errors) = dto.Validate();
+        
         if(!success)
         {
             return BadRequest(errors);
         }
         
-        var result = await RegisterCustomerService.Register(_dbFactory,
-                            _configuration,
-                            dto.Email,
-                            dto.Password, 
-                            dto.DisplayName, 
-                            dto.Language);
+        var result = await RegisterDeliveryService.Register(
+            _dbFactory,
+            _configuration,
+            dto.Email,
+            dto.Password, 
+            dto.DisplayName, 
+            dto.Language);
         return Ok(result);
     }
 }

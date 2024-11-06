@@ -1,15 +1,14 @@
 using Dapper;
 using KiloMart.DataAccess.Contracts;
 using KiloMart.Domain.Languages.Models;
-using KiloMart.Domain.Register.Customer.Models;
 using KiloMart.Domain.Register.Delivary.Models;
 using KiloMart.Domain.Register.Provider.Models;
 using KiloMart.Domain.Register.Utils;
 using Microsoft.Extensions.Configuration;
 
-namespace KiloMart.Domain.Register.Customer.Services;
+namespace KiloMart.Domain.Register.Provider.Services;
 
-public static class RegisterCustomerService
+public static class RegisterProviderService
 {
     public static async Task<RegisterResult> Register(
         IDbFactory dbFactory,
@@ -47,10 +46,10 @@ public static class RegisterCustomerService
                 new { DisplayName = displayName, IsActive = false },
                 transaction
             );
-            // TODO: Insert into Customer the PartyId
-            // the columns are PartyId, CreatedAt
+            // TODO: Insert into Provider the PartyId
+            // the columns are PartyId
             await connection.ExecuteAsync(
-                @"INSERT INTO Customer (Party) VALUES (@Party)",
+                @"INSERT INTO Provider (Party) VALUES (@Party)",
                 new { Party = partyId },
                 transaction
             );
@@ -75,7 +74,7 @@ public static class RegisterCustomerService
                 INSERT INTO MembershipUser (Email,EmailConfirmed, PasswordHash, Role, Party) 
                 OUTPUT INSERTED.Id 
                 VALUES (@Email, @EmailConfirmed, @PasswordHash, @Role, @Party)",
-                new { Email = email, EmailConfirmed = false, PasswordHash = passwordHash, Role = (int)UserRole.Customer, Party = partyId },
+                new { Email = email, EmailConfirmed = false, PasswordHash = passwordHash, Role = (int)UserRole.Provider, Party = partyId },
                 transaction
             );
 

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 
 [ApiController]
-[Route("api/provider")]
+[Route("api/delivery")]
 public class DeliveryController : ControllerBase
 {
     private readonly IDbFactory _dbFactory;

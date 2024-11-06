@@ -1,4 +1,4 @@
-namespace KiloMart.Domain.Register.Provider.Models;
+namespace KiloMart.Domain.Register.Utils;
 
 public class RegisterResult
 {

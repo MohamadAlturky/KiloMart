@@ -1,4 +1,4 @@
-namespace KiloMart.Domain.Register.Delivery.Models;
+namespace KiloMart.Domain.Register.Utils;
 
 public class MembershipUserIdDto
 {

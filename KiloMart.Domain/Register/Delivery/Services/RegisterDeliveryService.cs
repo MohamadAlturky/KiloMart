@@ -1,7 +1,6 @@
 using Dapper;
 using KiloMart.DataAccess.Contracts;
 using KiloMart.Domain.Languages.Models;
-using KiloMart.Domain.Register.Delivery.Models;
 using KiloMart.Domain.Register.Utils;
 using Microsoft.Extensions.Configuration;
 

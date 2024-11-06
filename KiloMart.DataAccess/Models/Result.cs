@@ -11,7 +11,7 @@ public class Result<T> : Result
     }
 
     public static Result<T> Ok(T data) => new Result<T>(true, data);
-    public static Result<T> Fail() => new Result<T>(false, default!);
+    public static new Result<T> Fail() => new Result<T>(false, default!);
 }
 
 

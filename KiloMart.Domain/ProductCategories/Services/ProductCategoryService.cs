@@ -10,11 +10,12 @@ public static class ProductCategoryService
 {
     public static Result<ProductCategoryDto> Insert(IDbFactory dbFactory, ProductCategoryDto category)
     {
+        using var connection = dbFactory.CreateDbConnection();
+        connection.Open();
+        using var transaction = connection.BeginTransaction();
         try
         {
-            using var connection = dbFactory.CreateDbConnection();
-            using var transaction = connection.BeginTransaction();
-            connection.Open();
+
 
             // Insert into ProductCategory table
             const string sql = @"
@@ -26,25 +27,27 @@ public static class ProductCategoryService
             category.Id = connection.QuerySingle<int>(sql, new { category.IsActive, category.Name }, transaction);
 
             // Insert localizations if any
-            if (category.Localizations != null && category.Localizations.Count > 0)
+            if (category.Localizations is not null && category.Localizations.Count > 0)
             {
                 foreach (var localization in category.Localizations)
                 {
                     localization.ProductCategory = category.Id;
-                    var localizationResult = ProductCategoryLocalizedService.Insert(dbFactory, localization);
+                    var localizationResult = ProductCategoryLocalizedService.Insert(connection, transaction, localization);
                     
                     // If any localization insert fails, return a failure result
                     if (!localizationResult.Success)
                     {
+                        transaction.Rollback();
                         return Result<ProductCategoryDto>.Fail(localizationResult.Errors);
                     }
                 }
             }
-
+            transaction.Commit();
             return Result<ProductCategoryDto>.Ok(category);
         }
         catch (Exception e)
         {
+            transaction.Rollback();
             return Result<ProductCategoryDto>.Fail([e.Message]);
         }
     }

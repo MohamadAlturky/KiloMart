@@ -13,4 +13,19 @@ public class CardDto
     public DateTime ExpireDate { get; set; }
 
     public int Customer { get; set; }
+    public (bool Success, string[] Errors) Validate()
+    {
+        var errors = new List<string>();
+
+        if (Customer <= 0)
+            errors.Add("Customer is required");
+        if (string.IsNullOrEmpty(HolderName))
+            errors.Add("Holder name is required");
+        if (string.IsNullOrEmpty(Number))
+            errors.Add("Number is required");
+        if (string.IsNullOrEmpty(SecurityCode))
+            errors.Add("Security code is required");
+
+        return (errors.Count == 0, errors.ToArray());
+    }
 }

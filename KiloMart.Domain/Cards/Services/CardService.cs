@@ -16,18 +16,19 @@ public static class CardService
 
             // SQL query to insert into Card table
             const string sql = @"
-                INSERT INTO Card (HolderName, Number, SecurityCode, ExpireDate, Customer)
-                VALUES (@HolderName, @Number, @SecurityCode, @ExpireDate, @Customer);
+                INSERT INTO Card (HolderName, Number, SecurityCode, ExpireDate, Customer,IsActive)
+                VALUES (@HolderName, @Number, @SecurityCode, @ExpireDate, @Customer,@IsActive);
                 SELECT CAST(SCOPE_IDENTITY() as int);"; // Retrieve the generated Id
 
             // Execute the insert and retrieve the new Id
             card.Id = connection.QuerySingle<int>(sql, new
             {
-                card.HolderName,
-                card.Number,
-                card.SecurityCode,
-                card.ExpireDate,
-                card.Customer
+                HolderName = card.HolderName,
+                Number = card.Number,
+                SecurityCode = card.SecurityCode,
+                ExpireDate = card.ExpireDate,
+                Customer = card.Customer,
+                IsActive = true
             });
 
             return Result<CardDto>.Ok(card);

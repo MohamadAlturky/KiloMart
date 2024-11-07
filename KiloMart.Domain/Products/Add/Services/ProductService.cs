@@ -9,20 +9,28 @@ public static class ProductService
 {
    public static Result<ProductDto> Insert(IDbFactory dbFactory, ProductDto product){
         using var connection = dbFactory.CreateDbConnection();
+        connection.Open();
         using var transaction = connection.BeginTransaction();
         try
         {
 
-            connection.Open();
 
             // Insert into Product table
             const string sql = @"
-                INSERT INTO Product (ImageUrl, CategoryId, IsActive, MeasurementUnit, Name, Description)
-                VALUES (@ImageUrl, @CategoryId, @IsActive, @MeasurementUnit, @Name, @Description);
+                INSERT INTO Product (ImageUrl, ProductCategory, IsActive, MeasurementUnit, Name, Description)
+                VALUES (@ImageUrl, @ProductCategory, @IsActive, @MeasurementUnit, @Name, @Description);
                 SELECT CAST(SCOPE_IDENTITY() as int);"; // Retrieve the generated Id
 
             // Execute the insert and retrieve the new Id
-            product.Id = connection.QuerySingle<int>(sql, new { product.ImageUrl, product.CategoryId, product.IsActive, product.MeasurementUnit, product.Name, product.Description }, transaction);
+            product.Id = connection.QuerySingle<int>(sql, 
+            new { 
+                ImageUrl = product.ImageUrl,
+                ProductCategory = product.CategoryId,
+                IsActive = product.IsActive, 
+                MeasurementUnit = product.MeasurementUnit, 
+                Name = product.Name, 
+                Description = product.Description 
+                }, transaction);
             // Insert localizations if any
             if (product.Localizations != null && product.Localizations.Count > 0)
             {
@@ -32,6 +40,7 @@ public static class ProductService
                     var localizationResult = ProductLocalizedService.Insert(connection, transaction, localization);
                     if (!localizationResult.Success)
                     {
+                        transaction.Rollback();
                         return Result<ProductDto>.Fail(localizationResult.Errors);
                     }
                 }

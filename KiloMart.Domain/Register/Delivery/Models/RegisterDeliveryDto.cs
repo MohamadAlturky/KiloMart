@@ -29,6 +29,7 @@ public class RegisterDeliveryDto
         {
             errors.Add("Display name is required.");
         }
+        
         return (errors.Count == 0, errors);
     }
 
@@ -38,4 +39,5 @@ public class RegisterDeliveryDto
         var regex = new Regex(@"^[^\s@]+@[^\s@]+\.[^\s@]+$");
         return regex.IsMatch(email);
     }
+    
 }

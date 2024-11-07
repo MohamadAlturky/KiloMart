@@ -1,6 +1,12 @@
+using System.Data;
+using Dapper;
+using KiloMart.DataAccess.Contracts;
+using KiloMart.DataAccess.Models;
+using KiloMart.Domain.Products.Add.Models;
+
 namespace KiloMart.Domain.Products.Add.Services;
 
-public static class ProductLocalizedDto
+public static class ProductLocalizedService
 {
     //write the static method Insert
     public static Result<ProductLocalizedDto> Insert(IDbFactory dbFactory, ProductLocalizedDto localization)
@@ -12,10 +18,16 @@ public static class ProductLocalizedDto
             
             // Insert into ProductLocalized table
             const string sql = @"
-                INSERT INTO ProductLocalized (Language, ProductId, MeasurementUnit, Description, Name)
-                VALUES (@Language, @ProductId, @MeasurementUnit, @Description, @Name);";
+                INSERT INTO ProductLocalized (Language, Product, MeasurementUnit, Description, Name)
+                VALUES (@Language, @Product, @MeasurementUnit, @Description, @Name);";
 
-            connection.Execute(sql, new { localization.Language, localization.ProductId, localization.MeasurementUnit, localization.Description, localization.Name });
+            connection.Execute(sql, new {
+                Language = localization.Language, 
+                Product = localization.Product,
+                MeasurementUnit = localization.MeasurementUnit,
+                Description = localization.Description,
+                Name = localization.Name
+            });
 
             return Result<ProductLocalizedDto>.Ok(localization);
         }
@@ -32,15 +44,15 @@ public static class ProductLocalizedDto
         {
             // Insert into ProductLocalized table
             const string sql = @"
-                INSERT INTO ProductLocalized (Language, ProductId, MeasurementUnit, Description, Name)
-                VALUES (@Language, @ProductId, @MeasurementUnit, @Description, @Name);";
+                INSERT INTO ProductLocalized (Language, Product, MeasurementUnit, Description, Name)
+                VALUES (@Language, @Product, @MeasurementUnit, @Description, @Name);";
 
             connection.Execute(sql, new { 
-                localization.Language, 
-                localization.ProductId, 
-                localization.MeasurementUnit, 
-                localization.Description, 
-                localization.Name }, transaction);
+                Language = localization.Language, 
+                Product = localization.Product, 
+                MeasurementUnit = localization.MeasurementUnit, 
+                Description = localization.Description, 
+                Name = localization.Name }, transaction);
 
             return Result<ProductLocalizedDto>.Ok(localization);
         }

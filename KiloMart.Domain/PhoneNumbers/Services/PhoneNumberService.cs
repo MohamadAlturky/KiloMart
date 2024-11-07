@@ -29,9 +29,9 @@ public static class PhoneNumberService
 
             return Result<PhoneNumberDto>.Ok(phoneNumber);
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            return Result<PhoneNumberDto>.Fail();
+            return Result<PhoneNumberDto>.Fail([e.Message]);
         }
     }
 }

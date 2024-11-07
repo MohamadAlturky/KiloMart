@@ -33,9 +33,9 @@ public static class CardService
 
             return Result<CardDto>.Ok(card);
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            return Result<CardDto>.Fail();
+            return Result<CardDto>.Fail([e.Message]);
         }
     }
 }

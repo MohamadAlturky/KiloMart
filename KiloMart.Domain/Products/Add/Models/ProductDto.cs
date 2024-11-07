@@ -3,9 +3,11 @@ namespace KiloMart.Domain.Products.Add.Models;
 public class ProductDto
 {
     public int Id { get; set; }
+    public bool IsActive { get; set; }
+
+    
     public string ImageUrl { get; set; } = string.Empty;
     public int CategoryId { get; set; }
-    public bool IsActive { get; set; }
     public string MeasurementUnit { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;

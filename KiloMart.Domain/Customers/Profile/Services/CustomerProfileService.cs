@@ -32,9 +32,9 @@ public static class CustomerProfileService
 
             return Result<CustomerProfileDto>.Ok(customerProfile);
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            return Result<CustomerProfileDto>.Fail();
+            return Result<CustomerProfileDto>.Fail([e.Message]);
         }
     }
 }

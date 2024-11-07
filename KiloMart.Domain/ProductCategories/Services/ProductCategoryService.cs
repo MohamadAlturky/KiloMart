@@ -36,16 +36,16 @@ public static class ProductCategoryService
                     // If any localization insert fails, return a failure result
                     if (!localizationResult.Success)
                     {
-                        return Result<ProductCategoryDto>.Fail();
+                        return Result<ProductCategoryDto>.Fail(localizationResult.Errors);
                     }
                 }
             }
 
             return Result<ProductCategoryDto>.Ok(category);
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            return Result<ProductCategoryDto>.Fail();
+            return Result<ProductCategoryDto>.Fail([e.Message]);
         }
     }
 }

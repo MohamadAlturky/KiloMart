@@ -2,7 +2,6 @@ namespace KiloMart.Domain.Products.Add.Models;
 
 public class ProductDto
 {
-    //write the public feild id , imagUrl , categoryId , isActive , MeasurementUnit , name and Description
     public int Id { get; set; }
     public string ImageUrl { get; set; } = string.Empty;
     public int CategoryId { get; set; }
@@ -10,7 +9,6 @@ public class ProductDto
     public string MeasurementUnit { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
-    //write the public feild Localizations as list of ProductLocalizedDto
     public List<ProductLocalizedDto> Localizations { get; set; } = new();
     public (bool Success, string[] Errors) Validate()
     {

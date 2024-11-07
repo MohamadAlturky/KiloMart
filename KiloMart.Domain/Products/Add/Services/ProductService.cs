@@ -1,13 +1,18 @@
+using Dapper;
+using KiloMart.DataAccess.Contracts;
+using KiloMart.DataAccess.Models;
+using KiloMart.Domain.Products.Add.Models;
+
 namespace KiloMart.Domain.Products.Add.Services;
 
 public static class ProductService
 {
    public static Result<ProductDto> Insert(IDbFactory dbFactory, ProductDto product){
-   
-   try
+        using var connection = dbFactory.CreateDbConnection();
+        using var transaction = connection.BeginTransaction();
+        try
         {
-            using var connection = dbFactory.CreateDbConnection();
-            using var transaction = connection.BeginTransaction();
+
             connection.Open();
 
             // Insert into Product table
@@ -23,21 +28,22 @@ public static class ProductService
             {
                 foreach (var localization in product.Localizations)
                 {
-                    localization.ProductId = product.Id;
-                    var localizationResult = ProductLocalizedService.Insert(dbFactory, localization);
+                    localization.Product = product.Id;
+                    var localizationResult = ProductLocalizedService.Insert(connection, transaction, localization);
                     if (!localizationResult.Success)
                     {
-                        return Result<ProductDto>.Fail();
+                        return Result<ProductDto>.Fail(localizationResult.Errors);
                     }
                 }
             }
-            
+            transaction.Commit();
 
             return Result<ProductDto>.Ok(product);
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            return Result<ProductDto>.Fail();
+            transaction.Rollback();
+            return Result<ProductDto>.Fail(new[] { e.Message });
         }
    }
  

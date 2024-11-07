@@ -1,4 +1,3 @@
-
 using System.Data;
 using Dapper;
 using KiloMart.DataAccess.Contracts;
@@ -25,9 +24,9 @@ public static class ProductCategoryLocalizedService
 
             return Result<ProductCategoryLocalizedDto>.Ok(localization);
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            return Result<ProductCategoryLocalizedDto>.Fail();
+            return Result<ProductCategoryLocalizedDto>.Fail(new[] { e.Message });
         }
     }
 
@@ -51,9 +50,9 @@ public static class ProductCategoryLocalizedService
 
             return Result<ProductCategoryLocalizedDto>.Ok(localization);
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            return Result<ProductCategoryLocalizedDto>.Fail();
+            return Result<ProductCategoryLocalizedDto>.Fail([e.Message]);
         }
     }
 }

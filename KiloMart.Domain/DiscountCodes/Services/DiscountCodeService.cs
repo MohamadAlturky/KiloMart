@@ -36,9 +36,9 @@ public static class DiscountCodeService
             transaction.Commit();
             return Result<DiscountCodeDto>.Ok(discountCode);
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            return Result<DiscountCodeDto>.Fail();
+            return Result<DiscountCodeDto>.Fail([e.Message]);
         }
     }
 }

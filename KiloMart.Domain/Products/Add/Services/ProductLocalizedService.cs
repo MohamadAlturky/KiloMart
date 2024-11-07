@@ -17,11 +17,13 @@ public static class ProductLocalizedService
             connection.Open();
             
             // Insert into ProductLocalized table
+            // select the generated id
             const string sql = @"
                 INSERT INTO ProductLocalized (Language, Product, MeasurementUnit, Description, Name)
-                VALUES (@Language, @Product, @MeasurementUnit, @Description, @Name);";
+                VALUES (@Language, @Product, @MeasurementUnit, @Description, @Name);
+                SELECT CAST(SCOPE_IDENTITY() as int);";
 
-            connection.Execute(sql, new {
+            localization.Id = connection.QuerySingle<int>(sql, new {
                 Language = localization.Language, 
                 Product = localization.Product,
                 MeasurementUnit = localization.MeasurementUnit,
@@ -31,9 +33,9 @@ public static class ProductLocalizedService
 
             return Result<ProductLocalizedDto>.Ok(localization);
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            return Result<ProductLocalizedDto>.Fail();
+            return Result<ProductLocalizedDto>.Fail([e.Message]);
         }
     }
     public static Result<ProductLocalizedDto> Insert(IDbConnection connection,
@@ -56,9 +58,9 @@ public static class ProductLocalizedService
 
             return Result<ProductLocalizedDto>.Ok(localization);
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            return Result<ProductLocalizedDto>.Fail();
+            return Result<ProductLocalizedDto>.Fail([e.Message]);
         }
     }
 }

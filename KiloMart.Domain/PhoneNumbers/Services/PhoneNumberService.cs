@@ -7,7 +7,7 @@ namespace KiloMart.Domain.PhoneNumbers.Services;
 
 public static class PhoneNumberService
 {
-    public static Result<PhoneNumberDto> Insert(IDbFactory dbFactory, PhoneNumberDto phoneNumber)
+    public static Result<CreatePhoneNumberResponse> Insert(IDbFactory dbFactory, CreatePhoneNumberRequest phoneNumber)
     {
         try
         {
@@ -21,17 +21,20 @@ public static class PhoneNumberService
                 SELECT CAST(SCOPE_IDENTITY() as int);"; // Retrieve the generated Id
 
             // Execute the insert and retrieve the new Id
-            phoneNumber.Id = connection.QuerySingle<int>(sql, new
+            CreatePhoneNumberResponse response = new();
+            response.Id = connection.QuerySingle<int>(sql, new
             {
                 phoneNumber.Value,
                 phoneNumber.Party
             });
+            response.Value = phoneNumber.Value;
+            response.Party = phoneNumber.Party;
 
-            return Result<PhoneNumberDto>.Ok(phoneNumber);
+            return Result<CreatePhoneNumberResponse>.Ok(response);
         }
         catch (Exception e)
         {
-            return Result<PhoneNumberDto>.Fail([e.Message]);
+            return Result<CreatePhoneNumberResponse>.Fail([e.Message]);
         }
     }
 }

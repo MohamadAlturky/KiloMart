@@ -21,7 +21,8 @@ public class ProductCategoryDto
 
         if (Localizations.Any(l => string.IsNullOrWhiteSpace(l.Name)))
             errors.Add("Localization name is required");
-
+        if (Localizations.Any(l => l.Language == 0))
+            errors.Add("Language is required");
         return (errors.Count == 0, errors.ToArray());
     }
 }

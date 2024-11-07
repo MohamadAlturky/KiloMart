@@ -1,5 +1,4 @@
 using KiloMart.DataAccess.Contracts;
-using KiloMart.Domain.Customers.List.Services;
 using KiloMart.Domain.Register.Provider.Models;
 using KiloMart.Domain.Register.Provider.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -16,13 +15,6 @@ public class ProviderController : ControllerBase
     {
         _dbFactory = dbFactory;
         _configuration = configuration;
-    }
-
-    [HttpGet]
-    public async Task<IActionResult> List()
-    {
-        var customers = await CustomerService.List(_dbFactory);
-        return Ok(customers);
     }
 
     // register a provider

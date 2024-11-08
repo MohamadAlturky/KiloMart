@@ -1,4 +1,4 @@
-namespace KiloMart.Api.Controllers;
+namespace KiloMart.Api.Models.Commands.Products;
 
 public class CreateProductRequest
 {
@@ -16,9 +16,9 @@ public class CreateProductRequest
             errors.Add("Arabic data is required");
         if (EnglishData is null)
             errors.Add("English data is required");
-        if(ArabicData?.Validate().Success == false)
+        if (ArabicData?.Validate().Success == false)
             errors.AddRange(ArabicData.Validate().Errors);
-        if(EnglishData?.Validate().Success == false)
+        if (EnglishData?.Validate().Success == false)
             errors.AddRange(EnglishData.Validate().Errors);
         if (File is null)
             errors.Add("File is required");

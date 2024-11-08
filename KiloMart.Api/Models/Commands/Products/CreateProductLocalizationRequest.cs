@@ -1,9 +1,9 @@
-namespace KiloMart.Api.Controllers;
+namespace KiloMart.Api.Models.Commands.Products;
 
 public class CreateProductLocalizationRequest
 {
-    public string Name { get; set; }= string.Empty;
-    public string Description { get; set; }= string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
     public string MeasurementUnit { get; set; } = string.Empty;
     public (bool Success, string[] Errors) Validate()
     {

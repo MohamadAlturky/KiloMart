@@ -1,9 +1,8 @@
-﻿using KiloMart.Api.RealTime;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using System.Security.Claims;
 
-namespace BasicChat
+namespace KiloMart.Api.RealTime
 {
     [Authorize]
     public class NotificationHub : Hub
@@ -34,7 +33,7 @@ namespace BasicChat
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            if (int.TryParse(Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value, 
+            if (int.TryParse(Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value,
                 out var userId))
             {
                 _connections.Remove(userId, Context.ConnectionId);

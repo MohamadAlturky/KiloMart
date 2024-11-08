@@ -3,7 +3,7 @@ using KiloMart.DataAccess.Contracts;
 using KiloMart.DataAccess.Models;
 using KiloMart.Domain.Customers.Profile.Models;
 
-namespace KiloMart.Domain.CustomerProfiles.Services
+namespace KiloMart.Domain.Customers.Profile.Services
 {
     public static class CustomerProfileService
     {
@@ -27,11 +27,11 @@ namespace KiloMart.Domain.CustomerProfiles.Services
                 // Insert into CustomerProfile and get new ID
                 var customerProfileId = await connection.QuerySingleAsync<int>(insertCustomerProfileSql, new
                 {
-                    Customer = customerProfileRequest.Customer,
-                    FirstName = customerProfileRequest.FirstName,
-                    SecondName = customerProfileRequest.SecondName,
-                    NationalName = customerProfileRequest.NationalName,
-                    NationalId = customerProfileRequest.NationalId
+                    customerProfileRequest.Customer,
+                    customerProfileRequest.FirstName,
+                    customerProfileRequest.SecondName,
+                    customerProfileRequest.NationalName,
+                    customerProfileRequest.NationalId
                 }, transaction);
 
                 // SQL to insert into CustomerProfileLocalized using the newly created CustomerProfile Id
@@ -43,10 +43,10 @@ namespace KiloMart.Domain.CustomerProfiles.Services
                 await connection.ExecuteAsync(insertCustomerProfileLocalizedSql, new
                 {
                     CustomerProfile = customerProfileId,
-                    Language = localizedRequest.Language,
-                    FirstName = localizedRequest.FirstName,
-                    SecondName = localizedRequest.SecondName,
-                    NationalName = localizedRequest.NationalName
+                    localizedRequest.Language,
+                    localizedRequest.FirstName,
+                    localizedRequest.SecondName,
+                    localizedRequest.NationalName
                 }, transaction);
 
                 // Commit transaction if both inserts are successful

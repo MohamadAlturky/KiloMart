@@ -18,7 +18,6 @@ public class DeliveryController : ControllerBase
     }
 
 
-    // register a provider
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterDeliveryDto dto)
     {

@@ -1,4 +1,4 @@
-namespace KiloMart.Api.Controllers.Commands;
+namespace KiloMart.Domain.Login.Models;
 
 public class ActivateUserRequest
 {

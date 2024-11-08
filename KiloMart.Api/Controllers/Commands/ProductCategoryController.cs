@@ -4,7 +4,7 @@ using KiloMart.Domain.ProductCategories.Models;
 using KiloMart.Domain.ProductCategories.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KiloMart.Api.Controllers;
+namespace KiloMart.Api.Controllers.Commands;
 
 [ApiController]
 [Route("api/product-categories")]
@@ -16,7 +16,7 @@ public class ProductCategoryController : ControllerBase
     {
         _dbFactory = dbFactory;
     }
-    
+
     [HttpPost("create")]
     public IActionResult Insert([FromBody] List<CreateProductCategoryRequest> categoryinfos)
     {

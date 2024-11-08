@@ -13,7 +13,7 @@ public class AuthorizeRoleAttribute : Attribute, IAuthorizationFilter
     public static string SECRET_KEY = "";
     public static string ISSUER = "";
     public static string AUDIENCE = "";
-
+    
     private readonly int _requiredRoleId;
 
     public AuthorizeRoleAttribute(int roleId)

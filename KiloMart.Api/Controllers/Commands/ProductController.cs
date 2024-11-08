@@ -1,3 +1,4 @@
+using KiloMart.Api.Models.Commands.Products;
 using KiloMart.Api.Services;
 using KiloMart.DataAccess.Contracts;
 using KiloMart.Domain.Languages.Models;
@@ -5,7 +6,7 @@ using KiloMart.Domain.Products.Add.Models;
 using KiloMart.Domain.Products.Add.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KiloMart.Api.Controllers;
+namespace KiloMart.Api.Controllers.Commands;
 
 [ApiController]
 [Route("api/products")]
@@ -21,11 +22,12 @@ public class ProductController : ControllerBase
     }
 
     [HttpPost("add")]
-    public async Task<IActionResult> Insert([FromForm] CreateProductRequest product){
+    public async Task<IActionResult> Insert([FromForm] CreateProductRequest product)
+    {
         var (success, errors) = product.Validate();
         if (!success)
             return BadRequest(errors);
-        if(product.File is null)
+        if (product.File is null)
         {
             return BadRequest("File is required");
         }
@@ -58,6 +60,6 @@ public class ProductController : ControllerBase
             }]
         };
         var result = ProductService.Insert(_dbFactory, productDto);
-        return result.Success ? Ok(result.Data) : StatusCode(500,result.Errors);
+        return result.Success ? Ok(result.Data) : StatusCode(500, result.Errors);
     }
 }

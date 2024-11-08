@@ -65,11 +65,11 @@ public class DeliveryController : ControllerBase
         }, new CreateDeliveryProfileLocalizedRequest
         {
             FirstName = request.FirstName,
-            SecondName = request.SecondName, 
+            SecondName = request.SecondName,
             Language = request.LanguageId,
             NationalName = request.NationalName,
         });
 
-        return Ok(result);
+        return result.Success ? Ok(result) : StatusCode(500, result.Errors);
     }
 }

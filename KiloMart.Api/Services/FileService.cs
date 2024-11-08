@@ -20,7 +20,8 @@ public static class FileService
         var extension = GetFileExtension(file.ContentType)??
             throw new ArgumentException("Unsupported image format.");
 
-        var path = Path.Combine(webRootPath, subDirectory, $"{fileName}{extension}");
+        var imageUrl = subDirectory + "/" + $"{fileName}{extension}";
+        var path =Path.Combine(webRootPath, subDirectory, $"{fileName}{extension}");
 
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
 
@@ -29,7 +30,7 @@ public static class FileService
             await file.CopyToAsync(stream);
         }
 
-        return path;
+        return imageUrl;
     }
 
     private static string? GetFileExtension(string contentType)

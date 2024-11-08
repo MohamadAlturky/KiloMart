@@ -38,19 +38,26 @@ public class ProductController : ControllerBase
             CategoryId = product.CategoryId,
             ImageUrl = filePath,
             IsActive = true,
-            Description = product.Localizations.First().Description,
-            MeasurementUnit = product.Localizations.First().MeasurementUnit,
-            Name = product.Localizations.First().Name,
-            Localizations = product.Localizations.Select(l => new ProductLocalizedDto 
-            { 
-                Name = l.Name, 
-                Description = l.Description, 
-                Language = l.LanguageId,
-                MeasurementUnit = l.MeasurementUnit,
-            }).ToList()
+            Description = product.ArabicData.Description,
+            MeasurementUnit = product.ArabicData.MeasurementUnit,
+            Name = product.ArabicData.Name,
+            Localizations = [new ProductLocalizedDto
+            {
+                Name = product.ArabicData.Name,
+                Description = product.ArabicData.Description,
+                Language = product.ArabicData.LanguageId,
+                MeasurementUnit = product.ArabicData.MeasurementUnit,
+            },
+            new ProductLocalizedDto
+            {
+                Name = product.EnglishData.Name,
+                Description = product.EnglishData.Description,
+                Language = product.EnglishData.LanguageId,
+                MeasurementUnit = product.EnglishData.MeasurementUnit,
+            }]
         };
         var result = ProductService.Insert(_dbFactory, productDto);
-        return result.Success ? Ok(result.Data) : BadRequest();
+        return result.Success ? Ok(result.Data) : StatusCode(500,result.Errors);
     }
 }
 
@@ -58,17 +65,22 @@ public class CreateProductRequest
 {
     public IFormFile? File { get; set; }
     public int CategoryId { get; set; }
-    public CreateProductLocalizationRequest[] Localizations { get; set; } =[];
+    public CreateProductLocalizationRequest? ArabicData { get; set; }
+    public CreateProductLocalizationRequest? EnglishData { get; set; }
 
     public (bool Success, string[] Errors) Validate()
     {
         var errors = new List<string>();
         if (CategoryId == 0)
             errors.Add("Category is required");
-        if (Localizations.Length == 0)
-            errors.Add("At least one localization is required");
-        if (Localizations.Any(l => l.Validate().Success == false))
-            errors.AddRange(Localizations.SelectMany(l => l.Validate().Errors));
+        if (ArabicData is null)
+            errors.Add("Arabic data is required");
+        if (EnglishData is null)
+            errors.Add("English data is required");
+        if(ArabicData?.Validate().Success == false)
+            errors.AddRange(ArabicData.Validate().Errors);
+        if(EnglishData?.Validate().Success == false)
+            errors.AddRange(EnglishData.Validate().Errors);
         if (File is null)
             errors.Add("File is required");
         return (errors.Count == 0, errors.ToArray());

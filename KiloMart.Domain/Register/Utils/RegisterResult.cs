@@ -6,4 +6,5 @@ public class RegisterResult
     public string? ErrorMessage { get; set; }
     public int? UserId { get; set; }
     public int? PartyId { get; set; }
+    public string? VerificationToken { get; set; }
 }

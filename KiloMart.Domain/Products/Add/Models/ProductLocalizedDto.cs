@@ -2,7 +2,6 @@ namespace KiloMart.Domain.Products.Add.Models;
 
 public class ProductLocalizedDto
 {
-    public int Id { get; set; }
     public int Product { get; set; }
     
     public byte Language { get; set; }

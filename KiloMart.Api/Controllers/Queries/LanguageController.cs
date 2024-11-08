@@ -1,4 +1,5 @@
 using Dapper;
+using KiloMart.Api.Authorization;
 using KiloMart.DataAccess.Contracts;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,6 +12,8 @@ public class LanguageController : ControllerBase
     {
         _dbFactory = dbFactory;
     }
+
+    [AuthorizeRole(1)]
     [HttpGet("list")]
     public async Task<IActionResult> List()
     {

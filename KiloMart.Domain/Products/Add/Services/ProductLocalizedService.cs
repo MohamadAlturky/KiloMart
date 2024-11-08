@@ -20,10 +20,9 @@ public static class ProductLocalizedService
             // select the generated id
             const string sql = @"
                 INSERT INTO ProductLocalized (Language, Product, MeasurementUnit, Description, Name)
-                VALUES (@Language, @Product, @MeasurementUnit, @Description, @Name);
-                SELECT CAST(SCOPE_IDENTITY() as int);";
+                VALUES (@Language, @Product, @MeasurementUnit, @Description, @Name);";
 
-            localization.Id = connection.QuerySingle<int>(sql, new {
+            connection.Execute(sql, new {
                 Language = localization.Language, 
                 Product = localization.Product,
                 MeasurementUnit = localization.MeasurementUnit,

@@ -1,5 +1,6 @@
 using Dapper;
 using KiloMart.DataAccess.Contracts;
+using KiloMart.Domain.Languages.Models;
 using KiloMart.Domain.ProductCategories.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -45,9 +46,9 @@ public class ProductCategoryController : ControllerBase
         var category = await connection.QueryFirstOrDefaultAsync<ProductCategoryDto>("SELECT [Id], [Name] , [IsActive] FROM ProductCategory where Id = @id", new { id });
         return Ok(category);
     }
-    // get all category localized
+    // get category localized
     [HttpGet("{id}/localized")]
-    public async Task<IActionResult> GetAllLocalized(int id, byte language)
+    public async Task<IActionResult> GetLocalizedById(int id, byte language)
     {
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
@@ -82,5 +83,36 @@ public class ProductCategoryController : ControllerBase
             
         }); // Return the first match or null if none found
 
+    }
+    //like the localized but return all localized
+    [HttpGet("localized/all")]
+    public async Task<IActionResult> GetAllLocalized(byte language)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+        string sql = @"
+                SELECT 
+                    ProductCategory.[Id], 
+                    ProductCategory.[Name], 
+                    ProductCategory.[IsActive], 
+                    ProductCategoryLocalized.[Name] AS LocalizedName, 
+                    ProductCategoryLocalized.[Language]
+                FROM ProductCategory
+                LEFT JOIN ProductCategoryLocalized 
+                    ON ProductCategory.Id = ProductCategoryLocalized.ProductCategory 
+                    where ProductCategoryLocalized.Language = @language";
+        var categories = await connection.QueryAsync<ProductCategoryDto>(
+            sql, 
+            new { language });
+        List<dynamic> result = new();
+        foreach (var category in categories)
+        {
+            result.Add(new {
+                Id=category.Id,
+                Name=category.LocalizedName is not null ? category.LocalizedName : category.Name,
+                IsActive=category.IsActive,
+            });
+        }
+        return Ok(result);
     }
 }

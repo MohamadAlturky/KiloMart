@@ -4,6 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\KiloMart.DataAccess\KiloMart.DataAccess.csproj" />
   </ItemGroup>

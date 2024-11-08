@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using KiloMart.Api.Authorization;
 var builder = WebApplication.CreateBuilder(args);
 
 #region Authentication
@@ -32,13 +33,18 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "KiloMart API", Version = "v1" });
+    
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.",
+        Description = @"JWT Authorization header using the Bearer scheme. 
+                      Enter 'Bearer' [space] and your token in the text input below.
+                      Example: 'Bearer 12345abcdef'",
         Name = "Authorization",
         In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT"
     });
 
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -52,7 +58,7 @@ builder.Services.AddSwaggerGen(options =>
                     Id = "Bearer"
                 }
             },
-            Array.Empty<string>()
+            new string[] {}
         }
     });
 });
@@ -60,10 +66,13 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddDataAccess(builder.Configuration);
 builder.Services.AddSignalR();
 
+// configuration
+AuthorizeRoleAttribute.SECRET_KEY = builder.Configuration["Jwt:Key"]!;
+AuthorizeRoleAttribute.ISSUER = builder.Configuration["Jwt:Issuer"]!;
+AuthorizeRoleAttribute.AUDIENCE = builder.Configuration["Jwt:Audience"]!;
 
 
 var app = builder.Build();
-
 app.MapHub<NotificationHub>("/notificationHub");
 
 if (app.Environment.IsDevelopment())

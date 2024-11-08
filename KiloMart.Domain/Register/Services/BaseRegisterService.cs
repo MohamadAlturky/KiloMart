@@ -36,9 +36,9 @@ public abstract class BaseRegisterService
             await CreatePartyType(connection, partyId, transaction);
             await CreatePartyLocalized(connection, partyId, language, displayName, transaction);
             var membershipUserId = await CreateMembershipUser(connection, email, password, UserRole, partyId, transaction);
-
+            var verificationToken = await GenerateVerificationToken(membershipUserId, connection, transaction);
             transaction.Commit();
-            return new RegisterResult { IsSuccess = true, UserId = membershipUserId, PartyId = partyId };
+            return new RegisterResult { IsSuccess = true, UserId = membershipUserId, PartyId = partyId, VerificationToken = verificationToken };
         }
         catch (Exception ex)
         {
@@ -90,11 +90,32 @@ public abstract class BaseRegisterService
     {
         var passwordHash = HashHandler.GetHash(password);
         return await connection.QuerySingleAsync<int>(
-            @"INSERT INTO MembershipUser (Email, EmailConfirmed, PasswordHash, Role, Party) 
+            @"INSERT INTO MembershipUser (Email, EmailConfirmed, PasswordHash, Role, Party,IsActive) 
             OUTPUT INSERTED.Id 
-            VALUES (@Email, @EmailConfirmed, @PasswordHash, @Role, @Party)",
-            new { Email = email, EmailConfirmed = false, PasswordHash = passwordHash, Role = (int)role, Party = partyId },
+            VALUES (@Email, @EmailConfirmed, @PasswordHash, @Role, @Party, @IsActive)",
+            new { Email = email, EmailConfirmed = false, PasswordHash = passwordHash, Role = (int)role, Party = partyId, IsActive = false },
             transaction
         );
     }
-} 
+
+    public async Task<string> GenerateVerificationToken(int membershipUserId, IDbConnection connection, IDbTransaction transaction)
+    {
+        // Generate a 5-digit random number as a verification token
+        Random random = new Random();
+        string token = random.Next(10000, 99999).ToString(); // Generates a 5-digit number as a string
+
+        // Insert the token into the VerificationToken table
+        await connection.ExecuteAsync(
+            @"INSERT INTO VerificationToken (MembershipUser, Value, CreatedAt)
+                VALUES (@MembershipUser, @Value, @CreatedAt)",
+            new { MembershipUser = membershipUserId, Value = token, CreatedAt = DateTime.UtcNow },
+            transaction
+        );
+
+        // Return the generated token
+        return token;
+    }
+
+
+
+}

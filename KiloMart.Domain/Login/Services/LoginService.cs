@@ -16,7 +16,7 @@ public class LoginService
         var connection = dbFactory.CreateDbConnection();
         connection.Open();
         var user = await connection.QueryFirstOrDefaultAsync<MembershipUserDto>(
-                @"SELECT Id, EmailConfirmed, PasswordHash, IsActive, Role
+                @"SELECT Id, EmailConfirmed, PasswordHash, IsActive, Role,Party
                   FROM MembershipUser
                   WHERE Email = @Email",
                 new { Email = email }

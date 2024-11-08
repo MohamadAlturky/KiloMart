@@ -1,4 +1,5 @@
 using Dapper;
+using KiloMart.Api.Models;
 using KiloMart.DataAccess.Contracts;
 using KiloMart.Domain.Languages.Models;
 using KiloMart.Domain.ProductCategories.Models;
@@ -21,7 +22,7 @@ public class ProductCategoryController : ControllerBase
     {
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
-        var categories = await connection.QueryAsync<ProductCategoryDto>("SELECT [Id], [Name] , [IsActive] FROM ProductCategory where IsActive = 1");
+        var categories = await connection.QueryAsync<ProductCategoryApiResponse>("SELECT [Id], [Name] , [IsActive] FROM ProductCategory where IsActive = 1");
         return Ok(categories.ToArray());
     }
 
@@ -30,10 +31,10 @@ public class ProductCategoryController : ControllerBase
     {
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
-        var categories = await connection.QueryAsync<ProductCategoryDto>("SELECT [Id], [Name] , [IsActive] FROM ProductCategory");
+        var categories = await connection.QueryAsync<ProductCategoryApiResponse>("SELECT [Id], [Name] , [IsActive] FROM ProductCategory");
         if (isActive is not null)
         {
-            categories = await connection.QueryAsync<ProductCategoryDto>("SELECT [Id], [Name] , [IsActive] FROM ProductCategory where IsActive = @isActive", new { isActive });
+            categories = await connection.QueryAsync<ProductCategoryApiResponse>("SELECT [Id], [Name] , [IsActive] FROM ProductCategory where IsActive = @isActive", new { isActive });
         }
         return Ok(categories.ToArray());
     }
@@ -43,7 +44,7 @@ public class ProductCategoryController : ControllerBase
     {
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
-        var category = await connection.QueryFirstOrDefaultAsync<ProductCategoryDto>("SELECT [Id], [Name] , [IsActive] FROM ProductCategory where Id = @id", new { id });
+        var category = await connection.QueryFirstOrDefaultAsync<ProductCategoryApiResponse>("SELECT [Id], [Name] , [IsActive] FROM ProductCategory where Id = @id", new { id });
         return Ok(category);
     }
     // get category localized
@@ -67,11 +68,11 @@ public class ProductCategoryController : ControllerBase
                 WHERE ProductCategory.Id = @id";
 
             // Execute the query with Dapper, mapping to ProductCategoryDto
-            var category = await connection.QueryAsync<ProductCategoryDto>(
+            var category = await connection.QueryAsync<ProductCategoryApiResponse>(
                 sql, 
                 new { id, language });
 
-        ProductCategoryDto? result = category.FirstOrDefault();
+        ProductCategoryApiResponse? result = category.FirstOrDefault();
         if(result is null)
         {
             return NotFound();
@@ -101,7 +102,7 @@ public class ProductCategoryController : ControllerBase
                 LEFT JOIN ProductCategoryLocalized 
                     ON ProductCategory.Id = ProductCategoryLocalized.ProductCategory 
                     where ProductCategoryLocalized.Language = @language";
-        var categories = await connection.QueryAsync<ProductCategoryDto>(
+        var categories = await connection.QueryAsync<ProductCategoryApiResponse>(
             sql, 
             new { language });
         List<dynamic> result = new();

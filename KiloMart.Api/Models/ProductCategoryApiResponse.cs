@@ -1,6 +1,6 @@
-namespace KiloMart.Api.Controllers.Queries;
+namespace KiloMart.Api.Models;
 
-public class ProductCategoryDto
+public class ProductCategoryApiResponse
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;

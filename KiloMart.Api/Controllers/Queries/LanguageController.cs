@@ -1,5 +1,6 @@
 using Dapper;
 using KiloMart.Api.Authorization;
+using KiloMart.Api.Models;
 using KiloMart.DataAccess.Contracts;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,7 +20,7 @@ public class LanguageController : ControllerBase
     {
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
-        var languages = await connection.QueryAsync<LanguageDto>("SELECT [Id], [Name] FROM Language");
+        var languages = await connection.QueryAsync<LanguageApiResponse>("SELECT [Id], [Name] FROM Language");
         return Ok(languages.ToArray());
     }
 }

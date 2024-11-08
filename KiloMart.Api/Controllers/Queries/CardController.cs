@@ -1,4 +1,5 @@
 using Dapper;
+using KiloMart.Api.Models;
 using KiloMart.DataAccess.Contracts;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,7 +19,7 @@ public class CardController : ControllerBase
     {
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
-        var cards = await connection.QueryAsync<CardDto>(
+        var cards = await connection.QueryAsync<CardApiResponse>(
             "SELECT [Id], [HolderName], [Number], [SecurityCode], [ExpireDate], [Customer] FROM Card WHERE Customer = @partyId",
             new { partyId });
         return Ok(cards.ToArray());

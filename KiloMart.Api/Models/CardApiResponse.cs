@@ -1,6 +1,6 @@
-namespace KiloMart.Api.Controllers.Queries;
+namespace KiloMart.Api.Models;
 
-public class CardDto
+public class CardApiResponse
 {
     public int Id { get; set; }
     public string HolderName { get; set; } = string.Empty;

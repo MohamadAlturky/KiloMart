@@ -18,7 +18,7 @@ public class CustomerController : ControllerBase
         _dbFactory = dbFactory;
         _configuration = configuration;
     }
-    // register a customer
+    #region register
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterCustomerDto dto)
     {
@@ -36,7 +36,9 @@ public class CustomerController : ControllerBase
                             dto.Language);
         return Ok(result);
     }
+    #endregion
 
+    #region profile
     [HttpPost("profile/create")]
     public async Task<IActionResult> CreateProfile(CreateCustomerProfileApiRequest request)
     {
@@ -65,4 +67,5 @@ public class CustomerController : ControllerBase
 
         return result.Success ? Ok(result) : StatusCode(500, result.Errors);
     }
+    #endregion
 }

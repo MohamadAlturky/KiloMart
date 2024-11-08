@@ -7,13 +7,13 @@ namespace KiloMart.Domain.DiscountCodes.Services;
 
 public static class DiscountCodeService
 {
-    public static Result<DiscountCodeDto> Insert(IDbFactory dbFactory, DiscountCodeDto discountCode)
+    public static Result<CreateDiscountCodeResponse> Insert(IDbFactory dbFactory,
+     CreateDiscountCodeRequest discountCode)
     {
         try
         {
             using var connection = dbFactory.CreateDbConnection();
             connection.Open();
-            using var transaction = connection.BeginTransaction();
 
             // SQL query to insert into DiscountCode table
             const string sql = @"
@@ -22,7 +22,7 @@ public static class DiscountCodeService
                 SELECT CAST(SCOPE_IDENTITY() as int);"; // Retrieve the generated Id
 
             // Execute the insert and retrieve the new Id
-            discountCode.Id = connection.QuerySingle<int>(sql, new
+            int id = connection.QuerySingle<int>(sql, new
             {
                 discountCode.Code,
                 discountCode.Value,
@@ -30,15 +30,24 @@ public static class DiscountCodeService
                 discountCode.StartDate,
                 discountCode.EndDate,
                 discountCode.DiscountType,
-                discountCode.IsActive
-            }, transaction);
+                IsActive = true,
+            });
 
-            transaction.Commit();
-            return Result<DiscountCodeDto>.Ok(discountCode);
+            return Result<CreateDiscountCodeResponse>.Ok(new CreateDiscountCodeResponse()
+            {
+                Id = id,
+                Code = discountCode.Code,
+                Value = discountCode.Value,
+                Description = discountCode.Description,
+                StartDate = discountCode.StartDate,
+                EndDate = discountCode.EndDate,
+                DiscountType = discountCode.DiscountType,
+                IsActive = true
+            });
         }
         catch (Exception e)
         {
-            return Result<DiscountCodeDto>.Fail([e.Message]);
+            return Result<CreateDiscountCodeResponse>.Fail([e.Message]);
         }
     }
 }

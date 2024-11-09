@@ -43,7 +43,10 @@ public static class JwtTokenHandler
         var secretKey = configuration["Jwt:Key"]!;
         var issuer = configuration["Jwt:Issuer"];
         var audience = configuration["Jwt:Audience"];
-        int expiryTime = int.Parse(configuration["Jwt:ExpiryTimeInMinutes"]!);
+        if (!int.TryParse(configuration["Jwt:ExpiryTimeInMinutes"], out int expiryTime))
+        {
+            throw new InvalidOperationException("Invalid expiry time in configuration.");
+        }
 
         // Ensure none of the values are null
         if (string.IsNullOrEmpty(secretKey) || string.IsNullOrEmpty(issuer) || string.IsNullOrEmpty(audience))
@@ -51,16 +54,19 @@ public static class JwtTokenHandler
             throw new InvalidOperationException("JWT configuration is missing or invalid.");
         }
 
+        // Key and signing credentials
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        var claims = new[]
+        // Claims
+        var claims = new List<Claim>
         {
-            new Claim(CustomClaimTypes.UserId, user.Id.ToString()),
-            new Claim(CustomClaimTypes.Email, user.Email),
+            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),  // Standard 'sub' claim
+            new Claim(JwtRegisteredClaimNames.Email, user.Email),        // Standard 'email' claim
             new Claim(CustomClaimTypes.Role, user.Role.ToString()),
             new Claim(CustomClaimTypes.Party, user.Party.ToString())
         };
+
         var token = new JwtSecurityToken(
             issuer: issuer,
             audience: audience,
@@ -68,6 +74,7 @@ public static class JwtTokenHandler
             expires: DateTime.UtcNow.AddMinutes(expiryTime),
             signingCredentials: creds
         );
+
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }

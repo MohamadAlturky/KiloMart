@@ -17,6 +17,19 @@ public class UserController : ControllerBase
         _dbFactory = dbFactory;
         _configuration = configuration;
     }
+    #region decode token
+    [HttpGet("decode-token")]
+    public IActionResult Decode(string token)
+    {
+        JwtTokenValidator.ValidateToken(token,
+            _configuration["Jwt:Key"]!,
+            _configuration["Jwt:Issuer"]!,
+            _configuration["Jwt:Audience"]!,
+            out var decodedToken);
+        return Ok(decodedToken);
+    }
+    #endregion
+    
     #region verify email
     [HttpPost("verify-email")]
     public async Task<IActionResult> VerifyEmail([FromBody] ActivateUserRequest request)

@@ -4,7 +4,7 @@ using KiloMart.Domain.ProductCategories.Models;
 using KiloMart.Domain.ProductCategories.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KiloMart.Api.Controllers.Commands;
+namespace KiloMart.Presentation.Controllers.Commands;
 
 [ApiController]
 [Route("api/product-categories")]

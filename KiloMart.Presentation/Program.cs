@@ -2,9 +2,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
-using KiloMart.Api.Authorization;
-using KiloMart.Api.RealTime;
 using KiloMart.Core.Configurations;
+using KiloMart.Presentation.Authorization;
+using KiloMart.Presentation.RealTime;
 var builder = WebApplication.CreateBuilder(args);
 
 #region Authentication

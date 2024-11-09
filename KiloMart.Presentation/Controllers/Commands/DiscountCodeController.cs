@@ -1,10 +1,9 @@
-
 using KiloMart.Core.Contracts;
 using KiloMart.Domain.DiscountCodes.Models;
 using KiloMart.Domain.DiscountCodes.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KiloMart.Api.Controllers.Commands;
+namespace KiloMart.Presentation.Controllers.Commands;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -23,7 +22,7 @@ public class DiscountCodeController : ControllerBase
         var result = DiscountCodeService.Insert(_dbFactory, request);
 
         if (!result.Success)
-            return StatusCode(500,result.Errors);
+            return StatusCode(500, result.Errors);
 
         return Ok(result.Data);
 

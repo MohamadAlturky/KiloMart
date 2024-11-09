@@ -1,4 +1,4 @@
-namespace KiloMart.Api.Models;
+namespace KiloMart.Presentation.Models.Queries;
 
 public class ProductCategoryApiResponse
 {

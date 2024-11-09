@@ -1,9 +1,9 @@
 using Dapper;
-using KiloMart.Api.Models;
 using KiloMart.Core.Contracts;
+using KiloMart.Presentation.Models.Queries;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KiloMart.Api.Controllers.Queries;
+namespace KiloMart.Presentation.Controllers.Queries;
 
 [ApiController]
 [Route("api/[controller]")]

@@ -1,9 +1,9 @@
-using KiloMart.Api.Models.Commands.Deliveries;
 using KiloMart.Core.Contracts;
 using KiloMart.Domain.Delivery.Profile.Models;
 using KiloMart.Domain.Delivery.Profile.Services;
 using KiloMart.Domain.Register.Delivery.Models;
 using KiloMart.Domain.Register.Delivery.Services;
+using KiloMart.Presentation.Models.Commands.Deliveries;
 using Microsoft.AspNetCore.Mvc;
 
 

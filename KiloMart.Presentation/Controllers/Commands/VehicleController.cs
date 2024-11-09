@@ -3,7 +3,7 @@ using KiloMart.Domain.Vehicles.Models;
 using KiloMart.Domain.Vehicles.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KiloMart.Api.Controllers.Commands;
+namespace KiloMart.Presentation.Controllers.Commands;
 
 [ApiController]
 [Route("api/[controller]")]

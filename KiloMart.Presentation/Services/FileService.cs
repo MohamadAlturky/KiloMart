@@ -1,4 +1,4 @@
-﻿namespace KiloMart.Api.Services;
+﻿namespace KiloMart.Presentation.Services;
 
 public static class FileService
 {
@@ -21,7 +21,7 @@ public static class FileService
             throw new ArgumentException("Unsupported image format.");
 
         var imageUrl = subDirectory + "/" + $"{fileName}{extension}";
-        var path =Path.Combine(webRootPath, subDirectory, $"{fileName}{extension}");
+        var path = Path.Combine(webRootPath, subDirectory, $"{fileName}{extension}");
 
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
 

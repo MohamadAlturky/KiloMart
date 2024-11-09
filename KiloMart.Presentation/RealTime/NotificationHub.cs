@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.SignalR;
 using System.Security.Claims;
 
-namespace KiloMart.Api.RealTime
+namespace KiloMart.Presentation.RealTime
 {
     [Authorize]
     public class NotificationHub : Hub

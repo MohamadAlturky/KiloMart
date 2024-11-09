@@ -4,7 +4,7 @@ using KiloMart.Domain.Login.Services;
 using KiloMart.Domain.Register.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KiloMart.Api.Controllers.Commands;
+namespace KiloMart.Presentation.Controllers.Commands;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -35,8 +35,8 @@ public class UserController : ControllerBase
             return BadRequest(errors);
 
         var result = await LoginService.Login(request.Email, request.Password, _dbFactory, _configuration);
-        return result.Success ? 
-            Ok(new { Success = true, Token = result.Token }) 
+        return result.Success ?
+            Ok(new { Success = true, result.Token })
         : Unauthorized(new { Success = false });
     }
 }

@@ -1,4 +1,3 @@
-
 using KiloMart.Core.Contracts;
 using KiloMart.Domain.Locations.Add.Services;
 using KiloMart.Domain.Locations.Details.Models;
@@ -6,7 +5,7 @@ using KiloMart.Domain.Locations.Details.Services;
 using KiloMart.Domain.Locations.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KiloMart.Api.Controllers.Commands;
+namespace KiloMart.Presentation.Controllers.Commands;
 
 [ApiController]
 [Route("api/[controller]")]

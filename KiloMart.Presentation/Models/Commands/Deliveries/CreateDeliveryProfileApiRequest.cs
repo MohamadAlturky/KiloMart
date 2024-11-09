@@ -1,4 +1,4 @@
-namespace KiloMart.Api.Models.Commands.Deliveries;
+namespace KiloMart.Presentation.Models.Commands.Deliveries;
 public class CreateDeliveryProfileApiRequest
 {
     public int Delivery { get; set; }

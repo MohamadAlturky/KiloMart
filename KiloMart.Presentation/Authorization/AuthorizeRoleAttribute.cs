@@ -5,7 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using KiloMart.Domain.Login.Models;
 
-namespace KiloMart.Api.Authorization;
+namespace KiloMart.Presentation.Authorization;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public class AuthorizeRoleAttribute : Attribute, IAuthorizationFilter
@@ -13,7 +13,7 @@ public class AuthorizeRoleAttribute : Attribute, IAuthorizationFilter
     public static string SECRET_KEY = "";
     public static string ISSUER = "";
     public static string AUDIENCE = "";
-    
+
     private readonly int _requiredRoleId;
 
     public AuthorizeRoleAttribute(int roleId)

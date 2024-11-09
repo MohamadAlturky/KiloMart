@@ -1,12 +1,12 @@
-using KiloMart.Api.Models.Commands.Products;
-using KiloMart.Api.Services;
 using KiloMart.Core.Contracts;
 using KiloMart.Domain.Languages.Models;
 using KiloMart.Domain.Products.Add.Models;
 using KiloMart.Domain.Products.Add.Services;
+using KiloMart.Presentation.Models.Commands.Products;
+using KiloMart.Presentation.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KiloMart.Api.Controllers.Commands;
+namespace KiloMart.Presentation.Controllers.Commands;
 
 [ApiController]
 [Route("api/products")]

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 
-namespace KiloMart.Api.RealTime;
+namespace KiloMart.Presentation.RealTime;
 
 public class ConnectionMapping<T>
 {

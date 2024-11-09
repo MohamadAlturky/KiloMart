@@ -1,4 +1,4 @@
-namespace KiloMart.Api.Models.Commands.Products;
+namespace KiloMart.Presentation.Models.Commands.Products;
 
 public class CreateProductRequest
 {

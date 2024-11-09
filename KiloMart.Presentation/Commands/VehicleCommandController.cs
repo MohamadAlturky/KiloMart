@@ -7,12 +7,12 @@ namespace KiloMart.Presentation.Commands;
 
 [ApiController]
 [Route("api/vehicle")]
-public class VehicleController : ControllerBase
+public class VehicleCommandController : ControllerBase
 {
     private readonly IDbFactory _dbFactory;
     private readonly VehicleService _vehicleService;
 
-    public VehicleController(IDbFactory dbFactory, VehicleService vehicleService)
+    public VehicleCommandController(IDbFactory dbFactory, VehicleService vehicleService)
     {
         _dbFactory = dbFactory;
         _vehicleService = vehicleService;

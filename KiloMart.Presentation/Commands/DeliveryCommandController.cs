@@ -9,12 +9,12 @@ using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/delivery")]
-public class DeliveryController : ControllerBase
+public class DeliveryCommandController : ControllerBase
 {
     private readonly IDbFactory _dbFactory;
     private readonly IConfiguration _configuration;
 
-    public DeliveryController(IDbFactory dbFactory, IConfiguration configuration)
+    public DeliveryCommandController(IDbFactory dbFactory, IConfiguration configuration)
     {
         _dbFactory = dbFactory;
         _configuration = configuration;

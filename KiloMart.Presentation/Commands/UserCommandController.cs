@@ -9,12 +9,12 @@ namespace KiloMart.Presentation.Commands;
 
 [ApiController]
 [Route("api/user")]
-public class UserController : ControllerBase
+public class UserCommandController : ControllerBase
 {
     private readonly IDbFactory _dbFactory;
     private readonly IConfiguration _configuration;
     private readonly IUserContext _userContext;
-    public UserController(IDbFactory dbFactory, IConfiguration configuration, IUserContext userContext)
+    public UserCommandController(IDbFactory dbFactory, IConfiguration configuration, IUserContext userContext)
     {
         _userContext = userContext;
         _dbFactory = dbFactory;

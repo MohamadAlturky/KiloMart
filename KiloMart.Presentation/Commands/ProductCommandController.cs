@@ -12,12 +12,12 @@ namespace KiloMart.Presentation.Commands;
 
 [ApiController]
 [Route("api/product")]
-public class ProductController : ControllerBase
+public class ProductCommandController : ControllerBase
 {
     private readonly IDbFactory _dbFactory;
     private readonly IWebHostEnvironment _environment;
 
-    public ProductController(IDbFactory dbFactory, IWebHostEnvironment environment)
+    public ProductCommandController(IDbFactory dbFactory, IWebHostEnvironment environment)
     {
         _dbFactory = dbFactory;
         _environment = environment;

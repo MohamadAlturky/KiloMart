@@ -1,7 +1,8 @@
 using Dapper;
 using KiloMart.Core.Contracts;
 using KiloMart.Core.Models;
-using KiloMart.Domain.Locations.Models;
+using KiloMart.Domain.Locations.Add.Models;
+
 namespace KiloMart.Domain.Locations.Add.Services;
 
 public static partial class LocationService

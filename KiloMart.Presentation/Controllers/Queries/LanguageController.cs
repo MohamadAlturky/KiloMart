@@ -4,7 +4,7 @@ using KiloMart.Presentation.Authorization;
 using KiloMart.Presentation.Models.Queries;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KiloMart.Api.Controllers.Queries;
+namespace KiloMart.Presentation.Controllers.Queries;
 
 public class LanguageController : ControllerBase
 {

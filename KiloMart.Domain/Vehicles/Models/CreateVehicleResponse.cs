@@ -1,4 +1,4 @@
-namespace KiloMart.Domain.Vehicles.Services;
+namespace KiloMart.Domain.Vehicles.Models;
 
 public class CreateVehicleResponse
 {

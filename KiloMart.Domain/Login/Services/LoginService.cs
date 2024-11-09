@@ -14,7 +14,7 @@ public class LoginService
         var connection = dbFactory.CreateDbConnection();
         connection.Open();
         var user = await connection.QueryFirstOrDefaultAsync<MembershipUserDto>(
-                @"SELECT Id, EmailConfirmed, PasswordHash, IsActive, Role,Party
+                @"SELECT Id, EmailConfirmed, PasswordHash, IsActive, Role, Party, Email
                   FROM MembershipUser
                   WHERE Email = @Email",
                 new { Email = email }
@@ -34,7 +34,8 @@ public class LoginService
             return new LoginResult { Success = false, Errors = ["Email is not confirmed."] };
         }
 
-        var token = JwtTokenHandler.GenerateAccessToken(user, configuration);
+        // var token = JwtTokenHandler.GenerateAccessToken(user, configuration);
+        var token = JwtTokenHandler.GenerateJwtToken(user, configuration);
         return new LoginResult { Success = true, Token = token };
     }
 
@@ -43,6 +44,5 @@ public class LoginService
         var hash = HashHandler.GetHash(inputPassword);
         return hash == storedPasswordHash;
     }
-
 }
 

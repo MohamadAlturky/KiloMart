@@ -1,4 +1,4 @@
-namespace KiloMart.Domain.Locations.Models;
+namespace KiloMart.Domain.Locations.Add.Models;
 
 public class CreateLocationResponse
 {

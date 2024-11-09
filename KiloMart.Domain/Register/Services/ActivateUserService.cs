@@ -1,5 +1,5 @@
 using Dapper;
-using KiloMart.DataAccess.Contracts;
+using KiloMart.Core.Contracts;
 
 namespace KiloMart.Domain.Register.Services;
 

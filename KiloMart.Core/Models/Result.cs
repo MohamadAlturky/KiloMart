@@ -1,4 +1,4 @@
-namespace KiloMart.DataAccess.Models;
+namespace KiloMart.Core.Models;
 
 public class Result<T> : Result
 {

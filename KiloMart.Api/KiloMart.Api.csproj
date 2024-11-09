@@ -10,7 +10,7 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\KiloMart.DataAccess\KiloMart.DataAccess.csproj" />
+    <ProjectReference Include="..\KiloMart.Core\KiloMart.Core.csproj" />
     <ProjectReference Include="..\KiloMart.Domain\KiloMart.Domain.csproj" />
   </ItemGroup>
   <ItemGroup>

@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34607.119
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KiloMart.DataAccess", "KiloMart.DataAccess\KiloMart.DataAccess.csproj", "{B437AB62-551D-4885-BFD0-C5224B00F9E5}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KiloMart.Api", "KiloMart.Api\KiloMart.Api.csproj", "{598DE217-0D5C-43E2-A009-A30AB5D4D119}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KiloMart.Domain", "KiloMart.Domain\KiloMart.Domain.csproj", "{5765E7AC-7A6B-42C5-8AC8-7AEF8B4B621F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KiloMart.Presentation", "KiloMart.Presentation\KiloMart.Presentation.csproj", "{B34E2B1A-9E35-4739-B133-A7456F32B81E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KiloMart.Core", "KiloMart.Core\KiloMart.Core.csproj", "{4DD066E5-6A1D-4F94-A97A-8CAF50BB777B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,18 +15,18 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{B437AB62-551D-4885-BFD0-C5224B00F9E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B437AB62-551D-4885-BFD0-C5224B00F9E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B437AB62-551D-4885-BFD0-C5224B00F9E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B437AB62-551D-4885-BFD0-C5224B00F9E5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{598DE217-0D5C-43E2-A009-A30AB5D4D119}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{598DE217-0D5C-43E2-A009-A30AB5D4D119}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{598DE217-0D5C-43E2-A009-A30AB5D4D119}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{598DE217-0D5C-43E2-A009-A30AB5D4D119}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5765E7AC-7A6B-42C5-8AC8-7AEF8B4B621F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5765E7AC-7A6B-42C5-8AC8-7AEF8B4B621F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5765E7AC-7A6B-42C5-8AC8-7AEF8B4B621F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5765E7AC-7A6B-42C5-8AC8-7AEF8B4B621F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B34E2B1A-9E35-4739-B133-A7456F32B81E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B34E2B1A-9E35-4739-B133-A7456F32B81E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B34E2B1A-9E35-4739-B133-A7456F32B81E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B34E2B1A-9E35-4739-B133-A7456F32B81E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DD066E5-6A1D-4F94-A97A-8CAF50BB777B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DD066E5-6A1D-4F94-A97A-8CAF50BB777B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DD066E5-6A1D-4F94-A97A-8CAF50BB777B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DD066E5-6A1D-4F94-A97A-8CAF50BB777B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

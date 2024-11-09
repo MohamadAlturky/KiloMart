@@ -1,7 +1,7 @@
 using KiloMart.Domain.Cards.Models;
 using Dapper;
-using KiloMart.DataAccess.Models;
-using KiloMart.DataAccess.Contracts;
+using KiloMart.Core.Models;
+using KiloMart.Core.Contracts;
 
 namespace KiloMart.Domain.Cards.Services;
 

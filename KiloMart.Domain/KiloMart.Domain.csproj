@@ -5,6 +5,6 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\KiloMart.DataAccess\KiloMart.DataAccess.csproj" />
+    <ProjectReference Include="..\KiloMart.Core\KiloMart.Core.csproj" />
   </ItemGroup>
 </Project>

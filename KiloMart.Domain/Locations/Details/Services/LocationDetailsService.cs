@@ -1,6 +1,6 @@
 using Dapper;
-using KiloMart.DataAccess.Contracts;
-using KiloMart.DataAccess.Models;
+using KiloMart.Core.Contracts;
+using KiloMart.Core.Models;
 using KiloMart.Domain.Locations.Details.Models;
 
 namespace KiloMart.Domain.Locations.Details.Services;

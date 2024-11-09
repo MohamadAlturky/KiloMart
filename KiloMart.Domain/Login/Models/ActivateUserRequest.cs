@@ -2,8 +2,8 @@ namespace KiloMart.Domain.Login.Models;
 
 public class ActivateUserRequest
 {
-    public string? Email { get; set; }
-    public string? VerificationToken { get; set; }
+    public string Email { get; set; } = string.Empty;
+    public string VerificationToken { get; set; } = string.Empty;
 
     public (bool Success, string[] Errors) Validate()
     {

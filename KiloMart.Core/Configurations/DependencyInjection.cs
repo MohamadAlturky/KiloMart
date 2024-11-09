@@ -1,9 +1,10 @@
-﻿using KiloMart.DataAccess.Contracts;
+﻿using KiloMart.Core.Contracts;
+using KiloMart.DataAccess.Contracts;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 
-namespace KiloMart.DataAccess.Configurations;
+namespace KiloMart.Core.Configurations;
 
 public static class DependencyInjection
 {

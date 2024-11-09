@@ -1,10 +1,10 @@
-using KiloMart.DataAccess.Configurations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
 using KiloMart.Api.Authorization;
 using KiloMart.Api.RealTime;
+using KiloMart.Core.Configurations;
 var builder = WebApplication.CreateBuilder(args);
 
 #region Authentication

@@ -1,4 +1,4 @@
-using KiloMart.DataAccess.Contracts;
+using KiloMart.Core.Contracts;
 using KiloMart.Domain.Vehicles.Models;
 using KiloMart.Domain.Vehicles.Services;
 using Microsoft.AspNetCore.Mvc;

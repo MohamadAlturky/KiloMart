@@ -1,4 +1,4 @@
-using KiloMart.DataAccess.Contracts;
+using KiloMart.Core.Contracts;
 using KiloMart.Domain.Languages.Models;
 using KiloMart.Domain.ProductCategories.Models;
 using KiloMart.Domain.ProductCategories.Services;

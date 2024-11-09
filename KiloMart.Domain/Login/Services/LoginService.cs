@@ -1,7 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Dapper;
-using KiloMart.DataAccess.Contracts;
+using KiloMart.Core.Contracts;
 using KiloMart.Domain.Login.Handlers;
 using KiloMart.Domain.Login.Models;
 using KiloMart.Domain.Register.Utils;

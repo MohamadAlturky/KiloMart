@@ -1,5 +1,5 @@
 
-using KiloMart.DataAccess.Contracts;
+using KiloMart.Core.Contracts;
 using KiloMart.Domain.Locations.Add.Services;
 using KiloMart.Domain.Locations.Details.Models;
 using KiloMart.Domain.Locations.Details.Services;

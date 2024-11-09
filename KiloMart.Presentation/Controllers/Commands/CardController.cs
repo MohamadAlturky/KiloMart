@@ -1,4 +1,4 @@
-using KiloMart.DataAccess.Contracts;
+using KiloMart.Core.Contracts;
 using KiloMart.Domain.Cards.Models;
 using KiloMart.Domain.Cards.Services;
 using Microsoft.AspNetCore.Authorization;

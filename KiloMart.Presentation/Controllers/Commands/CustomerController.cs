@@ -1,4 +1,4 @@
-using KiloMart.DataAccess.Contracts;
+using KiloMart.Core.Contracts;
 using KiloMart.Domain.Customers.Profile.Models;
 using KiloMart.Domain.Customers.Profile.Services;
 using KiloMart.Domain.Register.Customer.Models;

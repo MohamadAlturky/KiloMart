@@ -1,5 +1,5 @@
 using KiloMart.Api.Models.Commands.Deliveries;
-using KiloMart.DataAccess.Contracts;
+using KiloMart.Core.Contracts;
 using KiloMart.Domain.Delivery.Profile.Models;
 using KiloMart.Domain.Delivery.Profile.Services;
 using KiloMart.Domain.Register.Delivery.Models;

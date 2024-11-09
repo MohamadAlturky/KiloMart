@@ -1,5 +1,5 @@
 
-using KiloMart.DataAccess.Contracts;
+using KiloMart.Core.Contracts;
 using KiloMart.Domain.DiscountCodes.Models;
 using KiloMart.Domain.DiscountCodes.Services;
 using Microsoft.AspNetCore.Mvc;

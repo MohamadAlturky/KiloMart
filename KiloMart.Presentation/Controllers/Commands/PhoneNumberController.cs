@@ -1,4 +1,4 @@
-using KiloMart.DataAccess.Contracts;
+using KiloMart.Core.Contracts;
 using KiloMart.Domain.PhoneNumbers.Models;
 using KiloMart.Domain.PhoneNumbers.Services;
 using Microsoft.AspNetCore.Mvc;

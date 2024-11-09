@@ -1,6 +1,6 @@
 using KiloMart.Api.Models.Commands.Products;
 using KiloMart.Api.Services;
-using KiloMart.DataAccess.Contracts;
+using KiloMart.Core.Contracts;
 using KiloMart.Domain.Languages.Models;
 using KiloMart.Domain.Products.Add.Models;
 using KiloMart.Domain.Products.Add.Services;

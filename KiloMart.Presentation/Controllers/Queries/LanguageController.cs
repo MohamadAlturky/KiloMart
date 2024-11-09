@@ -1,7 +1,7 @@
 using Dapper;
 using KiloMart.Api.Authorization;
 using KiloMart.Api.Models;
-using KiloMart.DataAccess.Contracts;
+using KiloMart.Core.Contracts;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KiloMart.Api.Controllers.Queries;

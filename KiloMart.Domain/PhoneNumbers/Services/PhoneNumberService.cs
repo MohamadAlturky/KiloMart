@@ -1,7 +1,7 @@
 using KiloMart.Domain.PhoneNumbers.Models;
 using Dapper;
-using KiloMart.DataAccess.Contracts;
-using KiloMart.DataAccess.Models;
+using KiloMart.Core.Models;
+using KiloMart.Core.Contracts;
 
 namespace KiloMart.Domain.PhoneNumbers.Services;
 

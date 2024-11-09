@@ -3,7 +3,7 @@ using SqlKata.Compilers;
 using SqlKata.Execution;
 using System.Data;
 
-namespace KiloMart.DataAccess.Contracts;
+namespace KiloMart.Core.Contracts;
 
 public class DbFactory(string connectionString) : IDbFactory
 {

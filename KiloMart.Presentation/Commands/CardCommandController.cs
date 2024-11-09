@@ -2,6 +2,8 @@ using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.Domain.Cards.Models;
 using KiloMart.Domain.Cards.Services;
+using KiloMart.Domain.Register.Utils;
+using KiloMart.Presentation.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,6 +24,7 @@ public class CardCommandController : ControllerBase
     }
 
     [HttpPost("add")]
+    [Guard(Roles.Customer)]
     public IActionResult CreateCard([FromBody] CardDto card)
     {
         var (Success,Errors) = card.Validate();

@@ -73,9 +73,9 @@ builder.Services.AddDataAccess(builder.Configuration);
 builder.Services.AddSignalR();
 
 // configuration
-AuthorizeRoleAttribute.SECRET_KEY = builder.Configuration["Jwt:Key"]!;
-AuthorizeRoleAttribute.ISSUER = builder.Configuration["Jwt:Issuer"]!;
-AuthorizeRoleAttribute.AUDIENCE = builder.Configuration["Jwt:Audience"]!;
+GuardAttribute.SECRET_KEY = builder.Configuration["Jwt:Key"]!;
+GuardAttribute.ISSUER = builder.Configuration["Jwt:Issuer"]!;
+GuardAttribute.AUDIENCE = builder.Configuration["Jwt:Audience"]!;
 
 
 var app = builder.Build();

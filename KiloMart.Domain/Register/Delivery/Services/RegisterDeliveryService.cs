@@ -6,5 +6,5 @@ namespace KiloMart.Domain.Register.Delivery.Services;
 public class RegisterDeliveryService : BaseRegisterService
 {
     protected override string PartyTypeTableName => "Delivery";
-    protected override UserRole UserRole => UserRole.Delivery;
+    protected override Roles UserRole => Roles.Delivery;
 }

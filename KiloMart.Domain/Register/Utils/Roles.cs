@@ -1,6 +1,6 @@
 namespace KiloMart.Domain.Register.Utils;
 
-public enum UserRole
+public enum Roles
 {
     Customer = 1,
     Provider = 2,

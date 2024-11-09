@@ -6,5 +6,5 @@ namespace KiloMart.Domain.Register.Customer.Services;
 public class RegisterCustomerService : BaseRegisterService
 {
     protected override string PartyTypeTableName => "Customer";
-    protected override UserRole UserRole => UserRole.Customer;
+    protected override Roles UserRole => Roles.Customer;
 }

@@ -6,12 +6,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace KiloMart.Presentation.Queries;
 
 [ApiController]
-[Route("api/[controller]")]
-public class ProviderController : ControllerBase
+[Route("api/provider")]
+public class ProviderQueryController : ControllerBase
 {
     private readonly IDbFactory _dbFactory;
 
-    public ProviderController(IDbFactory dbFactory)
+    public ProviderQueryController(IDbFactory dbFactory)
     {
         _dbFactory = dbFactory;
     }

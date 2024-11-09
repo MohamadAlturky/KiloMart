@@ -6,11 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace KiloMart.Presentation.Queries;
 
 [ApiController]
-[Route("api/[controller]")]
-public class PhoneNumberController : ControllerBase
+[Route("api/phone-number")]
+public class PhoneNumberQueryController : ControllerBase
 {
     private readonly IDbFactory _dbFactory;
-    public PhoneNumberController(IDbFactory dbFactory)
+    public PhoneNumberQueryController(IDbFactory dbFactory)
     {
         _dbFactory = dbFactory;
     }

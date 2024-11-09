@@ -7,11 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace KiloMart.Presentation.Queries;
 
 [ApiController]
-[Route("api/[controller]")]
-public class DelivaryController : ControllerBase
+[Route("api/delivary")]
+public class DelivaryQueryController : ControllerBase
 {
     private readonly IDbFactory _dbFactory;
-    public DelivaryController(IDbFactory dbFactory)
+    public DelivaryQueryController(IDbFactory dbFactory)
     {
         _dbFactory = dbFactory;
     }
@@ -35,7 +35,6 @@ public class DelivaryController : ControllerBase
         var delivaries = await connection.QueryAsync<DelivaryProfileApiResponse>("SELECT [Id], [Delivary], [FirstName], [SecondName], [NationalName], [NationalId], [LicenseNumber], [LicenseExpiredDate], [DrivingLicenseNumber] FROM DelivaryProfile");
         return Ok(delivaries);
     }
-    //get localized fields
     [HttpGet("localized/{id}")]
     public async Task<IActionResult> GetLocalized(int id, byte language)
     {

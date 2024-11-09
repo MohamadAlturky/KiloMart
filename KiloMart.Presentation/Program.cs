@@ -5,7 +5,13 @@ using Microsoft.OpenApi.Models;
 using KiloMart.Core.Configurations;
 using KiloMart.Presentation.Authorization;
 using KiloMart.Presentation.RealTime;
+using KiloMart.Core.Authentication;
+
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUserContext, UserContext>();
 
 #region Authentication
 // Add JWT Authentication configuration

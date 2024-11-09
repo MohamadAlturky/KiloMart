@@ -61,8 +61,8 @@ public static class JwtTokenHandler
         // Claims
         var claims = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),  // Standard 'sub' claim
-            new Claim(JwtRegisteredClaimNames.Email, user.Email),        // Standard 'email' claim
+            new Claim(CustomClaimTypes.UserId, user.Id.ToString()),
+            new Claim(CustomClaimTypes.Email, user.Email),       
             new Claim(CustomClaimTypes.Role, user.Role.ToString()),
             new Claim(CustomClaimTypes.Party, user.Party.ToString())
         };

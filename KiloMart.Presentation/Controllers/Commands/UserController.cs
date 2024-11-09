@@ -1,3 +1,4 @@
+using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.Domain.Login.Models;
 using KiloMart.Domain.Login.Services;
@@ -12,8 +13,10 @@ public class UserController : ControllerBase
 {
     private readonly IDbFactory _dbFactory;
     private readonly IConfiguration _configuration;
-    public UserController(IDbFactory dbFactory, IConfiguration configuration)
+    private readonly IUserContext _userContext;
+    public UserController(IDbFactory dbFactory, IConfiguration configuration, IUserContext userContext)
     {
+        _userContext = userContext;
         _dbFactory = dbFactory;
         _configuration = configuration;
     }
@@ -30,6 +33,14 @@ public class UserController : ControllerBase
     }
     #endregion
     
+    #region user payload
+    [HttpGet("user-payload")]
+    public IActionResult Payload()
+    {
+        return Ok(_userContext.Get());
+    }
+    #endregion
+
     #region verify email
     [HttpPost("verify-email")]
     public async Task<IActionResult> VerifyEmail([FromBody] ActivateUserRequest request)

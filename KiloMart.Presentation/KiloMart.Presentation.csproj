@@ -13,10 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\KiloMart.Commands\KiloMart.Commands.csproj" />
     <ProjectReference Include="..\KiloMart.Core\KiloMart.Core.csproj" />
     <ProjectReference Include="..\KiloMart.Domain\KiloMart.Domain.csproj" />
-    <ProjectReference Include="..\KiloMart.Queries\KiloMart.Queries.csproj" />
   </ItemGroup>
 
   <ItemGroup>

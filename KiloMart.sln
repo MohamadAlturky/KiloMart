@@ -9,10 +9,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KiloMart.Presentation", "Ki
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KiloMart.Core", "KiloMart.Core\KiloMart.Core.csproj", "{4DD066E5-6A1D-4F94-A97A-8CAF50BB777B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KiloMart.Commands", "KiloMart.Commands\KiloMart.Commands.csproj", "{5F81A905-ECEB-495C-B328-D2D9397B7464}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KiloMart.Queries", "KiloMart.Queries\KiloMart.Queries.csproj", "{AABB4C73-84E9-4657-999F-5A70EDDD0DCB}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,14 +27,6 @@ Global
 		{4DD066E5-6A1D-4F94-A97A-8CAF50BB777B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4DD066E5-6A1D-4F94-A97A-8CAF50BB777B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4DD066E5-6A1D-4F94-A97A-8CAF50BB777B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5F81A905-ECEB-495C-B328-D2D9397B7464}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5F81A905-ECEB-495C-B328-D2D9397B7464}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5F81A905-ECEB-495C-B328-D2D9397B7464}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5F81A905-ECEB-495C-B328-D2D9397B7464}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AABB4C73-84E9-4657-999F-5A70EDDD0DCB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AABB4C73-84E9-4657-999F-5A70EDDD0DCB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AABB4C73-84E9-4657-999F-5A70EDDD0DCB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AABB4C73-84E9-4657-999F-5A70EDDD0DCB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

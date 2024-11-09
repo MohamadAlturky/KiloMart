@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace KiloMart.Presentation.Controllers.Commands;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/vehicle")]
 public class VehicleController : ControllerBase
 {
     private readonly IDbFactory _dbFactory;
@@ -18,7 +18,7 @@ public class VehicleController : ControllerBase
         _vehicleService = vehicleService;
     }
 
-    [HttpPost]
+    [HttpPost("add")]
     public async Task<IActionResult> Create([FromBody] CreateVehicleRequest vehicle)
     {
         var (isValid, errors) = vehicle.Validate();

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace KiloMart.Presentation.Controllers.Commands;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/discount")]
 public class DiscountCodeController : ControllerBase
 {
     private readonly IDbFactory _dbFactory;
@@ -16,7 +16,7 @@ public class DiscountCodeController : ControllerBase
         _dbFactory = dbFactory;
     }
 
-    [HttpPost]
+    [HttpPost("add")]
     public IActionResult Create([FromBody] CreateDiscountCodeRequest request)
     {
         var result = DiscountCodeService.Insert(_dbFactory, request);

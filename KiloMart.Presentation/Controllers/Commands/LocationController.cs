@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace KiloMart.Presentation.Controllers.Commands;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/location")]
 public class LocationController : ControllerBase
 {
     private readonly IDbFactory _dbFactory;

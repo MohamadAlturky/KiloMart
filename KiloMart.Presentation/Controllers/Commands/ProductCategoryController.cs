@@ -1,5 +1,4 @@
 using KiloMart.Core.Contracts;
-using KiloMart.Domain.Languages.Models;
 using KiloMart.Domain.ProductCategories.Models;
 using KiloMart.Domain.ProductCategories.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -17,7 +16,7 @@ public class ProductCategoryController : ControllerBase
         _dbFactory = dbFactory;
     }
 
-    [HttpPost("create")]
+    [HttpPost("add")]
     public IActionResult Insert([FromBody] List<CreateProductCategoryRequest> categoryinfos)
     {
         var category = new ProductCategoryDto

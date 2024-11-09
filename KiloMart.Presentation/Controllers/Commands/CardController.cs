@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace KiloMart.Presentation.Controllers.Commands;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/card")]
 [Authorize]
 public class CardController : ControllerBase
 {
@@ -18,7 +18,7 @@ public class CardController : ControllerBase
         _dbFactory = dbFactory;
     }
 
-    [HttpPost]
+    [HttpPost("add")]
     public IActionResult CreateCard([FromBody] CardDto card)
     {
         var result = CardService.Insert(_dbFactory, card);

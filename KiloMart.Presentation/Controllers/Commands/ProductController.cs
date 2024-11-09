@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace KiloMart.Presentation.Controllers.Commands;
 
 [ApiController]
-[Route("api/products")]
+[Route("api/product")]
 public class ProductController : ControllerBase
 {
     private readonly IDbFactory _dbFactory;

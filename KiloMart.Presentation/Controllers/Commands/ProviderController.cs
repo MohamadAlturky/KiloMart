@@ -19,7 +19,6 @@ public class ProviderController : ControllerBase
         _configuration = configuration;
     }
 
-    // register a provider
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterProviderDto dto)
     {

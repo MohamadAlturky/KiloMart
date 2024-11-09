@@ -39,7 +39,7 @@ public class CustomerController : ControllerBase
     #endregion
 
     #region profile
-    [HttpPost("profile/create")]
+    [HttpPost("profile/add")]
     public async Task<IActionResult> CreateProfile(CreateCustomerProfileApiRequest request)
     {
         var (success, errors) = request.Validate();

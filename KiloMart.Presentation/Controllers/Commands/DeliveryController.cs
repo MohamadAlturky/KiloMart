@@ -41,7 +41,7 @@ public class DeliveryController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost("profile/create")]
+    [HttpPost("profile/add")]
     public async Task<IActionResult> CreateProfile(CreateDeliveryProfileApiRequest request)
     {
         var (success, errors) = request.Validate();

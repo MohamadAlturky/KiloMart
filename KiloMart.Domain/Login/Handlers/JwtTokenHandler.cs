@@ -35,4 +35,39 @@ public static class JwtTokenHandler
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+
+
+    public static string GenerateJwtToken(MembershipUserDto user, IConfiguration configuration)
+    {
+        // Fetch the key, issuer, and audience from configuration
+        var secretKey = configuration["Jwt:Key"]!;
+        var issuer = configuration["Jwt:Issuer"];
+        var audience = configuration["Jwt:Audience"];
+        int expiryTime = int.Parse(configuration["Jwt:ExpiryTimeInMinutes"]!);
+
+        // Ensure none of the values are null
+        if (string.IsNullOrEmpty(secretKey) || string.IsNullOrEmpty(issuer) || string.IsNullOrEmpty(audience))
+        {
+            throw new InvalidOperationException("JWT configuration is missing or invalid.");
+        }
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var claims = new[]
+        {
+            new Claim(CustomClaimTypes.UserId, user.Id.ToString()),
+            new Claim(CustomClaimTypes.Email, user.Email),
+            new Claim(CustomClaimTypes.Role, user.Role.ToString()),
+            new Claim(CustomClaimTypes.Party, user.Party.ToString())
+        };
+        var token = new JwtSecurityToken(
+            issuer: issuer,
+            audience: audience,
+            claims: claims,
+            expires: DateTime.UtcNow.AddMinutes(expiryTime),
+            signingCredentials: creds
+        );
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
 }

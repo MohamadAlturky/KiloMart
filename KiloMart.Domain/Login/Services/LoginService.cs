@@ -34,7 +34,8 @@ public class LoginService
             return new LoginResult { Success = false, Errors = ["Email is not confirmed."] };
         }
 
-        var token = JwtTokenHandler.GenerateAccessToken(user, configuration);
+        // var token = JwtTokenHandler.GenerateAccessToken(user, configuration);
+        var token = JwtTokenHandler.GenerateJwtToken(user, configuration);
         return new LoginResult { Success = true, Token = token };
     }
 
@@ -43,6 +44,5 @@ public class LoginService
         var hash = HashHandler.GetHash(inputPassword);
         return hash == storedPasswordHash;
     }
-
 }
 

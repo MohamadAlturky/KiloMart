@@ -40,7 +40,7 @@ public class VerifyUserEmailService
             }
 
             // Step 2: Update the MembershipUser record to set IsActive = true and EmailConfirmed = true
-            if (dto.Role == (byte)UserRole.Customer)
+            if (dto.Role == (byte)Roles.Customer)
             {
 
                 await connection.ExecuteAsync(

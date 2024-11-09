@@ -2,11 +2,12 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using KiloMart.Domain.Login.Models;
+using KiloMart.Domain.Register.Utils;
 
 namespace KiloMart.Presentation.Authorization;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-public class AuthorizeRoleAttribute : Attribute, IAuthorizationFilter
+public class GuardAttribute : Attribute, IAuthorizationFilter
 {
     public static string SECRET_KEY = "";
     public static string ISSUER = "";
@@ -14,9 +15,9 @@ public class AuthorizeRoleAttribute : Attribute, IAuthorizationFilter
 
     private readonly int _requiredRoleId;
 
-    public AuthorizeRoleAttribute(int roleId)
+    public GuardAttribute(Roles userRole)
     {
-        _requiredRoleId = roleId;
+        _requiredRoleId = (byte)userRole;
     }
 
     public void OnAuthorization(AuthorizationFilterContext context)

@@ -10,7 +10,7 @@ namespace KiloMart.Domain.Register.Services;
 public abstract class BaseRegisterService
 {
     protected abstract string PartyTypeTableName { get; }
-    protected abstract UserRole UserRole { get; }
+    protected abstract Roles UserRole { get; }
 
     public async Task<RegisterResult> Register(
         IDbFactory dbFactory,
@@ -86,7 +86,7 @@ public abstract class BaseRegisterService
         );
     }
 
-    private static async Task<int> CreateMembershipUser(IDbConnection connection, string email, string password, UserRole role, int partyId, IDbTransaction transaction)
+    private static async Task<int> CreateMembershipUser(IDbConnection connection, string email, string password, Roles role, int partyId, IDbTransaction transaction)
     {
         var passwordHash = HashHandler.GetHash(password);
         return await connection.QuerySingleAsync<int>(

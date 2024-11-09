@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Cards\" />
+    <Folder Include="Customers\" />
+    <Folder Include="Delivery\" />
+    <Folder Include="DiscountCodes\" />
+    <Folder Include="Locations\" />
+    <Folder Include="Languages\" />
+    <Folder Include="Vehicles\" />
+    <Folder Include="Users\" />
+    <Folder Include="Providers\" />
+    <Folder Include="ProductCategories\" />
+    <Folder Include="Products\" />
+    <Folder Include="PhoneNumbers\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\KiloMart.Core\KiloMart.Core.csproj" />
+    <ProjectReference Include="..\KiloMart.Domain\KiloMart.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

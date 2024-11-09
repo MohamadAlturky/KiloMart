@@ -10,12 +10,12 @@ namespace KiloMart.Presentation.Commands;
 [ApiController]
 [Route("api/card")]
 [Authorize]
-public class CardController : ControllerBase
+public class CardCommandController : ControllerBase
 {
     private readonly IDbFactory _dbFactory;
     private readonly IUserContext _userContext;
 
-    public CardController(IDbFactory dbFactory, IUserContext userContext)
+    public CardCommandController(IDbFactory dbFactory, IUserContext userContext)
     {
         _dbFactory = dbFactory;
         _userContext = userContext;

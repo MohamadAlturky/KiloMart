@@ -7,11 +7,11 @@ namespace KiloMart.Presentation.Commands;
 
 [ApiController]
 [Route("api/product-categories")]
-public class ProductCategoryController : ControllerBase
+public class ProductCategoryCommandController : ControllerBase
 {
     private readonly IDbFactory _dbFactory;
 
-    public ProductCategoryController(IDbFactory dbFactory)
+    public ProductCategoryCommandController(IDbFactory dbFactory)
     {
         _dbFactory = dbFactory;
     }

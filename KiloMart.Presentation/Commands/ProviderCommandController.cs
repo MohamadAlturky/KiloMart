@@ -8,12 +8,12 @@ using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/provider")]
-public class ProviderController : ControllerBase
+public class ProviderCommandController : ControllerBase
 {
     private readonly IDbFactory _dbFactory;
     private readonly IConfiguration _configuration;
 
-    public ProviderController(IDbFactory dbFactory, IConfiguration configuration)
+    public ProviderCommandController(IDbFactory dbFactory, IConfiguration configuration)
     {
         _dbFactory = dbFactory;
         _configuration = configuration;

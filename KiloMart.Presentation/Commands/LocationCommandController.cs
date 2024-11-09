@@ -9,10 +9,10 @@ namespace KiloMart.Presentation.Commands;
 
 [ApiController]
 [Route("api/location")]
-public class LocationController : ControllerBase
+public class LocationCommandController : ControllerBase
 {
     private readonly IDbFactory _dbFactory;
-    public LocationController(IDbFactory dbFactory)
+    public LocationCommandController(IDbFactory dbFactory)
     {
         _dbFactory = dbFactory;
     }

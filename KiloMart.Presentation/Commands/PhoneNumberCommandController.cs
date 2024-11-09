@@ -7,10 +7,10 @@ namespace KiloMart.Presentation.Commands;
 
 [ApiController]
 [Route("api/phone-number")]
-public class PhoneNumberController : ControllerBase
+public class PhoneNumberCommandController : ControllerBase
 {
     private readonly IDbFactory _dbFactory;
-    public PhoneNumberController(IDbFactory dbFactory)
+    public PhoneNumberCommandController(IDbFactory dbFactory)
     {
         _dbFactory = dbFactory;
     }

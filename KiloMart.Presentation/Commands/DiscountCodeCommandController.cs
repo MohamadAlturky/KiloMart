@@ -7,11 +7,11 @@ namespace KiloMart.Presentation.Commands;
 
 [ApiController]
 [Route("api/discount")]
-public class DiscountCodeController : ControllerBase
+public class DiscountCodeCommandController : ControllerBase
 {
     private readonly IDbFactory _dbFactory;
 
-    public DiscountCodeController(IDbFactory dbFactory)
+    public DiscountCodeCommandController(IDbFactory dbFactory)
     {
         _dbFactory = dbFactory;
     }

@@ -24,6 +24,11 @@ public class CardController : ControllerBase
     [HttpPost("add")]
     public IActionResult CreateCard([FromBody] CardDto card)
     {
+        var (Success,Errors) = card.Validate();
+        if (!Success)
+        {
+            return StatusCode(400, Errors);
+        }
         var result = CardService.Insert(_dbFactory, card,_userContext.Get().Party);
 
         if (!result.Success)
@@ -31,6 +36,6 @@ public class CardController : ControllerBase
             return BadRequest(result.Errors);
         }
 
-        return Ok(result.Data);
+        return Ok(new {Id = result.Data});
     }
 }

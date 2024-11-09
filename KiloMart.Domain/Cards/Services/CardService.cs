@@ -7,7 +7,7 @@ namespace KiloMart.Domain.Cards.Services;
 
 public static class CardService
 {
-    public static Result<CardDto> Insert(IDbFactory dbFactory, CardDto card)
+    public static Result<int> Insert(IDbFactory dbFactory, CardDto card,int party)
     {
         try
         {
@@ -21,21 +21,21 @@ public static class CardService
                 SELECT CAST(SCOPE_IDENTITY() as int);"; // Retrieve the generated Id
 
             // Execute the insert and retrieve the new Id
-            card.Id = connection.QuerySingle<int>(sql, new
+            var id = connection.QuerySingle<int>(sql, new
             {
                 HolderName = card.HolderName,
                 Number = card.Number,
                 SecurityCode = card.SecurityCode,
                 ExpireDate = card.ExpireDate,
-                Customer = card.Customer,
+                Customer = party,
                 IsActive = true
             });
 
-            return Result<CardDto>.Ok(card);
+            return Result<int>.Ok(id);
         }
         catch (Exception e)
         {
-            return Result<CardDto>.Fail([e.Message]);
+            return Result<int>.Fail([e.Message]);
         }
     }
 }

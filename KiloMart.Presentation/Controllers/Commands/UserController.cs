@@ -1,7 +1,7 @@
 using KiloMart.Core.Contracts;
 using KiloMart.Domain.Login.Models;
 using KiloMart.Domain.Login.Services;
-using KiloMart.Domain.Register.Services;
+using KiloMart.Domain.Register.Activate;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KiloMart.Presentation.Controllers.Commands;
@@ -24,7 +24,7 @@ public class UserController : ControllerBase
         if (!success)
             return BadRequest(errors);
 
-        var result = await ActivateUserService.ActivateUser(request.Email, request.VerificationToken, _dbFactory);
+        var result = await VerifyUserEmailService.ActivateUser(request.Email, request.VerificationToken, _dbFactory);
         return result ? Ok(new { Success = true }) : StatusCode(500, new { Success = false });
     }
     [HttpPost("login")]

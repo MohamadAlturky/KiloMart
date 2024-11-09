@@ -13,7 +13,7 @@ public class VerifyUserEmailService
 {
 
     // activate user
-    public static async Task<bool> ActivateUser(string email,
+    public static async Task<bool> VerifyEmail(string email,
     string verificationToken, IDbFactory dbFactory)
     {
         using var connection = dbFactory.CreateDbConnection();

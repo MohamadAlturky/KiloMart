@@ -63,7 +63,7 @@ public abstract class BaseRegisterService
             @"INSERT INTO Party (DisplayName, IsActive) 
             OUTPUT INSERTED.Id 
             VALUES (@DisplayName, @IsActive);",
-            new { DisplayName = displayName, IsActive = false },
+            new { DisplayName = displayName, IsActive = true },
             transaction
         );
     }
@@ -93,7 +93,7 @@ public abstract class BaseRegisterService
             @"INSERT INTO MembershipUser (Email, EmailConfirmed, PasswordHash, Role, Party,IsActive) 
             OUTPUT INSERTED.Id 
             VALUES (@Email, @EmailConfirmed, @PasswordHash, @Role, @Party, @IsActive)",
-            new { Email = email, EmailConfirmed = false, PasswordHash = passwordHash, Role = (int)role, Party = partyId, IsActive = false },
+            new { Email = email, EmailConfirmed = false, PasswordHash = passwordHash, Role = (byte)role, Party = partyId, IsActive = false },
             transaction
         );
     }

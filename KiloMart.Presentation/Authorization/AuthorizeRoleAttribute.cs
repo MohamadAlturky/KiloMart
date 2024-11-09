@@ -1,8 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using KiloMart.Domain.Login.Models;
 
 namespace KiloMart.Presentation.Authorization;
@@ -32,24 +30,15 @@ public class AuthorizeRoleAttribute : Attribute, IAuthorizationFilter
 
         try
         {
-
-            var tokenValidationParameters = new TokenValidationParameters
+            bool decodingResult = JwtTokenValidator.ValidateToken(token, SECRET_KEY, ISSUER, AUDIENCE, out JwtSecurityToken? decodedToken);
+            if(!decodingResult || decodedToken is null)
             {
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SECRET_KEY)),
-                ValidateIssuer = true,
-                ValidIssuer = ISSUER,
-                ValidateAudience = true,
-                ValidAudience = AUDIENCE,
-                ValidateLifetime = true,
-                ClockSkew = TimeSpan.Zero
-            };
+                context.Result = new UnauthorizedResult();
+                return;
+            }
+            
 
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var validatedToken);
-            var jwtToken = validatedToken as JwtSecurityToken;
-
-            var roleIdClaim = jwtToken?.Claims.FirstOrDefault(c => c.Type == CustomClaimTypes.Role);
+            var roleIdClaim = decodedToken?.Claims.FirstOrDefault(c => c.Type == CustomClaimTypes.Role);
             if (roleIdClaim == null || !int.TryParse(roleIdClaim.Value, out int roleIdFromToken))
             {
                 context.Result = new ForbidResult();

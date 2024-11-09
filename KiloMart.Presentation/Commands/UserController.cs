@@ -5,7 +5,7 @@ using KiloMart.Domain.Login.Services;
 using KiloMart.Domain.Register.Activate;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KiloMart.Presentation.Controllers.Commands;
+namespace KiloMart.Presentation.Commands;
 
 [ApiController]
 [Route("api/user")]
@@ -32,7 +32,7 @@ public class UserController : ControllerBase
         return Ok(decodedToken);
     }
     #endregion
-    
+
     #region user payload
     [HttpGet("user-payload")]
     public IActionResult Payload()

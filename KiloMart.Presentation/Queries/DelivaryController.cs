@@ -4,7 +4,7 @@ using KiloMart.Core.Contracts;
 using KiloMart.Presentation.Models.Queries;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KiloMart.Presentation.Controllers.Queries;
+namespace KiloMart.Presentation.Queries;
 
 [ApiController]
 [Route("api/[controller]")]

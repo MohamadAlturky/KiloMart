@@ -5,7 +5,7 @@ using KiloMart.Domain.Locations.Details.Models;
 using KiloMart.Domain.Locations.Details.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KiloMart.Presentation.Controllers.Commands;
+namespace KiloMart.Presentation.Commands;
 
 [ApiController]
 [Route("api/location")]

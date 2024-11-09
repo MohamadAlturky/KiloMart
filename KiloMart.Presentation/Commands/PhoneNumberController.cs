@@ -3,7 +3,7 @@ using KiloMart.Domain.PhoneNumbers.Models;
 using KiloMart.Domain.PhoneNumbers.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KiloMart.Presentation.Controllers.Commands;
+namespace KiloMart.Presentation.Commands;
 
 [ApiController]
 [Route("api/phone-number")]

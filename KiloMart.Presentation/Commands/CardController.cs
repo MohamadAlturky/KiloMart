@@ -4,7 +4,7 @@ using KiloMart.Domain.Cards.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KiloMart.Presentation.Controllers.Commands;
+namespace KiloMart.Presentation.Commands;
 
 [ApiController]
 [Route("api/card")]

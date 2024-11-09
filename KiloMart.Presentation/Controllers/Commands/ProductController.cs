@@ -2,6 +2,8 @@ using KiloMart.Core.Contracts;
 using KiloMart.Domain.Languages.Models;
 using KiloMart.Domain.Products.Add.Models;
 using KiloMart.Domain.Products.Add.Services;
+using KiloMart.Domain.Products.Offers.Models;
+using KiloMart.Domain.Products.Offers.Services;
 using KiloMart.Presentation.Models.Commands.Products;
 using KiloMart.Presentation.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -62,4 +64,28 @@ public class ProductController : ControllerBase
         var result = ProductService.Insert(_dbFactory, productDto);
         return result.Success ? Ok(result.Data) : StatusCode(500, result.Errors);
     }
+
+    [HttpPost("offer")]
+    public IActionResult CreateOffer([FromBody] CreateProductOfferRequest request)
+    {
+        var (success, errors) = request.Validate();
+        if (!success)
+            return BadRequest(errors);
+
+        var productOffer = new ProductOfferDto
+        {
+            Product = request.ProductId,
+            Price = request.Price,
+            OffPercentage = request.OffPercentage,
+            FromDate = request.FromDate,
+            ToDate = null,
+            Quantity = request.Quantity,
+            Provider = request.ProviderId,
+            IsActive = true
+        };
+
+        var result = ProductOfferService.Insert(_dbFactory, productOffer);
+        return result.Success ? Ok(result.Data) : StatusCode(500, result.Errors);
+    }
 }
+

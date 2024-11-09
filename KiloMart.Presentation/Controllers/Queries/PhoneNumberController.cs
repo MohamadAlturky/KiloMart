@@ -3,7 +3,7 @@ using KiloMart.Core.Contracts;
 using KiloMart.Presentation.Models.Queries;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KiloMart.Presentation.Controllers.Queries;
+namespace KiloMart.Api.Controllers.Queries;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -24,4 +24,4 @@ public class PhoneNumberController : ControllerBase
             new { partyId });
         return Ok(phoneNumbers.ToArray());
     }
-}
+}   

@@ -1,11 +1,9 @@
 using Dapper;
 using KiloMart.Core.Contracts;
-using KiloMart.Domain.Languages.Models;
-using KiloMart.Domain.ProductCategories.Models;
 using KiloMart.Presentation.Models.Queries;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KiloMart.Presentation.Controllers.Queries;
+namespace KiloMart.Api.Controllers.Queries;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -38,7 +36,7 @@ public class ProductCategoryController : ControllerBase
         }
         return Ok(categories.ToArray());
     }
-
+    
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
@@ -54,7 +52,7 @@ public class ProductCategoryController : ControllerBase
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
         // SQL query with a left join to get category and localized information
-        string sql = @"
+            string sql = @"
                 SELECT 
                     ProductCategory.[Id], 
                     ProductCategory.[Name], 
@@ -67,22 +65,21 @@ public class ProductCategoryController : ControllerBase
                     AND ProductCategoryLocalized.Language = @language
                 WHERE ProductCategory.Id = @id";
 
-        // Execute the query with Dapper, mapping to ProductCategoryDto
-        var category = await connection.QueryAsync<ProductCategoryApiResponse>(
-            sql,
-            new { id, language });
+            // Execute the query with Dapper, mapping to ProductCategoryDto
+            var category = await connection.QueryAsync<ProductCategoryApiResponse>(
+                sql, 
+                new { id, language });
 
         ProductCategoryApiResponse? result = category.FirstOrDefault();
-        if (result is null)
+        if(result is null)
         {
             return NotFound();
         }
-        return Ok(new
-        {
-            id = result.Id,
-            name = result.LocalizedName is not null ? result.LocalizedName : result.Name,
-            isActive = result.IsActive,
-
+        return Ok(new{
+            id=result.Id,
+            name=result.LocalizedName is not null ? result.LocalizedName : result.Name,
+            isActive=result.IsActive,
+            
         }); // Return the first match or null if none found
 
     }
@@ -104,16 +101,15 @@ public class ProductCategoryController : ControllerBase
                     ON ProductCategory.Id = ProductCategoryLocalized.ProductCategory 
                     where ProductCategoryLocalized.Language = @language";
         var categories = await connection.QueryAsync<ProductCategoryApiResponse>(
-            sql,
+            sql, 
             new { language });
         List<dynamic> result = new();
         foreach (var category in categories)
         {
-            result.Add(new
-            {
-                category.Id,
-                Name = category.LocalizedName is not null ? category.LocalizedName : category.Name,
-                category.IsActive,
+            result.Add(new {
+                Id=category.Id,
+                Name=category.LocalizedName is not null ? category.LocalizedName : category.Name,
+                IsActive=category.IsActive,
             });
         }
         return Ok(result);

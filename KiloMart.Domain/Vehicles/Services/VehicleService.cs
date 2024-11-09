@@ -2,7 +2,6 @@ using Dapper;
 using KiloMart.Core.Contracts;
 using KiloMart.Core.Models;
 using KiloMart.Domain.Vehicles.Models;
-using System.Data;
 
 namespace KiloMart.Domain.Vehicles.Services;
 

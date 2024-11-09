@@ -1,5 +1,4 @@
-﻿using SqlKata;
-using SqlKata.Execution;
+﻿using SqlKata.Execution;
 using System.Data;
 
 namespace KiloMart.Core.Contracts;

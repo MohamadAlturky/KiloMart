@@ -1,10 +1,10 @@
 using Dapper;
-using KiloMart.Api.Authorization;
 using KiloMart.Core.Contracts;
+using KiloMart.Presentation.Authorization;
 using KiloMart.Presentation.Models.Queries;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KiloMart.Presentation.Controllers.Queries;
+namespace KiloMart.Api.Controllers.Queries;
 
 public class LanguageController : ControllerBase
 {

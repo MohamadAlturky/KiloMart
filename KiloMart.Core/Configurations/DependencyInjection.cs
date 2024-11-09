@@ -1,5 +1,4 @@
 ﻿using KiloMart.Core.Contracts;
-using KiloMart.DataAccess.Contracts;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 

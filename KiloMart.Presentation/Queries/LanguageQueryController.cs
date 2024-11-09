@@ -6,10 +6,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace KiloMart.Presentation.Queries;
 
-public class LanguageController : ControllerBase
+[ApiController]
+[Route("api/language")]
+public class LanguageQueryController : ControllerBase
 {
     private readonly IDbFactory _dbFactory;
-    public LanguageController(IDbFactory dbFactory)
+    public LanguageQueryController(IDbFactory dbFactory)
     {
         _dbFactory = dbFactory;
     }

@@ -1,3 +1,4 @@
+using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.Domain.Cards.Models;
 using KiloMart.Domain.Cards.Services;
@@ -12,22 +13,29 @@ namespace KiloMart.Presentation.Commands;
 public class CardController : ControllerBase
 {
     private readonly IDbFactory _dbFactory;
+    private readonly IUserContext _userContext;
 
-    public CardController(IDbFactory dbFactory)
+    public CardController(IDbFactory dbFactory, IUserContext userContext)
     {
         _dbFactory = dbFactory;
+        _userContext = userContext;
     }
 
     [HttpPost("add")]
     public IActionResult CreateCard([FromBody] CardDto card)
     {
-        var result = CardService.Insert(_dbFactory, card);
+        var (Success,Errors) = card.Validate();
+        if (!Success)
+        {
+            return StatusCode(400, Errors);
+        }
+        var result = CardService.Insert(_dbFactory, card,_userContext.Get().Party);
 
         if (!result.Success)
         {
             return BadRequest(result.Errors);
         }
 
-        return Ok(result.Data);
+        return Ok(new {Id = result.Data});
     }
 }

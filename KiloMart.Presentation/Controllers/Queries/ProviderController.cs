@@ -1,9 +1,9 @@
 using Dapper;
-using KiloMart.Api.Models;
 using KiloMart.Core.Contracts;
+using KiloMart.Presentation.Models.Queries;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KiloMart.Api.Controllers.Queries;
+namespace KiloMart.Presentation.Controllers.Queries;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -15,21 +15,21 @@ public class ProviderController : ControllerBase
     {
         _dbFactory = dbFactory;
     }
-    
+
     [HttpGet("{id}")]
     public async Task<IActionResult> Get(int id)
     {
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
-        
+
         var provider = await connection.QueryFirstOrDefaultAsync<ProviderProfileApiResponse>(
             "SELECT [Id], [Provider], [FirstName], [SecondName], [OwnerNationalId], [NationalApprovalId], [CompanyName], [OwnerName] " +
             "FROM ProviderProfile WHERE Id = @id",
             new { id });
-        
+
         return Ok(provider);
     }
-    
+
     [HttpGet("admin/list")]
     public async Task<IActionResult> AdminList()
     {

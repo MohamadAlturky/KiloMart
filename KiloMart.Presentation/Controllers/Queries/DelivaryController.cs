@@ -1,10 +1,10 @@
 
 using Dapper;
-using KiloMart.Api.Models;
 using KiloMart.Core.Contracts;
+using KiloMart.Presentation.Models.Queries;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KiloMart.Api.Controllers.Queries;
+namespace KiloMart.Presentation.Controllers.Queries;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -15,13 +15,13 @@ public class DelivaryController : ControllerBase
     {
         _dbFactory = dbFactory;
     }
-    
+
     [HttpGet("{id}")]
     public async Task<IActionResult> Get(int id)
     {
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
-        
+
         var delivary = await connection.QueryFirstOrDefaultAsync<DelivaryProfileApiResponse>(
             "SELECT [Id], [Delivary], [FirstName], [SecondName], [NationalName], [NationalId], [LicenseNumber], [LicenseExpiredDate], [DrivingLicenseNumber] FROM DelivaryProfile WHERE Id = @id",
             new { id });
@@ -37,7 +37,7 @@ public class DelivaryController : ControllerBase
     }
     //get localized fields
     [HttpGet("localized/{id}")]
-    public async Task<IActionResult> GetLocalized(int id,byte language)
+    public async Task<IActionResult> GetLocalized(int id, byte language)
     {
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
@@ -64,7 +64,7 @@ public class DelivaryController : ControllerBase
         AND DelivaryProfileLocalized.Language = @language
     WHERE 
         DelivaryProfile.Id = @id";
-    var Delivary = await connection.QueryAsync<DelivaryProfileApiResponse>(sql, new { id, language });
+        var Delivary = await connection.QueryAsync<DelivaryProfileApiResponse>(sql, new { id, language });
         return Ok(Delivary.FirstOrDefault()); // Return the first result if it exists
 
     }

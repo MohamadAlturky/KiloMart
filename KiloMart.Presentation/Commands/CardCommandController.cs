@@ -23,7 +23,7 @@ public class CardCommandController : ControllerBase
         _userContext = userContext;
     }
 
-    [HttpPost("add")]
+    [HttpPost]
     [Guard([Roles.Customer])]
     public IActionResult CreateCard([FromBody] CardDto card)
     {
@@ -43,12 +43,14 @@ public class CardCommandController : ControllerBase
     }
 
 
-    [HttpPut("{id}")]
+    [HttpPut]
     [Guard([Roles.Customer])]
-    public async Task<IActionResult> UpdateCard([FromBody] UpdateCardDto dto, int id)
+    public async Task<IActionResult> UpdateCard(
+        [FromBody] UpdateCardDto dto,
+        [FromQuery] int id)
     {
         var party = _userContext.Get().Party;
-        var result = await UpdateCardService.Update(_dbFactory, dto, id, party);
+        var result = await UpdateCardService.Update(_dbFactory, dto, id, party, true);
         if (!result.Success)
         {
             return StatusCode(500, result.Errors);
@@ -57,6 +59,25 @@ public class CardCommandController : ControllerBase
         {
             Success = true,
             Data = $"card with id = {id} updated successfully."
+        });
+    }
+
+    [HttpDelete]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> DeleteCard(
+        [FromQuery] int id)
+    {
+        var party = _userContext.Get().Party;
+        var result = await UpdateCardService.Update(_dbFactory,
+        new() { }, id, party, false);
+        if (!result.Success)
+        {
+            return StatusCode(500, result.Errors);
+        }
+        return Ok(new 
+        {
+            Success = true,
+            Data = $"card with id = {id} deleted successfully."
         });
     }
 }

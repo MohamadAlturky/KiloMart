@@ -1,5 +1,8 @@
 using Dapper;
+using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
+using KiloMart.Domain.Register.Utils;
+using KiloMart.Presentation.Authorization;
 using KiloMart.Presentation.Models.Queries;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,14 +13,18 @@ namespace KiloMart.Presentation.Queries;
 public class CardQueryController : ControllerBase
 {
     private readonly IDbFactory _dbFactory;
-    public CardQueryController(IDbFactory dbFactory)
+    private readonly IUserContext _userContext;
+    public CardQueryController(IDbFactory dbFactory, IUserContext userContext)
     {
+        _userContext = userContext;
         _dbFactory = dbFactory;
     }
-    [HttpGet("{partyId}")]
-    
-    public async Task<IActionResult> GetByPartyId(int partyId)
+
+    [HttpGet("mine")]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> GetMine()
     {
+        var partyId = _userContext.Get().Party;
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
         var cards = await connection.QueryAsync<CardApiResponse>(

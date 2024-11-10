@@ -1,5 +1,6 @@
 
 using Dapper;
+using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.Presentation.Models.Queries;
 using Microsoft.AspNetCore.Mvc;
@@ -11,8 +12,10 @@ namespace KiloMart.Presentation.Queries;
 public class DelivaryQueryController : ControllerBase
 {
     private readonly IDbFactory _dbFactory;
-    public DelivaryQueryController(IDbFactory dbFactory)
+    private readonly IUserContext _userContext;
+    public DelivaryQueryController(IDbFactory dbFactory,IUserContext userContext)
     {
+        _userContext = userContext;
         _dbFactory = dbFactory;
     }
 
@@ -67,4 +70,47 @@ public class DelivaryQueryController : ControllerBase
         return Ok(Delivary.FirstOrDefault()); // Return the first result if it exists
 
     }
+
+    [HttpGet("profile")]
+public async Task<IActionResult> GetProfile()
+{
+    using var connection = _dbFactory.CreateDbConnection();
+    // You need to get the delivary Id from the current user context or some other way
+    var delivaryId = _userContext.Get().Party; // You need to implement this method
+    connection.Open();
+    var sql = @"
+        SELECT
+            [Id],
+            [Delivary],
+            [FirstName],
+            [SecondName],
+            [NationalName],
+            [NationalId],
+            [LicenseNumber],
+            [LicenseExpiredDate],
+            [DrivingLicenseNumber],
+            [DrivingLicenseExpiredDate]
+        FROM
+            DelivaryProfile
+        WHERE
+            Id = @delivaryId";
+    var delivaryProfile = await connection.QueryFirstOrDefaultAsync<DelivaryProfileApiResponse>(sql, new { delivaryId });
+    return Ok(delivaryProfile);
+}
+
+}
+
+
+public class DelivaryProfileApiResponse
+{
+    public int Id { get; set; }
+    public int Delivary { get; set; }
+    public string FirstName { get; set; }
+    public string SecondName { get; set; }
+    public string NationalName { get; set; }
+    public string NationalId { get; set; }
+    public string LicenseNumber { get; set; }
+    public DateTime LicenseExpiredDate { get; set; }
+    public string DrivingLicenseNumber { get; set; }
+    public DateTime DrivingLicenseExpiredDate { get; set; }
 }

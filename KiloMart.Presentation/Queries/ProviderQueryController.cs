@@ -1,4 +1,5 @@
 using Dapper;
+using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.Presentation.Models.Queries;
 using Microsoft.AspNetCore.Mvc;
@@ -10,10 +11,12 @@ namespace KiloMart.Presentation.Queries;
 public class ProviderQueryController : ControllerBase
 {
     private readonly IDbFactory _dbFactory;
+    private readonly IUserContext _userContext;
 
-    public ProviderQueryController(IDbFactory dbFactory)
+    public ProviderQueryController(IDbFactory dbFactory, IUserContext userContext)
     {
         _dbFactory = dbFactory;
+        _userContext = userContext;
     }
 
     [HttpGet("{id}")]
@@ -78,4 +81,32 @@ public class ProviderQueryController : ControllerBase
 
         return Ok(provider);
     }
+
+    [HttpGet("profile")]
+    public async Task<IActionResult> GetProfile()
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        var sql = @"
+        SELECT 
+            [Id],
+            [Provider],
+            [FirstName],
+            [SecondName],
+            [OwnerNationalId],
+            [NationalApprovalId],
+            [CompanyName],
+            [OwnerName]
+        FROM 
+            ProviderProfile
+        WHERE 
+            [Provider] = @provider";
+
+        var providerId = _userContext.Get().Party;
+        var provider = await connection.QueryFirstOrDefaultAsync<ProviderProfileApiResponse>(sql, new { provider = providerId });
+
+        return Ok(provider);
+    }
+
 }

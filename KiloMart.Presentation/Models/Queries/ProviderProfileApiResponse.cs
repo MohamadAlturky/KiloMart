@@ -10,11 +10,4 @@ public class ProviderProfileApiResponse
     public string NationalApprovalId { get; set; } = string.Empty;
     public string CompanyName { get; set; } = string.Empty;
     public string OwnerName { get; set; } = string.Empty;
-
-    // Localized fields
-    public int Language { get; set; }
-    public string FirstNameLocalized { get; set; } = string.Empty;
-    public string SecondNameLocalized { get; set; } = string.Empty;
-    public string CompanyNameLocalized { get; set; } = string.Empty;
-    public string OwnerNameLocalized { get; set; } = string.Empty;
 }

@@ -7,7 +7,6 @@ public class CreateProductOfferRequest
     public decimal OffPercentage { get; set; }
     public DateTime FromDate { get; set; }
     public float Quantity { get; set; }
-    public int ProviderId { get; set; }
 
     public (bool Success, string[] Errors) Validate()
     {
@@ -23,8 +22,6 @@ public class CreateProductOfferRequest
             errors.Add("From date must be in the future");
         if (Quantity <= 0)
             errors.Add("Quantity must be greater than zero");
-        if (ProviderId <= 0)
-            errors.Add("Provider ID is required");
 
         return (errors.Count == 0, errors.ToArray());
     }

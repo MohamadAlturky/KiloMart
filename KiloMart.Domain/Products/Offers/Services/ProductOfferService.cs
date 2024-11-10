@@ -7,7 +7,8 @@ namespace KiloMart.Domain.Products.Offers.Services;
 
 public static class ProductOfferService
 {
-    public static Result<ProductOfferDto> Insert(IDbFactory dbFactory, ProductOfferDto offer)
+    public static Result<ProductOfferDto> Insert(IDbFactory dbFactory, 
+    ProductOfferDto offer)
     {
         using var connection = dbFactory.CreateDbConnection();
         connection.Open();

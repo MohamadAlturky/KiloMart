@@ -188,6 +188,7 @@ Happy Coding! 🎉
 - success 200
 
 > tested ✅
+
 > need verify code to activate account
 
 #### Register Provider
@@ -208,6 +209,7 @@ Happy Coding! 🎉
 - success 200
 
 > tested ✅
+
 > need verify code to activate account and the admin to accept
 
 #### Register Delivery
@@ -228,6 +230,7 @@ Happy Coding! 🎉
 - success 200
 
 > tested ✅
+
 > need verify code to activate account and the admin to accept
 
 

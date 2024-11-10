@@ -26,8 +26,8 @@ public class PhoneNumberQueryController : ControllerBase
         int partyId = _userContext.Get().Party;
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
-        var phoneNumbers = await connection.QueryAsync<PhoneNumberApiResponse>(
-            "SELECT [Id], [Value], [Party] FROM PhoneNumber WHERE Party = @partyId",
+        var phoneNumbers = await connection.QueryAsync<PhoneNumberApiResponseForMine>(
+            "SELECT [Id], [Value] FROM PhoneNumber WHERE Party = @partyId",
             new { partyId });
         return Ok(phoneNumbers.ToArray());
     }
@@ -36,8 +36,8 @@ public class PhoneNumberQueryController : ControllerBase
 
 
     [HttpGet("list")]
-    [Guard([Roles.Admin])]
-    public async Task<IActionResult> GetPhoneNumbers(int page = 1, int pageSize = 10, byte language = 1)
+    // [Guard([Roles.Admin])]
+    public async Task<IActionResult> GetPhoneNumbers(int page = 1, int pageSize = 10)
     {
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
@@ -56,16 +56,15 @@ public class PhoneNumberQueryController : ControllerBase
                 ph.Id AS PhoneNumberId,
                 ph.Value AS NumberValue,
                 p.Id AS PersonId,
-                COALESCE(pl.DisplayName, p.DisplayName) AS PersonName
+                p.DisplayName AS PersonName
                     FROM PhoneNumber ph
                         INNER JOIN Party p ON ph.Party = p.Id
-                        LEFT JOIN PartyLocalized pl ON pl.Party = p.Id AND pl.Language = @language
                             WHERE p.IsActive = 1
-                            ORDER BY ph.Id
-                                OFFSET @skip ROWS FETCH NEXT @pageSize ROWS ONLY
+                                ORDER BY ph.Id
+                OFFSET @skip ROWS FETCH NEXT @pageSize ROWS ONLY
         """;
         var phoneNumbers = await connection.QueryAsync<PhoneNumberApiResponse>(sql,
-            new { language = language, skip = skip, pageSize = pageSize });
+            new { skip = skip, pageSize = pageSize });
 
         return Ok(new 
         {
@@ -82,4 +81,11 @@ public class PhoneNumberQueryController : ControllerBase
         public int PersonId { get; set; }
         public string PersonName { get; set; } = null!;
     }
+
+    public class PhoneNumberApiResponseForMine
+    {
+        public int Id { get; set; }
+        public string Value { get; set; } = null!;
+    }
+
 }

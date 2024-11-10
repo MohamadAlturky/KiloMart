@@ -38,8 +38,8 @@ public class CardQueryController : ControllerBase
 
 
     [HttpGet("list")]
-    [Guard([Roles.Admin])]
-    public async Task<IActionResult> GetAll([FromQuery] int languageId,[FromQuery]  int page = 1,[FromQuery]  int pageSize = 10)
+    // [Guard([Roles.Admin])]
+    public async Task<IActionResult> GetAll([FromQuery]  int page = 1,[FromQuery]  int pageSize = 10)
     {
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
@@ -53,20 +53,18 @@ public class CardQueryController : ControllerBase
                 [c].[SecurityCode], 
                 [c].[ExpireDate], 
                 [p].[Id] as [CustomerId],
-                COALESCE([pl].[DisplayName], [p].[DisplayName]) as [CustomerName],
+                [p].[DisplayName] as [CustomerName],
                 [c].[IsActive]
 		FROM Card [c]
 		INNER JOIN Party [p] 
 			ON [c].[Customer] = [p].[Id]
-		Left JOIN PartyLocalized [pl] 
-			ON [p].[Id] = [pl].[Party] AND [pl].[Language] = @language
 		WHERE [p].[IsActive] = 1  
 			ORDER BY [c].[Id] 
 	    OFFSET @skip ROWS FETCH NEXT @pageSize ROWS ONLY;";
 
         var cards = await connection.QueryAsync<CardApiResponseWithCustomerName>(
             query,
-            new { language = languageId, skip, pageSize });
+            new { skip, pageSize });
 
         return Ok(cards.ToArray());
     }
@@ -75,11 +73,11 @@ public class CardQueryController : ControllerBase
 public class CardApiResponseWithCustomerName
 {
     public int Id { get; set; }
-    public string HolderName { get; set; }
-    public string Number { get; set; }
-    public string SecurityCode { get; set; }
-    public string ExpireDate { get; set; }
+    public string HolderName { get; set; } = null!;
+    public string Number { get; set; }= null!;
+    public string SecurityCode { get; set; }= null!;
+    public DateTime ExpireDate { get; set; }
     public int CustomerId { get; set; }
-    public string CustomerName { get; set; }
+    public string CustomerName { get; set; }= null!;
     public bool IsActive { get; set; }
 }

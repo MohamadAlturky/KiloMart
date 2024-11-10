@@ -278,3 +278,25 @@ final response = await http.get(
   headers: headers,
 );
 ```
+
+
+
+
+### Cards Management
+> request formate 
+
+``` json 
+{
+  "holderName": "string",
+  "number": "string",
+  "securityCode": "string",
+  "expireDate": "2024-11-10T02:24:49.289Z"
+}
+```
+> status code
+- validation error 400 
+- server error 500 
+- success 200
+
+> tested ✅
+> needs authentication 💂‍♂️ and this action is only for `customer`.

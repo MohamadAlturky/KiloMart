@@ -1,3 +1,4 @@
+using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.Domain.Delivery.Profile.Models;
 using KiloMart.Domain.Delivery.Profile.Services;
@@ -13,13 +14,15 @@ public class DeliveryCommandController : ControllerBase
 {
     private readonly IDbFactory _dbFactory;
     private readonly IConfiguration _configuration;
-
-    public DeliveryCommandController(IDbFactory dbFactory, IConfiguration configuration)
+    private readonly IUserContext _userContext;
+    public DeliveryCommandController(IDbFactory dbFactory,
+        IConfiguration configuration,
+        IUserContext userContext)
     {
+        _userContext = userContext;
         _dbFactory = dbFactory;
         _configuration = configuration;
     }
-
 
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterDeliveryDto dto)
@@ -48,6 +51,7 @@ public class DeliveryCommandController : ControllerBase
         {
             return BadRequest(errors);
         }
+        var delivery = _userContext.Get().Party;
 
         var result = await DeliveryProfileService.InsertAsync(_dbFactory,
         new CreateDeliveryProfileRequest
@@ -61,12 +65,6 @@ public class DeliveryCommandController : ControllerBase
             LicenseNumber = request.LicenseNumber,
             DrivingLicenseNumber = request.DrivingLicenseNumber,
             LicenseExpiredDate = request.LicenseExpiredDate,
-        }, new CreateDeliveryProfileLocalizedRequest
-        {
-            FirstName = request.FirstName,
-            SecondName = request.SecondName,
-            Language = request.LanguageId,
-            NationalName = request.NationalName,
         });
 
         return result.Success ? Ok(result) : StatusCode(500, result.Errors);

@@ -9,12 +9,10 @@ public static class DeliveryProfileService
 {
     public static async Task<Result<CreateDeliveryProfileResponse>> InsertAsync(
         IDbFactory dbFactory,
-        CreateDeliveryProfileRequest deliveryProfileRequest,
-        CreateDeliveryProfileLocalizedRequest localizedRequest)
+        CreateDeliveryProfileRequest deliveryProfileRequest)
     {
         using var connection = dbFactory.CreateDbConnection();
         connection.Open();
-        using var transaction = connection.BeginTransaction();
 
         try
         {
@@ -38,22 +36,9 @@ public static class DeliveryProfileService
                 deliveryProfileRequest.LicenseExpiredDate,
                 deliveryProfileRequest.DrivingLicenseNumber,
                 deliveryProfileRequest.DrivingLicenseExpiredDate
-            }, transaction);
+            });
 
-            const string insertDeliveryProfileLocalizedSql = @"
-                    INSERT INTO DelivaryProfileLocalized (DelivaryProfile, Language, FirstName, SecondName, NationalName)
-                    VALUES (@DeliveryProfile, @Language, @FirstName, @SecondName, @NationalName);";
-
-            await connection.ExecuteAsync(insertDeliveryProfileLocalizedSql, new
-            {
-                DeliveryProfile = deliveryProfileId,
-                localizedRequest.Language,
-                localizedRequest.FirstName,
-                localizedRequest.SecondName,
-                localizedRequest.NationalName
-            }, transaction);
-
-            transaction.Commit();
+            
 
             return Result<CreateDeliveryProfileResponse>.Ok(new CreateDeliveryProfileResponse
             {
@@ -71,7 +56,6 @@ public static class DeliveryProfileService
         }
         catch (Exception e)
         {
-            transaction.Rollback();
             return Result<CreateDeliveryProfileResponse>.Fail([e.Message]);
         }
     }

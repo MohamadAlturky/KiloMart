@@ -9,12 +9,10 @@ public static class ProviderProfileService
 {
     public static async Task<Result<CreateProviderProfileResponse>> InsertAsync(
         IDbFactory dbFactory,
-        CreateProviderProfileRequest providerProfileRequest,
-        CreateProviderProfileLocalizedRequest localizedRequest)
+        CreateProviderProfileRequest providerProfileRequest)
     {
         using var connection = dbFactory.CreateDbConnection();
         connection.Open();
-        using var transaction = connection.BeginTransaction();
 
         try
         {
@@ -36,25 +34,7 @@ public static class ProviderProfileService
                 providerProfileRequest.NationalApprovalId,
                 providerProfileRequest.CompanyName,
                 providerProfileRequest.OwnerName
-            }, transaction);
-
-            const string insertProviderProfileLocalizedSql = @"
-                INSERT INTO ProviderProfileLocalized (
-                    ProviderProfile, Language, FirstName, SecondName, CompanyName, OwnerName)
-                VALUES (
-                    @ProviderProfile, @Language, @FirstName, @SecondName, @CompanyName, @OwnerName);";
-
-            await connection.ExecuteAsync(insertProviderProfileLocalizedSql, new
-            {
-                ProviderProfile = providerProfileId,
-                localizedRequest.Language,
-                localizedRequest.FirstName,
-                localizedRequest.SecondName,
-                localizedRequest.CompanyName,
-                localizedRequest.OwnerName
-            }, transaction);
-
-            transaction.Commit();
+            });
 
             return Result<CreateProviderProfileResponse>.Ok(new CreateProviderProfileResponse
             {
@@ -70,7 +50,6 @@ public static class ProviderProfileService
         }
         catch (Exception e)
         {
-            transaction.Rollback();
             return Result<CreateProviderProfileResponse>.Fail([e.Message]);
         }
     }

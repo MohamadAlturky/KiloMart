@@ -7,7 +7,9 @@ namespace KiloMart.Domain.PhoneNumbers.Services;
 
 public static class PhoneNumberService
 {
-    public static async Task<Result<CreatePhoneNumberResponse>> Insert(IDbFactory dbFactory, CreatePhoneNumberRequest phoneNumber)
+    public static async Task<Result<CreatePhoneNumberResponse>> Insert(IDbFactory dbFactory,
+     CreatePhoneNumberRequest phoneNumber,
+     int party)
     {
         try
         {
@@ -25,11 +27,11 @@ public static class PhoneNumberService
             response.Id = await connection.QuerySingleAsync<int>(sql, new
             {
                 Value = phoneNumber.Value,
-                Party = phoneNumber.Party,
+                Party = party,
                 IsActive = true
             });
             response.Value = phoneNumber.Value;
-            response.Party = phoneNumber.Party;
+            response.Party = party;
 
             return Result<CreatePhoneNumberResponse>.Ok(response);
         }

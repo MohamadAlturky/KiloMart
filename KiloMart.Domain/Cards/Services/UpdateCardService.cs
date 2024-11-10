@@ -7,7 +7,7 @@ namespace KiloMart.Domain.Cards.Services
     public static class UpdateCardService
     {
         
-        public static async Task<Result> Update(IDbFactory dbFactory, UpdateCardDto dto, int id, int party)
+        public static async Task<Result> Update(IDbFactory dbFactory, UpdateCardDto dto, int id, int party,bool? isActive)
         {
             try
             {
@@ -24,7 +24,7 @@ namespace KiloMart.Domain.Cards.Services
                         IsActive,
                         Customer
                     FROM Card
-                    WHERE Id = @Id";
+                    WHERE Id = @Id AND IsActive = 1";
 
                 var parameters = new
                 {
@@ -58,9 +58,9 @@ namespace KiloMart.Domain.Cards.Services
                 {
                     existingCard.Number = dto.Number;
                 }
-                if(dto.IsActive.HasValue)
+                if(isActive.HasValue)
                 {
-                    existingCard.IsActive = dto.IsActive.Value;
+                    existingCard.IsActive = isActive.Value;
                 }
                 
                 // SQL query to update the Card table
@@ -113,7 +113,6 @@ public class UpdateCardDto
     public string? SecurityCode { get; set; }
 
     public DateTime? ExpireDate { get; set; }
-    public bool? IsActive { get; set; }
 }
 
 

@@ -7,7 +7,7 @@ namespace KiloMart.Domain.Locations.Add.Services;
 
 public static partial class LocationService
 {
-    public static async Task<Result<CreateLocationResponse>> Insert(IDbFactory dbFactory, CreateLocationRequest location)
+    public static async Task<Result<CreateLocationResponse>> Insert(IDbFactory dbFactory, CreateLocationRequest location, int party)
     {
         try
         {
@@ -25,14 +25,14 @@ public static partial class LocationService
                 location.Longitude,
                 location.Latitude,
                 location.Name,
-                location.Party,
+                party,
                 IsActive = true
             });
 
             response.Longitude = location.Longitude;
             response.Latitude = location.Latitude;
             response.Name = location.Name;
-            response.Party = location.Party;
+            response.Party = party;
 
             return Result<CreateLocationResponse>.Ok(response);
         }

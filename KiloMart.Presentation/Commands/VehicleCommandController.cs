@@ -1,6 +1,9 @@
+using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
+using KiloMart.Domain.Register.Utils;
+using KiloMart.Domain.Vehicles.DataAccess;
 using KiloMart.Domain.Vehicles.Models;
-using KiloMart.Domain.Vehicles.Services;
+using KiloMart.Presentation.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KiloMart.Presentation.Commands;
@@ -10,26 +13,68 @@ namespace KiloMart.Presentation.Commands;
 public class VehicleCommandController : ControllerBase
 {
     private readonly IDbFactory _dbFactory;
-    private readonly VehicleService _vehicleService;
+    private readonly IUserContext _userContext;
 
-    public VehicleCommandController(IDbFactory dbFactory, VehicleService vehicleService)
+    public VehicleCommandController(IDbFactory dbFactory, IUserContext userContext)
     {
+        _userContext = userContext;
         _dbFactory = dbFactory;
-        _vehicleService = vehicleService;
     }
 
     [HttpPost("add")]
+    [Guard([Roles.Delivery])]
     public async Task<IActionResult> Create([FromBody] CreateVehicleRequest vehicle)
     {
         var (isValid, errors) = vehicle.Validate();
         if (!isValid)
             return BadRequest(errors);
+        var party = _userContext.Get().Party;
+        try
+        {
+            var vehicleModel = new Vehicle()
+            {
+                Delivary = party,
+                Model = vehicle.Model,
+                Number = vehicle.Number,
+                Type = vehicle.Type,
+                Year = vehicle.Year
+            };
+            await VehicleRepository.InsertVehicle(vehicleModel, _dbFactory);
+        }
+        catch (Exception e)
+        {
+            return StatusCode(500, new List<string>() { e.Message });
+        }
 
-        var result = await _vehicleService.Create(vehicle, _dbFactory);
+        return Ok(new { Sucess = true });
+    }
 
-        if (!result.Success)
-            return BadRequest(result.Errors);
+    [HttpPut("update")]
+    [Guard([Roles.Delivery])]
+    public async Task<IActionResult> Update([FromBody] UpdateVehicleRequest vehicle, [FromQuery] int id)
+    {
+        var existingVehicle = await VehicleRepository.GetVehicleById(id, _dbFactory);
+        var party = _userContext.Get().Party;
 
-        return Ok(result.Data);
+        if (existingVehicle is null)
+            return NotFound("Vehicle not found");
+
+        if (party != existingVehicle.Delivary)
+        {
+            return StatusCode(400, "this Vehicle is not for you.");
+
+        }
+        var updatedVehicle = new Vehicle
+        {
+            Id = existingVehicle.Id,
+            Number = vehicle.Number ?? existingVehicle.Number,
+            Model = vehicle.Model ?? existingVehicle.Model,
+            Type = vehicle.Type ?? existingVehicle.Type,
+            Year = vehicle.Year ?? existingVehicle.Year,
+            Delivary = party
+        };
+
+        await VehicleRepository.UpdateVehicle(updatedVehicle, _dbFactory);
+        return Ok(updatedVehicle);
     }
 }

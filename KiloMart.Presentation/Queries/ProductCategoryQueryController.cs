@@ -227,7 +227,6 @@ public class ProductCategoryQueryController : ControllerBase
             totalCount = totalCount
         });
     }
-
 }
 
 public class ProductCategoryApiResponseDto

@@ -300,3 +300,76 @@ final response = await http.get(
 
 > tested ✅
 > needs authentication 💂‍♂️ and this action is only for `customer`.
+
+
+
+
+### Product Categories
+
+#### Get Paginated Product Categories
+> Retrieves a paginated list of active product categories with localization support
+
+**Endpoint:** `GET /api/product-category/paginated`
+
+**Query Parameters:**
+```json
+{
+  "language": "byte (required)",
+  "page": "integer (default: 1)",
+  "pageSize": "integer (default: 10)"
+}
+
+
+> Response Format:
+
+
+``` json
+{
+  "data": [
+    {
+      "id": "integer",
+      "name": "string",
+      "isActive": "boolean"
+    }
+  ],
+  "totalCount": "integer"
+}
+```
+
+#### Get All Paginated Product Categories (Admin)
+Retrieves a paginated list of all product categories with filtering options
+
+Endpoint: GET /api/product-category/paginated/all
+
+**Query Parameters:**
+```json
+{
+  "language": "byte (required)",
+  "page": "integer (default: 1)", 
+  "pageSize": "integer (default: 10)",
+  "isActive": "boolean (default: true)"
+}
+```
+
+> Response Format:
+
+``` json
+{
+  "data": [
+    {
+      "id": "integer",
+      "name": "string", 
+      "isActive": "boolean"
+    }
+  ],
+  "totalCount": "integer"
+}
+
+```
+
+> Status Codes:
+
+200: Success
+400: Bad Request
+500: Server Error
+Tested ✅

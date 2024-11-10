@@ -36,4 +36,13 @@ public static class LocationRepository
         var result = await connection.QueryAsync<Location>(query, new { Party = partyId });
         return result.ToList();
     }
+
+    public static async Task<Location?> GetLocationById(int id, IDbFactory dbFactory)
+    {
+        using var connection = dbFactory.CreateDbConnection();
+        connection.Open();
+        var query = "SELECT * FROM [dbo].[Location] WHERE [Id] = @Id";
+        var result = await connection.QueryFirstOrDefaultAsync<Location>(query, new { Id = id });
+        return result;
+    }
 }

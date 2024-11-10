@@ -20,7 +20,7 @@ public class PhoneNumberQueryController : ControllerBase
         _userContext = userContext;
     }
     [HttpGet("mine")]
-    [Guard([Roles.Customer,Roles.Provider,Roles.Delivery])]
+    [Guard([Roles.Customer, Roles.Provider, Roles.Delivery])]
     public async Task<IActionResult> GetByPartyId()
     {
         int partyId = _userContext.Get().Party;
@@ -30,5 +30,56 @@ public class PhoneNumberQueryController : ControllerBase
             "SELECT [Id], [Value], [Party] FROM PhoneNumber WHERE Party = @partyId",
             new { partyId });
         return Ok(phoneNumbers.ToArray());
+    }
+
+
+
+
+    [HttpGet("list")]
+    [Guard([Roles.Admin])]
+    public async Task<IActionResult> GetPhoneNumbers(int page = 1, int pageSize = 10, byte language = 1)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        int skip = (page - 1) * pageSize;
+
+        var countSql = """
+        SELECT COUNT(*) FROM PhoneNumber ph 
+            INNER JOIN Party p ON ph.Party = p.Id 
+                WHERE p.IsActive = 1;
+        """;
+        var count = await connection.ExecuteScalarAsync<int>(countSql);
+
+        var sql = """
+            SELECT 
+                ph.Id AS PhoneNumberId,
+                ph.Value AS NumberValue,
+                p.Id AS PersonId,
+                COALESCE(pl.DisplayName, p.DisplayName) AS PersonName
+                    FROM PhoneNumber ph
+                        INNER JOIN Party p ON ph.Party = p.Id
+                        LEFT JOIN PartyLocalized pl ON pl.Party = p.Id AND pl.Language = @language
+                            WHERE p.IsActive = 1
+                            ORDER BY ph.Id
+                                OFFSET @skip ROWS FETCH NEXT @pageSize ROWS ONLY
+        """;
+        var phoneNumbers = await connection.QueryAsync<PhoneNumberApiResponse>(sql,
+            new { language = language, skip = skip, pageSize = pageSize });
+
+        return Ok(new 
+        {
+            data = phoneNumbers.ToArray(),
+            totalCount = count
+        });
+    }
+
+
+    public class PhoneNumberApiResponse
+    {
+        public int PhoneNumberId { get; set; }
+        public string NumberValue { get; set; } = null!;
+        public int PersonId { get; set; }
+        public string PersonName { get; set; } = null!;
     }
 }

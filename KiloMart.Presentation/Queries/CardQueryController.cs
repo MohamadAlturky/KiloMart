@@ -33,4 +33,6 @@ public class CardQueryController : ControllerBase
         return Ok(cards.ToArray());
 
     }
+
+
 }

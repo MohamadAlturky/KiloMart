@@ -234,6 +234,47 @@ Happy Coding! 🎉
 > need verify code to activate account and the admin to accept
 
 
+#### Login
+> request formate 
+
+``` json 
+{
+  "email": "string",
+  "password": "string"
+}
+```
+> status code
+- validation error 400 
+- server error 500 
+- success 200
+
+> tested ✅
 
 
+> response formate example
+ 
+``` json
+{
+  "success": true,
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOiI0IiwiRW1haWwiOiJtNzk5Njc4QGdtYWlsLmNvbSIsIlJvbGUiOiIxIiwiUGFydHkiOiI3IiwiZXhwIjoxNzMzNjI0NDg0LCJpc3MiOiJLaWxvTWFydCIsImF1ZCI6IktpbG9NYXJ0In0.uFZEXv3Jsc4yygrpG0JwDhPUf28-8kWU5xLWF4zRrVI"
+}
+```
 
+> `NOTES`: token is valid for 4 weeks now.
+
+
+> How to use the token in Flutter:
+
+```dart
+// Add token to headers for authenticated requests
+final headers = {
+  'Authorization': 'Bearer $token',
+  'Content-Type': 'application/json'
+};
+
+// Example authenticated request
+final response = await http.get(
+  Uri.parse('your_api_endpoint'),
+  headers: headers,
+);
+```

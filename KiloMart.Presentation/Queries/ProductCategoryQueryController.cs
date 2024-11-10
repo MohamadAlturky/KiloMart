@@ -20,7 +20,8 @@ public class ProductCategoryQueryController : ControllerBase
     {
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
-        var categories = await connection.QueryAsync<ProductCategoryApiResponse>("SELECT [Id], [Name] , [IsActive] FROM ProductCategory where IsActive = 1");
+        var sql = "SELECT [Id], [Name] , [IsActive] FROM ProductCategory where IsActive = 1";
+        var categories = await connection.QueryAsync<ProductCategoryApiResponse>(sql);
         return Ok(categories.ToArray());
     }
 
@@ -100,7 +101,7 @@ public class ProductCategoryQueryController : ControllerBase
                 FROM ProductCategory
                 LEFT JOIN ProductCategoryLocalized 
                     ON ProductCategory.Id = ProductCategoryLocalized.ProductCategory 
-                    where ProductCategoryLocalized.Language = @language";
+                    AND ProductCategoryLocalized.Language = @language";
         var categories = await connection.QueryAsync<ProductCategoryApiResponse>(
             sql,
             new { language });
@@ -116,4 +117,122 @@ public class ProductCategoryQueryController : ControllerBase
         }
         return Ok(result);
     }
+
+    [HttpGet("paginated")]
+    public async Task<IActionResult> GetAllLocalizedPaginated(
+    [FromQuery] byte language,
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 10)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        // Calculate OFFSET for pagination
+        int offset = (page - 1) * pageSize;
+        var countSql = "SELECT COUNT(*) FROM ProductCategory WITH (NOLOCK) WHERE IsActive = 1";
+        int totalCount = await connection.ExecuteScalarAsync<int>(countSql);
+
+        // SQL query with pagination, using OFFSET and FETCH
+        string sql = @"
+        SELECT 
+            ProductCategory.[Id], 
+            ProductCategory.[Name], 
+            ProductCategory.[IsActive], 
+            ProductCategoryLocalized.[Name] AS LocalizedName, 
+            ProductCategoryLocalized.[Language]
+        FROM ProductCategory WITH (NOLOCK)
+        LEFT JOIN ProductCategoryLocalized WITH (NOLOCK)
+            ON ProductCategory.Id = ProductCategoryLocalized.ProductCategory 
+            AND ProductCategoryLocalized.Language = @language
+            WHERE ProductCategory.IsActive = 1
+        ORDER BY ProductCategory.[Id]
+        OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
+
+        // Query execution with pagination parameters
+        var categories = await connection.QueryAsync<ProductCategoryApiResponse>(
+            sql,
+            new { language, offset, pageSize });
+
+        // Transforming results
+        List<ProductCategoryApiResponseDto> result = [];
+        foreach (var category in categories)
+        {
+            result.Add(new()
+            {
+                Id = category.Id,
+                Name = category.LocalizedName ?? category.Name,
+                IsActive = category.IsActive,
+            });
+        }
+
+        return Ok(new
+        {
+            data = result,
+            totalCount = totalCount
+        });
+    }
+
+    
+    [HttpGet("paginated/all")]
+    public async Task<IActionResult> GetAllLocalizedPaginatedForAdmin(
+    [FromQuery] byte language,
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 10,
+    [FromQuery] bool isActive = true)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        // Calculate OFFSET for pagination
+        int offset = (page - 1) * pageSize;
+        var countSql = "SELECT COUNT(*) FROM ProductCategory WITH (NOLOCK) WHERE IsActive = @isActive";
+        int totalCount = await connection.ExecuteScalarAsync<int>(countSql, new { isActive });
+
+        // SQL query with pagination, using OFFSET and FETCH
+        string sql = @"
+        SELECT 
+            ProductCategory.[Id], 
+            ProductCategory.[Name], 
+            ProductCategory.[IsActive], 
+            ProductCategoryLocalized.[Name] AS LocalizedName, 
+            ProductCategoryLocalized.[Language]
+        FROM ProductCategory WITH (NOLOCK)
+        LEFT JOIN ProductCategoryLocalized WITH (NOLOCK)
+            ON ProductCategory.Id = ProductCategoryLocalized.ProductCategory 
+            AND ProductCategoryLocalized.Language = @language
+            WHERE ProductCategory.IsActive = @isActive
+        ORDER BY ProductCategory.[Id]
+        OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
+
+        // Query execution with pagination parameters
+        var categories = await connection.QueryAsync<ProductCategoryApiResponse>(
+            sql,
+            new { language, offset, pageSize,isActive });
+
+        // Transforming results
+        List<ProductCategoryApiResponseDto> result = [];
+        foreach (var category in categories)
+        {
+            result.Add(new()
+            {
+                Id = category.Id,
+                Name = category.LocalizedName ?? category.Name,
+                IsActive = category.IsActive,
+            });
+        }
+
+        return Ok(new
+        {
+            data = result,
+            totalCount = totalCount
+        });
+    }
+
+}
+
+public class ProductCategoryApiResponseDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = null!;
+    public bool IsActive { get; set; }
 }

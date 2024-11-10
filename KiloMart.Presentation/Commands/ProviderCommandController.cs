@@ -1,3 +1,4 @@
+using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.Domain.Provider.Profile.Models;
 using KiloMart.Domain.Provider.Profile.Services;
@@ -10,14 +11,18 @@ using Microsoft.AspNetCore.Mvc;
 [Route("api/provider")]
 public class ProviderCommandController : ControllerBase
 {
-    private readonly IDbFactory _dbFactory;
+   private readonly IDbFactory _dbFactory;
     private readonly IConfiguration _configuration;
-
-    public ProviderCommandController(IDbFactory dbFactory, IConfiguration configuration)
+    private readonly IUserContext _userContext;
+    public ProviderCommandController(IDbFactory dbFactory,
+        IConfiguration configuration,
+        IUserContext userContext)
     {
+        _userContext = userContext;
         _dbFactory = dbFactory;
         _configuration = configuration;
     }
+
 
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterProviderDto dto)
@@ -46,6 +51,7 @@ public class ProviderCommandController : ControllerBase
         {
             return BadRequest(errors);
         }
+        var provider = _userContext.Get().Party;
 
         var result = await ProviderProfileService.InsertAsync(_dbFactory,
         new CreateProviderProfileRequest
@@ -57,13 +63,6 @@ public class ProviderCommandController : ControllerBase
             CompanyName = request.CompanyName,
             OwnerName = request.OwnerName,
             OwnerNationalId = request.OwnerNationalId,
-        }, new CreateProviderProfileLocalizedRequest
-        {
-            FirstName = request.FirstName,
-            SecondName = request.SecondName,
-            Language = request.LanguageId,
-            CompanyName = request.CompanyName,
-            OwnerName = request.OwnerName
         });
         return result.Success ? Ok(result) : StatusCode(500, result.Errors);
     }

@@ -17,7 +17,12 @@ public class GuardAttribute : Attribute, IAuthorizationFilter
 
     public GuardAttribute(Roles[] roles)
     {
-        _roles = roles.Select(x => (byte)x).ToList();
+        _roles = [];
+        foreach(var role in roles)
+        {
+            _roles.Add((byte)role);
+        }
+
     }
 
     public void OnAuthorization(AuthorizationFilterContext context)
@@ -40,13 +45,21 @@ public class GuardAttribute : Attribute, IAuthorizationFilter
             
 
             var roleIdClaim = decodedToken?.Claims.FirstOrDefault(c => c.Type == CustomClaimTypes.Role);
-            if (roleIdClaim == null || !int.TryParse(roleIdClaim.Value, out int roleIdFromToken))
+            if (roleIdClaim == null || !byte.TryParse(roleIdClaim.Value, out byte roleIdFromToken))
             {
                 context.Result = new ForbidResult();
                 return;
             }
-
-            if (_roles.Contains(byte.Parse(roleIdClaim.Value)))
+            bool roleExists = false;
+            foreach(var role in _roles)
+            {
+                if(role == roleIdFromToken)
+                {
+                    roleExists = true;
+                    break;
+                }
+            }
+            if (!roleExists)
             {
                 context.Result = new ForbidResult();
             }

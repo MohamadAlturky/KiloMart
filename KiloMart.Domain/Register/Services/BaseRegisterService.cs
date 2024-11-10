@@ -1,7 +1,6 @@
 using System.Data;
 using Dapper;
 using KiloMart.Core.Contracts;
-using KiloMart.Domain.Languages.Models;
 using KiloMart.Domain.Register.Utils;
 using Microsoft.Extensions.Configuration;
 
@@ -17,8 +16,7 @@ public abstract class BaseRegisterService
         IConfiguration configuration,
         string email,
         string password,
-        string displayName,
-        Language language)
+        string displayName)
     {
         using var connection = dbFactory.CreateDbConnection();
         connection.Open();
@@ -34,7 +32,6 @@ public abstract class BaseRegisterService
 
             var partyId = await CreateParty(connection, displayName, transaction);
             await CreatePartyType(connection, partyId, transaction);
-            await CreatePartyLocalized(connection, partyId, language, displayName, transaction);
             var membershipUserId = await CreateMembershipUser(connection, email, password, UserRole, partyId, transaction);
             var verificationToken = await GenerateVerificationToken(membershipUserId, connection, transaction);
             transaction.Commit();
@@ -77,14 +74,6 @@ public abstract class BaseRegisterService
         );
     }
 
-    private static async Task CreatePartyLocalized(IDbConnection connection, int partyId, Language language, string displayName, IDbTransaction transaction)
-    {
-        await connection.ExecuteAsync(
-            @"INSERT INTO PartyLocalized (Party, Language, DisplayName) VALUES (@Party, @Language, @DisplayName)",
-            new { Party = partyId, Language = (int)language, DisplayName = displayName },
-            transaction
-        );
-    }
 
     private static async Task<int> CreateMembershipUser(IDbConnection connection, string email, string password, Roles role, int partyId, IDbTransaction transaction)
     {
@@ -115,7 +104,4 @@ public abstract class BaseRegisterService
         // Return the generated token
         return token;
     }
-
-
-
 }

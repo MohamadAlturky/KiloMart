@@ -32,8 +32,7 @@ public class CustomerCommandController : ControllerBase
                             _configuration,
                             dto.Email,
                             dto.Password,
-                            dto.DisplayName,
-                            dto.Language);
+                            dto.DisplayName);
         return Ok(result);
     }
     #endregion

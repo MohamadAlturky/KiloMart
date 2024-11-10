@@ -16,7 +16,6 @@ public class LanguageQueryController : ControllerBase
         _dbFactory = dbFactory;
     }
 
-    [AuthorizeRole(1)]
     [HttpGet("list")]
     public async Task<IActionResult> List()
     {

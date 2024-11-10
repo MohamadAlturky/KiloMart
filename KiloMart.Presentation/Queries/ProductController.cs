@@ -17,8 +17,9 @@ public class ProductQueryController : ControllerBase
         _dbFactory = dbFactory;
     }
 
-    [HttpGet("paginated/all")]
+    [HttpGet("paginated/by-category")]
     public async Task<IActionResult> GetAllLocalizedPaginatedForAdmin(
+    [FromQuery] int category,
     [FromQuery] byte language = 1,
     [FromQuery] int page = 1,
     [FromQuery] int pageSize = 10,
@@ -37,21 +38,20 @@ public class ProductQueryController : ControllerBase
             SELECT
                 p.[Id] AS Id,
                 p.[ImageUrl] AS ImageUrl,
-                p.[ProductCategory] AS ProductCategory,
                 p.[IsActive] AS IsActive,
                 COALESCE(pl.[MeasurementUnit], p.[MeasurementUnit]) AS MeasurementUnit,
                 COALESCE(pl.[Description], p.[Description]) AS Description,
                 COALESCE(pl.[Name], p.[Name]) AS Name
             FROM Product p
                 LEFT JOIN ProductLocalized pl ON p.Id = pl.Product AND pl.Language = @Language
-            WHERE p.IsActive = @isActive
+            WHERE p.IsActive = @isActive AND p.[ProductCategory] = @category
             ORDER BY p.[Id]
             OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
 
         // Query execution with pagination parameters
         var products = await connection.QueryAsync<ProductApiResponse>(
             sql,
-            new { Language = language, offset, pageSize, isActive });
+            new { Language = language, offset, pageSize, isActive,category });
         
 
         return Ok(new
@@ -65,7 +65,6 @@ public class ProductQueryController : ControllerBase
     {
         public int Id { get; set; }
         public string ImageUrl { get; set; }= null!;
-        public int ProductCategory { get; set; }
         public bool IsActive { get; set; }
         public string MeasurementUnit { get; set; }= null!;
         public string Description { get; set; } = null!;

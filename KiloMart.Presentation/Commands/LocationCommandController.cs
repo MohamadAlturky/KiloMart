@@ -43,7 +43,7 @@ public class LocationCommandController : ControllerBase
     }
 
 
-    [HttpPost("update")]
+    [HttpPut("update")]
     [Guard([Roles.Customer, Roles.Delivery, Roles.Provider])]
     public async Task<IActionResult> Update(
     [FromBody] LocationUpdateRequest request,

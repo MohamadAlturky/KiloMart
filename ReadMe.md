@@ -108,16 +108,6 @@ Add supported languages and resource files to `/Localization`. You can specify d
 
 ---
 
-## 📖 API Documentation
-
-The API documentation is generated via **Swagger** and available at:
-
-- `http://localhost:5000/swagger`
-
-This includes detailed information about each endpoint, parameters, responses, and example requests.
-
----
-
 ## 🌐 Localization Support
 
 This API supports multiple languages to cater to a global user base. Localization is enabled for:
@@ -173,9 +163,10 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 Happy Coding! 🎉
 
+---
 
 
-## Api Documentation
+## 📖 Api Documentation
 
 ### Authentication
 

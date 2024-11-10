@@ -7,5 +7,5 @@ public class CardApiResponse
     public string Number { get; set; } = string.Empty;
     public string SecurityCode { get; set; } = string.Empty;
     public DateTime ExpireDate { get; set; }
-    public int CustomerId { get; set; }
+    public int Customer { get; set; }
 }

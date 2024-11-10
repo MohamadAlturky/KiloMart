@@ -15,6 +15,7 @@ public class CardQueryController : ControllerBase
         _dbFactory = dbFactory;
     }
     [HttpGet("{partyId}")]
+    
     public async Task<IActionResult> GetByPartyId(int partyId)
     {
         using var connection = _dbFactory.CreateDbConnection();

@@ -9,12 +9,10 @@ namespace KiloMart.Domain.Customers.Profile.Services
     {
         public static async Task<Result<CreateCustomerProfileResponse>> InsertAsync(
             IDbFactory dbFactory,
-            CreateCustomerProfileRequest customerProfileRequest,
-            CreateCustomerProfileLocalizedRequest localizedRequest)
+            CreateCustomerProfileRequest customerProfileRequest)
         {
             using var connection = dbFactory.CreateDbConnection();
             connection.Open();
-            using var transaction = connection.BeginTransaction();
 
             try
             {
@@ -32,27 +30,9 @@ namespace KiloMart.Domain.Customers.Profile.Services
                     customerProfileRequest.SecondName,
                     customerProfileRequest.NationalName,
                     customerProfileRequest.NationalId
-                }, transaction);
+                });
 
-                // SQL to insert into CustomerProfileLocalized using the newly created CustomerProfile Id
-                const string insertCustomerProfileLocalizedSql = @"
-                    INSERT INTO CustomerProfileLocalized (CustomerProfile, Language, FirstName, SecondName, NationalName)
-                    VALUES (@CustomerProfile, @Language, @FirstName, @SecondName, @NationalName);";
-
-                // Execute the insert into CustomerProfileLocalized
-                await connection.ExecuteAsync(insertCustomerProfileLocalizedSql, new
-                {
-                    CustomerProfile = customerProfileId,
-                    localizedRequest.Language,
-                    localizedRequest.FirstName,
-                    localizedRequest.SecondName,
-                    localizedRequest.NationalName
-                }, transaction);
-
-                // Commit transaction if both inserts are successful
-                transaction.Commit();
-
-                // Prepare response
+                
                 return Result<CreateCustomerProfileResponse>.Ok(new CreateCustomerProfileResponse
                 {
                     Id = customerProfileId,
@@ -65,7 +45,6 @@ namespace KiloMart.Domain.Customers.Profile.Services
             }
             catch (Exception e)
             {
-                transaction.Rollback();
                 return Result<CreateCustomerProfileResponse>.Fail([e.Message]);
             }
         }

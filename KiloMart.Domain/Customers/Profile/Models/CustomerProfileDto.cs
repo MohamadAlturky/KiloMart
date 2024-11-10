@@ -10,14 +10,6 @@ public class CreateCustomerProfileRequest
     public string NationalId { get; set; }
 }
 
-public class CreateCustomerProfileLocalizedRequest
-{
-    public int Language { get; set; }
-    public string FirstName { get; set; }
-    public string SecondName { get; set; }
-    public string NationalName { get; set; }
-}
-
 public class CreateCustomerProfileResponse
 {
     public int Id { get; set; }

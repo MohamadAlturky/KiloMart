@@ -172,3 +172,74 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 ---
 
 Happy Coding! 🎉
+
+
+
+## Api Documentation
+
+### Authentication
+
+#### Register Customer
+
+> request formate 
+
+``` json 
+{
+  "email": "string",
+  "password": "string",
+  "displayName": "string",
+  "language": 1
+}
+```
+> status code
+- validation error 400 
+- server error 500 
+- success 200
+
+> tested ✅
+> need verify code to activate account
+
+#### Register Provider
+
+> request formate 
+
+``` json 
+{
+  "email": "string",
+  "password": "string",
+  "displayName": "string",
+  "language": 1
+}
+```
+> status code
+- validation error 400 
+- server error 500 
+- success 200
+
+> tested ✅
+> need verify code to activate account and the admin to accept
+
+#### Register Delivery
+
+> request formate 
+
+``` json 
+{
+  "email": "string",
+  "password": "string",
+  "displayName": "string",
+  "language": 1
+}
+```
+> status code
+- validation error 400 
+- server error 500 
+- success 200
+
+> tested ✅
+> need verify code to activate account and the admin to accept
+
+
+
+
+

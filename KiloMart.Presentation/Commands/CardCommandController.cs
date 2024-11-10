@@ -24,7 +24,7 @@ public class CardCommandController : ControllerBase
     }
 
     [HttpPost("add")]
-    [Guard(Roles.Customer)]
+    [Guard([Roles.Customer])]
     public IActionResult CreateCard([FromBody] CardDto card)
     {
         var (Success,Errors) = card.Validate();

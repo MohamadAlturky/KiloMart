@@ -13,11 +13,11 @@ public class GuardAttribute : Attribute, IAuthorizationFilter
     public static string ISSUER = "";
     public static string AUDIENCE = "";
 
-    private readonly int _requiredRoleId;
+    private readonly List<byte> _roles;
 
-    public GuardAttribute(Roles userRole)
+    public GuardAttribute(Roles[] roles)
     {
-        _requiredRoleId = (byte)userRole;
+        _roles = roles.Select(x => (byte)x).ToList();
     }
 
     public void OnAuthorization(AuthorizationFilterContext context)
@@ -46,7 +46,7 @@ public class GuardAttribute : Attribute, IAuthorizationFilter
                 return;
             }
 
-            if (roleIdFromToken != _requiredRoleId)
+            if (_roles.Contains(byte.Parse(roleIdClaim.Value)))
             {
                 context.Result = new ForbidResult();
             }

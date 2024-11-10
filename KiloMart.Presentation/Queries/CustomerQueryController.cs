@@ -1,4 +1,5 @@
 using Dapper;
+using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.Presentation.Models.Queries;
 using Microsoft.AspNetCore.Mvc;
@@ -10,9 +11,12 @@ namespace KiloMart.Presentation.Queries;
 public class CustomerQueryController : ControllerBase
 {
     private readonly IDbFactory _dbFactory;
-    public CustomerQueryController(IDbFactory dbFactory)
+    private readonly IUserContext _userContext;
+
+    public CustomerQueryController(IDbFactory dbFactory,IUserContext userContext)
     {
         _dbFactory = dbFactory;
+        _userContext = userContext;
     }
 
     [HttpGet("{id}")]
@@ -63,5 +67,27 @@ public class CustomerQueryController : ControllerBase
         var customer = await connection.QueryAsync<CustomerProfileApiResponse>(sql, new { id, language });
         return Ok(customer.FirstOrDefault()); // Return the first result if it exists
 
+    }
+    [HttpGet("profile")]
+    public async Task<IActionResult> GetProfile()
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        var customerId = _userContext.Get().Party;
+
+        connection.Open();
+        var sql = @"
+        SELECT 
+            [Id], 
+            [Customer], 
+            [FirstName], 
+            [SecondName], 
+            [NationalName], 
+            [NationalId]
+        FROM 
+            [CustomerProfile]
+        WHERE 
+            [Customer] = @customerId";
+        var customer = await connection.QueryFirstOrDefaultAsync<CustomerProfileApiResponse>(sql, new { customerId });
+        return Ok(customer);
     }
 }

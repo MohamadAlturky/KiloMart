@@ -16,8 +16,8 @@ namespace KiloMart.DataAccess.Database
             IDbTransaction? transaction = null)
         {
             const string query = @"INSERT INTO [dbo].[ProductOffer]
-                                ([Product], [Price], [OffPercentage], [FromDate], [ToDate], [Quantity], [Provider])
-                                VALUES (@Product, @Price, @OffPercentage, @FromDate, @ToDate, @Quantity, @Provider)
+                                ([Product], [Price], [OffPercentage], [FromDate], [ToDate], [Quantity], [Provider], [IsActive])
+                                VALUES (@Product, @Price, @OffPercentage, @FromDate, @ToDate, @Quantity, @Provider, @IsActive)
                                 SELECT CAST(SCOPE_IDENTITY() AS INT)";
 
             return await connection.ExecuteScalarAsync<int>(query, new
@@ -28,7 +28,8 @@ namespace KiloMart.DataAccess.Database
                 FromDate = fromDate,
                 ToDate = toDate,
                 Quantity = quantity,
-                Provider = provider
+                Provider = provider,
+                IsActive = true
             }, transaction);
         }
 

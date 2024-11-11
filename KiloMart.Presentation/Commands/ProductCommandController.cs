@@ -65,27 +65,27 @@ public class ProductCommandController : ControllerBase
         return result.Success ? Ok(result.Data) : StatusCode(500, result.Errors);
     }
 
-    [HttpPost("offer")]
-    public IActionResult CreateOffer([FromBody] CreateProductOfferRequest request)
-    {
-        var (success, errors) = request.Validate();
-        if (!success)
-            return BadRequest(errors);
+    // [HttpPost("offer")]
+    // public IActionResult CreateOffer([FromBody] CreateProductOfferRequest request)
+    // {
+    //     var (success, errors) = request.Validate();
+    //     if (!success)
+    //         return BadRequest(errors);
 
-        var productOffer = new ProductOfferDto
-        {
-            Product = request.ProductId,
-            Price = request.Price,
-            OffPercentage = request.OffPercentage,
-            FromDate = request.FromDate,
-            ToDate = null,
-            Quantity = request.Quantity,
-            Provider = request.ProviderId,
-            IsActive = true
-        };
+    //     var productOffer = new ProductOfferDto
+    //     {
+    //         Product = request.ProductId,
+    //         Price = request.Price,
+    //         OffPercentage = request.OffPercentage,
+    //         FromDate = request.FromDate,
+    //         ToDate = null,
+    //         Quantity = request.Quantity,
+    //         Provider = request.ProviderId,
+    //         IsActive = true
+    //     };
 
-        var result = ProductOfferService.Insert(_dbFactory, productOffer);
-        return result.Success ? Ok(result.Data) : StatusCode(500, result.Errors);
-    }
+    //     var result = ProductOfferService.Insert(_dbFactory, productOffer);
+    //     return result.Success ? Ok(result.Data) : StatusCode(500, result.Errors);
+    // }
 }
 

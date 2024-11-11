@@ -8,6 +8,9 @@ using Dapper;
 /// [Language] [tinyint] NOT NULL,
 /// [ProductCategory] [int] NOT NULL)
 /// </summary>
+
+namespace KiloMart.DataAccess.Database;
+
 public static partial class Db
 {
     public static async Task<int> InsertProductCategoryLocalizedAsync(IDbConnection connection,

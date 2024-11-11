@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace KiloMart.Presentation.Controllers;
 
 [ApiController]
+[Route("api/[controller]")]
 public class CardController : AppController
 {
     public CardController(IDbFactory dbFactory, IUserContext userContext)
@@ -55,7 +56,6 @@ public class CardController : AppController
         var (isValid, errors) = model.Validate();
         if (!isValid)
             return BadRequest(new { Errors = errors });
-
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
 

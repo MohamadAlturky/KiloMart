@@ -53,8 +53,8 @@ namespace KiloMart.DataAccess.Database
                                 [OrderItem], 
                                 [DiscountCode]
                                 FROM [dbo].[OrderItemDiscountCode]";
-
-            return await connection.QueryAsync<OrderItemDiscountCode>(query);
+            var result =  await connection.QueryAsync<OrderItemDiscountCode>(query);
+            return result.ToList();
         }
 
         public static async Task<OrderItemDiscountCode?> GetOrderItemDiscountCodeAsync(IDbConnection connection,

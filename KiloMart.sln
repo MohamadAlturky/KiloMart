@@ -5,9 +5,11 @@ VisualStudioVersion = 17.9.34607.119
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KiloMart.Domain", "KiloMart.Domain\KiloMart.Domain.csproj", "{5765E7AC-7A6B-42C5-8AC8-7AEF8B4B621F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KiloMart.Presentation", "KiloMart.Presentation\KiloMart.Presentation.csproj", "{B34E2B1A-9E35-4739-B133-A7456F32B81E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KiloMart.Presentation", "KiloMart.Presentation\KiloMart.Presentation.csproj", "{B34E2B1A-9E35-4739-B133-A7456F32B81E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KiloMart.Core", "KiloMart.Core\KiloMart.Core.csproj", "{4DD066E5-6A1D-4F94-A97A-8CAF50BB777B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KiloMart.Core", "KiloMart.Core\KiloMart.Core.csproj", "{4DD066E5-6A1D-4F94-A97A-8CAF50BB777B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KiloMart.DataAccess", "KiloMart.DataAccess\KiloMart.DataAccess.csproj", "{E9E55043-F510-41A2-A7E9-072EF4E9B4CB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{4DD066E5-6A1D-4F94-A97A-8CAF50BB777B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4DD066E5-6A1D-4F94-A97A-8CAF50BB777B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4DD066E5-6A1D-4F94-A97A-8CAF50BB777B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E9E55043-F510-41A2-A7E9-072EF4E9B4CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E9E55043-F510-41A2-A7E9-072EF4E9B4CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E9E55043-F510-41A2-A7E9-072EF4E9B4CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E9E55043-F510-41A2-A7E9-072EF4E9B4CB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

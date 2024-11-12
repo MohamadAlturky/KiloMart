@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace KiloMart.Presentation.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/cardss")]
 public class CardController : AppController
 {
     public CardController(IDbFactory dbFactory, IUserContext userContext)

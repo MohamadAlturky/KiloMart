@@ -1,17 +1,13 @@
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
-using KiloMart.Domain.ProductCategories.Models;
-using KiloMart.Domain.ProductCategories.Services;
 using KiloMart.Domain.Products.Offers.Services;
 using KiloMart.Presentation.Models.Commands.Products;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Razor.TagHelpers;
-using Microsoft.AspNetCore.Routing.Tree;
 
 namespace KiloMart.Presentation.Commands;
 
 [ApiController]
-[Route("api/product-categories")]
+[Route("api/product-offer")]
 public class ProductOfferCommandController : ControllerBase
 {
     private readonly IDbFactory _dbFactory;

@@ -11,7 +11,6 @@ public class LocationInsertModel
     public string Name { get; set; } = null!;
     public float Longitude { get; set; }
     public float Latitude { get; set; }
-    public int Party { get; set; }
 
     public (bool Success, string[] Errors) Validate()
     {
@@ -26,29 +25,25 @@ public class LocationInsertModel
         if (Latitude < -90 || Latitude > 90)
             errors.Add("Latitude must be between -90 and 90.");
 
-        if (Party <= 0)
-            errors.Add("Party ID must be a positive number.");
-
         return (errors.Count == 0, errors.ToArray());
     }
 }
 
 public class LocationUpdateModel
 {
-    public int Id { get; set; }
+    public int Id  { get; set; }
     public string? Name { get; set; }
     public float? Longitude { get; set; }
     public float? Latitude { get; set; }
-    public int? Party { get; set; }
     public bool? IsActive { get; set; }
 
     public (bool Success, string[] Errors) Validate()
     {
         var errors = new List<string>();
-
-        if (Id <= 0)
-            errors.Add("Location ID must be a positive number.");
-
+        if(Id <= 0)
+        {
+            errors.Add("Id is required");
+        }
         return (errors.Count == 0, errors.ToArray());
     }
 }
@@ -74,14 +69,14 @@ public static class LocationService
               model.Longitude,
               model.Latitude,
               model.Name,
-              model.Party);
+              userPayLoad.Party);
             var location = new Location
             {
                 Id = id,
                 Name = model.Name,
                 Longitude = model.Longitude,
                 Latitude = model.Latitude,
-                Party = model.Party,
+                Party = userPayLoad.Party,
                 IsActive = true
             };
 
@@ -115,10 +110,14 @@ public static class LocationService
                 return Result<Location>.Fail(["Not Found"]);
             }
 
+            if(existingModel.Party != userPayLoad.Party)
+            {
+                return Result<Location>.Fail(["Un Authorized"]);
+            }
+
             existingModel.Name = model.Name ?? existingModel.Name;
             existingModel.Longitude = model.Longitude ?? existingModel.Longitude;
             existingModel.Latitude = model.Latitude ?? existingModel.Latitude;
-            existingModel.Party = model.Party ?? existingModel.Party;
             existingModel.IsActive = model.IsActive ?? existingModel.IsActive;
 
             await Db.UpdateLocationAsync(connection,

@@ -21,13 +21,13 @@ public static partial class Db
         string holderName,
         string number,
         string securityCode,
-        DateOnly expireDate,
+        DateTime expireDate,
         int customer,
         IDbTransaction? transaction = null)
     {
         const string query = @"INSERT INTO [dbo].[Card]
-                            ([HolderName], [Number], [SecurityCode], [ExpireDate], [Customer])
-                            VALUES (@HolderName, @Number, @SecurityCode, @ExpireDate, @Customer)
+                            ([HolderName], [Number], [SecurityCode], [ExpireDate], [Customer],[IsActive])
+                            VALUES (@HolderName, @Number, @SecurityCode, @ExpireDate, @Customer,1)
                             SELECT CAST(SCOPE_IDENTITY() AS INT)";
 
         return await connection.ExecuteScalarAsync<int>(query, new
@@ -45,7 +45,7 @@ public static partial class Db
         string holderName, 
         string number, 
         string securityCode, 
-        DateOnly expireDate,
+        DateTime expireDate,
         int customer, 
         bool isActive, 
         IDbTransaction? transaction = null)
@@ -113,7 +113,7 @@ public class Card
     public string HolderName { get; set; } = null!;
     public string Number { get; set; } = null!;
     public string SecurityCode { get; set; } = null!;
-    public DateOnly ExpireDate { get; set; }
+    public DateTime ExpireDate { get; set; }
     public int Customer { get; set; }
     public bool IsActive { get; set; }
 }

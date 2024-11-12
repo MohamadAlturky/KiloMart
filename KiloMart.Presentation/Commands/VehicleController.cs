@@ -1,8 +1,6 @@
 using KiloMart.Commands.Services;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
-using KiloMart.Domain.Vehicles.Models;
-using KiloMart.Presentation.Authorization;
 using KiloMart.Presentation.Commands;
 using Microsoft.AspNetCore.Mvc;
 

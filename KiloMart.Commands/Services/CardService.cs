@@ -10,8 +10,7 @@ public class CardInsertModel
     public string HolderName { get; set; } = null!;
     public string Number { get; set; } = null!;
     public string SecurityCode { get; set; } = null!;
-    public DateOnly ExpireDate { get; set; }
-    public int Customer { get; set; }
+    public DateTime ExpireDate { get; set; }
 
     public (bool Success, string[] Errors) Validate()
     {
@@ -20,17 +19,15 @@ public class CardInsertModel
         if (string.IsNullOrWhiteSpace(HolderName))
             errors.Add("Holder name is required.");
 
-        if (string.IsNullOrWhiteSpace(Number) || Number.Length != 16)
-            errors.Add("Card number must be 16 digits.");
+        if (string.IsNullOrWhiteSpace(Number))
+            errors.Add("Card number is required.");
 
-        if (string.IsNullOrWhiteSpace(SecurityCode) || SecurityCode.Length != 3)
-            errors.Add("Security code must be 3 digits.");
+        if (string.IsNullOrWhiteSpace(SecurityCode))
+            errors.Add("Security code is required.");
 
-        if (ExpireDate < DateOnly.FromDateTime(DateTime.Now))
+        if (ExpireDate < DateTime.Now)
             errors.Add("Expire date must be in the future.");
 
-        if (Customer <= 0)
-            errors.Add("Customer ID must be a positive number.");
 
         return (errors.Count == 0, errors.ToArray());
     }
@@ -39,10 +36,10 @@ public class CardInsertModel
 public class CardUpdateModel
 {
     public int Id { get; set; }
-    public string? HolderName { get; set; } 
-    public string? Number { get; set; } 
+    public string? HolderName { get; set; }
+    public string? Number { get; set; }
     public string? SecurityCode { get; set; }
-    public DateOnly? ExpireDate { get; set; }
+    public DateTime? ExpireDate { get; set; }
     public bool? IsActive { get; set; }
 
     public (bool Success, string[] Errors) Validate()
@@ -72,7 +69,11 @@ public static class CardService
         {
             var connection = dbFactory.CreateDbConnection();
             connection.Open();
-            var id = await Db.InsertCardAsync(connection, model.HolderName, model.Number, model.SecurityCode, model.ExpireDate, model.Customer);
+            var id = await Db.InsertCardAsync(connection,
+            model.HolderName, model.Number,
+             model.SecurityCode,
+             model.ExpireDate,
+              userPayLoad.Party);
             var card = new Card
             {
                 Id = id,
@@ -80,7 +81,7 @@ public static class CardService
                 Number = model.Number,
                 SecurityCode = model.SecurityCode,
                 ExpireDate = model.ExpireDate,
-                Customer = model.Customer,
+                Customer = userPayLoad.Party,
                 IsActive = true
             };
 
@@ -109,23 +110,27 @@ public static class CardService
             var connection = dbFactory.CreateDbConnection();
             connection.Open();
             var existingModel = await Db.GetCardByIdAsync(model.Id, connection);
-            
+
             if (existingModel is null)
             {
                 return Result<Card>.Fail(["Not Found"]);
             }
-            existingModel.ExpireDate = model.ExpireDate??
+            if (existingModel.Customer != userPayLoad.Party)
+            {
+                return Result<Card>.Fail(["Un Authorized"]);
+            }
+            existingModel.ExpireDate = model.ExpireDate ??
                                             existingModel.ExpireDate;
-            existingModel.Number = model.Number??
+            existingModel.Number = model.Number ??
                                             existingModel.Number;
-            existingModel.HolderName = model.HolderName??
+            existingModel.HolderName = model.HolderName ??
                                             existingModel.HolderName;
-            existingModel.IsActive = model.IsActive??
+            existingModel.IsActive = model.IsActive ??
                                             existingModel.IsActive;
-            existingModel.SecurityCode = model.SecurityCode??
+            existingModel.SecurityCode = model.SecurityCode ??
                                             existingModel.SecurityCode;
 
-            await Db.UpdateCardAsync(connection, 
+            await Db.UpdateCardAsync(connection,
                 existingModel.Id,
                 existingModel.HolderName,
                 existingModel.Number,

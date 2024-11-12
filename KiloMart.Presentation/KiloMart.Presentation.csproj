@@ -15,6 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="..\KiloMart.Core\KiloMart.Core.csproj" />
     <ProjectReference Include="..\KiloMart.DataAccess\KiloMart.DataAccess.csproj" />
+    <ProjectReference Include="..\KiloMart.Commands\KiloMart.Commands.csproj" />
     <ProjectReference Include="..\KiloMart.Domain\KiloMart.Domain.csproj" />
   </ItemGroup>
 

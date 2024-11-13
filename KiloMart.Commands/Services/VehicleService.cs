@@ -22,7 +22,7 @@ public static class VehicleService
         {
             var connection = dbFactory.CreateDbConnection();
             connection.Open();
-            var id = await Db.InsertVehicleAsync(connection, model.Number, model.Model, model.Type, model.Year, model.Delivary);
+            var id = await Db.InsertVehicleAsync(connection, model.Number, model.Model, model.Type, model.Year, userPayLoad.Party);
             var vehicle = new Vehicle
             {
                 Id = id,
@@ -30,7 +30,7 @@ public static class VehicleService
                 Model = model.Model,
                 Type = model.Type,
                 Year = model.Year,
-                Delivary = model.Delivary
+                Delivary = userPayLoad.Party
             };
 
             return Result<Vehicle>.Ok(vehicle);
@@ -66,7 +66,6 @@ public static class VehicleService
             existingModel.Model = model.Model ?? existingModel.Model;
             existingModel.Type = model.Type ?? existingModel.Type;
             existingModel.Year = model.Year ?? existingModel.Year;
-            existingModel.Delivary = model.Delivary ?? existingModel.Delivary;
 
             await Db.UpdateVehicleAsync(connection,
                 existingModel.Id,
@@ -92,7 +91,6 @@ public class VehicleInsertModel
     public string Model { get; set; } = null!;
     public string Type { get; set; } = null!;
     public string Year { get; set; } = null!;
-    public int Delivary { get; set; }
 
     public (bool Success, string[] Errors) Validate()
     {
@@ -110,9 +108,6 @@ public class VehicleInsertModel
         if (string.IsNullOrWhiteSpace(Year))
             errors.Add("Vehicle year is required.");
 
-        if (Delivary <= 0)
-            errors.Add("Delivary must be a positive number.");
-
         return (errors.Count == 0, errors.ToArray());
     }
 }
@@ -124,7 +119,6 @@ public class VehicleUpdateModel
     public string? Model { get; set; }
     public string? Type { get; set; }
     public string? Year { get; set; }
-    public int? Delivary { get; set; }
 
     public (bool Success, string[] Errors) Validate()
     {

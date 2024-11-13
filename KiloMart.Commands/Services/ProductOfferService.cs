@@ -11,9 +11,7 @@ namespace KiloMart.Commands.Services
         public decimal Price { get; set; }
         public decimal OffPercentage { get; set; }
         public DateTime FromDate { get; set; }
-        public DateTime? ToDate { get; set; }
         public float Quantity { get; set; }
-        public int Provider { get; set; }
 
         public (bool Success, string[] Errors) Validate()
         {
@@ -31,8 +29,8 @@ namespace KiloMart.Commands.Services
             if (Quantity <= 0)
                 errors.Add("Quantity must be a positive number.");
 
-            if (Provider <= 0)
-                errors.Add("Provider ID must be a positive number.");
+            if (FromDate.AddMinutes(1) < DateTime.UtcNow)
+                errors.Add("From date must be in the future");
 
             return (errors.Count == 0, errors.ToArray());
         }
@@ -43,10 +41,7 @@ namespace KiloMart.Commands.Services
         public int Id { get; set; }
         public decimal? Price { get; set; }
         public decimal? OffPercentage { get; set; }
-        public DateTime? FromDate { get; set; }
-        public DateTime? ToDate { get; set; }
         public float? Quantity { get; set; }
-        public int? Provider { get; set; }
         public bool? IsActive { get; set; }
 
         public (bool Success, string[] Errors) Validate()
@@ -77,14 +72,14 @@ namespace KiloMart.Commands.Services
             {
                 var connection = dbFactory.CreateDbConnection();
                 connection.Open();
-                var id = await Db.InsertProductOfferAsync(connection, 
-                    model.Product, 
-                    model.Price, 
-                    model.OffPercentage, 
-                    model.FromDate, 
-                    model.ToDate, 
-                    model.Quantity, 
-                    model.Provider);
+                var id = await Db.InsertProductOfferAsync(connection,
+                    model.Product,
+                    model.Price,
+                    model.OffPercentage,
+                    model.FromDate,
+                    null,
+                    model.Quantity,
+                    userPayLoad.Party);
                 var productOffer = new ProductOffer
                 {
                     Id = id,
@@ -92,9 +87,9 @@ namespace KiloMart.Commands.Services
                     Price = model.Price,
                     OffPercentage = model.OffPercentage,
                     FromDate = model.FromDate,
-                    ToDate = model.ToDate,
+                    ToDate = null,
                     Quantity = model.Quantity,
-                    Provider = model.Provider,
+                    Provider = userPayLoad.Party,
                     IsActive = true
                 };
 
@@ -127,13 +122,14 @@ namespace KiloMart.Commands.Services
                 {
                     return Result<ProductOffer>.Fail(["Not Found"]);
                 }
+                if (existingModel.Provider != userPayLoad.Party)
+                {
+                    return Result<ProductOffer>.Fail(["Un Authorized"]);
+                }
 
                 existingModel.Price = model.Price ?? existingModel.Price;
                 existingModel.OffPercentage = model.OffPercentage ?? existingModel.OffPercentage;
-                existingModel.FromDate = model.FromDate ?? existingModel.FromDate;
-                existingModel.ToDate = model.ToDate ?? existingModel.ToDate;
                 existingModel.Quantity = model.Quantity ?? existingModel.Quantity;
-                existingModel.Provider = model.Provider ?? existingModel.Provider;
                 existingModel.IsActive = model.IsActive ?? existingModel.IsActive;
 
                 await Db.UpdateProductOfferAsync(connection,

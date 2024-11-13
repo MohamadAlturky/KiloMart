@@ -24,8 +24,8 @@ public static partial class Db
         IDbTransaction? transaction = null)
     {
         const string query = @"INSERT INTO [dbo].[Location]
-                            ([Longitude], [Latitude], [Name], [Party])
-                            VALUES (@Longitude, @Latitude, @Name, @Party)
+                            ([Longitude], [Latitude], [Name], [Party],[IsActive])
+                            VALUES (@Longitude, @Latitude, @Name, @Party,1)
                             SELECT CAST(SCOPE_IDENTITY() AS INT)";
 
         return await connection.ExecuteScalarAsync<int>(query, new

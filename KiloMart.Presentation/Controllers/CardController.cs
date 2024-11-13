@@ -1,14 +1,15 @@
+using Dapper;
+using KiloMart.Commands.Services;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
-using KiloMart.DataAccess.Database;
-using KiloMart.Presentation.Commands;
+using KiloMart.Domain.Register.Utils;
+using KiloMart.Presentation.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-
-namespace KiloMart.Presentation.Controllers;
+namespace KiloMart.Presentation.Commands;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/card")]
 public class CardController : AppController
 {
     public CardController(IDbFactory dbFactory, IUserContext userContext)
@@ -16,90 +17,113 @@ public class CardController : AppController
     {
     }
 
-    // Models
-    public class CardModel
+    [HttpPost]
+    public async Task<IActionResult> Insert(CardInsertModel model)
     {
-        public int? Id { get; set; }
-        public string HolderName { get; set; } = null!;
-        public string Number { get; set; } = null!;
-        public string SecurityCode { get; set; } = null!;
-        public DateOnly ExpireDate { get; set; }
-        public int Customer { get; set; }
+        var result = await CardService.Insert(_dbFactory, _userContext.Get(), model);
 
-        public (bool Success, string[] Errors) Validate()
+        if (result.Success)
         {
-            var errors = new List<string>();
-
-            if (string.IsNullOrWhiteSpace(HolderName))
-                errors.Add("Holder name is required");
-
-            if (string.IsNullOrWhiteSpace(Number))
-                errors.Add("Card number is required");
-
-            if (string.IsNullOrWhiteSpace(SecurityCode))
-                errors.Add("Security code is required");
-
-            if (ExpireDate == default)
-                errors.Add("Expire date is required");
-
-            if (Customer <= 0)
-                errors.Add("Customer ID is required");
-
-            return (errors.Count == 0, errors.ToArray());
+            return CreatedAtAction(nameof(Insert), new { id = result.Data.Id }, result.Data);
+        }
+        else
+        {
+            return BadRequest(result.Errors);
         }
     }
 
-    // Actions
-    [HttpPost("card")]
-    public async Task<ActionResult<CardModel>> CreateCard(CardModel model)
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(int id, CardUpdateModel model)
     {
-        var (isValid, errors) = model.Validate();
-        if (!isValid)
-            return BadRequest(new { Errors = errors });
-        using var connection = _dbFactory.CreateDbConnection();
-        connection.Open();
+        model.Id = id;
 
-        var newId = await Db.InsertCardAsync(connection, model.HolderName, model.Number, model.SecurityCode, model.ExpireDate, model.Customer);
+        var result = await CardService.Update(_dbFactory, _userContext.Get(), model);
 
-        var card = new CardModel
+        if (result.Success)
         {
-            Id = newId,
-            HolderName = model.HolderName,
-            Number = model.Number,
-            SecurityCode = model.SecurityCode,
-            ExpireDate = model.ExpireDate,
-            Customer = model.Customer
-        };
-
-        return Ok(card);
+            return Ok(result.Data);
+        }
+        else
+        {
+            if (result.Errors.Contains("Not Found"))
+            {
+                return NotFound();
+            }
+            else
+            {
+                return BadRequest(result.Errors);
+            }
+        }
     }
-
-    [HttpPut("card/{id}")]
-    public async Task<ActionResult<bool>> UpdateCard(int id, CardModel model)
+    
+    [HttpGet("mine")]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> GetMine()
     {
-        var (isValid, errors) = model.Validate();
-        if (!isValid)
-            return BadRequest(new { Errors = errors });
-
+        var partyId = _userContext.Get().Party;
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
-        return await Db.UpdateCardAsync(connection, id, model.HolderName, model.Number, model.SecurityCode, model.ExpireDate, model.Customer, true);
+        var cards = await connection.QueryAsync<CardApiResponse>(
+            "SELECT [Id], [HolderName], [Number], [SecurityCode], [ExpireDate], [Customer] FROM Card WHERE Customer = @partyId AND IsActive = 1;",
+            new { partyId });
+        return Ok(cards.ToArray());
+
     }
 
-    [HttpDelete("card/{id}")]
-    public async Task<ActionResult<bool>> DeleteCard(int id)
+
+
+
+    [HttpGet("list")]
+    // [Guard([Roles.Admin])]
+    public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
-        return await Db.DeleteCardAsync(connection, id);
-    }
+        int skip = (page - 1) * pageSize;
 
-    [HttpGet("card/{id}")]
-    public async Task<IActionResult> GetCard(int id)
-    {
-        using var connection = _dbFactory.CreateDbConnection();
-        connection.Open();
-        var result = await Db.GetCardByIdAsync(id, connection);
-        return Ok(result);
+        var query = @"
+        SELECT 
+                [c].[Id],
+                [c].[HolderName], 
+                [c].[Number], 
+                [c].[SecurityCode], 
+                [c].[ExpireDate], 
+                [p].[Id] as [CustomerId],
+                [p].[DisplayName] as [CustomerName],
+                [c].[IsActive]
+		FROM Card [c]
+		INNER JOIN Party [p] 
+			ON [c].[Customer] = [p].[Id]
+		WHERE [p].[IsActive] = 1  
+			ORDER BY [c].[Id] 
+	    OFFSET @skip ROWS FETCH NEXT @pageSize ROWS ONLY;";
+
+        var cards = await connection.QueryAsync<CardApiResponseWithCustomerName>(
+            query,
+            new { skip, pageSize });
+
+        return Ok(cards.ToArray());
     }
+}
+
+
+public class CardApiResponseWithCustomerName
+{
+    public int Id { get; set; }
+    public string HolderName { get; set; } = null!;
+    public string Number { get; set; } = null!;
+    public string SecurityCode { get; set; } = null!;
+    public DateTime ExpireDate { get; set; }
+    public int CustomerId { get; set; }
+    public string CustomerName { get; set; } = null!;
+    public bool IsActive { get; set; }
+}
+public class CardApiResponse
+{
+    public int Id { get; set; }
+    public string HolderName { get; set; } = string.Empty;
+    public string Number { get; set; } = string.Empty;
+    public string SecurityCode { get; set; } = string.Empty;
+    public DateTime ExpireDate { get; set; }
+    public int Customer { get; set; }
 }

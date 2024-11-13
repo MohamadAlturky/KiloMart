@@ -1,6 +1,8 @@
+using KiloMart.Commands.Services;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
-using KiloMart.DataAccess.Database;
+using KiloMart.Domain.Register.Utils;
+using KiloMart.Presentation.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KiloMart.Presentation.Controllers;
@@ -11,7 +13,6 @@ public class ProductOfferController : ControllerBase
 {
     private readonly IDbFactory _dbFactory;
     private readonly IUserContext _userContext;
-
     public ProductOfferController(IDbFactory dbFactory, IUserContext userContext)
     {
         _dbFactory = dbFactory;
@@ -19,110 +20,38 @@ public class ProductOfferController : ControllerBase
     }
 
     [HttpPost("add")]
-    public async Task<ActionResult<int>> AddProductOfferAsync([FromBody] AddProductOfferDto model)
+    [Guard([Roles.Provider])]
+    public async Task<IActionResult> Insert([FromBody] ProductOfferInsertModel request)
     {
-        var providerId = _userContext.Get().Party;
-        if (!model.Validate().Success)
-        {
-            return BadRequest(model.Validate().Errors);
-        }
 
-        using var connection = _dbFactory.CreateDbConnection();
-        connection.Open();
-        try
-        {
-            var id = await Db.InsertProductOfferAsync(connection,
-                model.Product,
-                model.Price,
-                model.OffPercentage,
-                model.FromDate,
-                model.ToDate,
-                model.Quantity,
-                providerId);
-
-            return CreatedAtAction(nameof(GetProductOfferAsync), new { id }, id);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { Errors = new List<string>() { ex.Message } });
-        }
+        var result = await ProductOfferService.Insert(_dbFactory, _userContext.Get(), request);
+        return result.Success ? 
+        CreatedAtAction(nameof(Insert), new { id = result.Data.Id }, result.Data)
+                : StatusCode(500, result.Errors);
     }
 
-    [HttpPut("edit")]
-    public async Task<ActionResult> UpdateProductOfferAsync([FromQuery] int id, [FromBody] UpdateProductOfferDto model)
+    [HttpPut("{id}")]
+    [Guard([Roles.Provider])]
+    public async Task<IActionResult> Update(int id, ProductOfferUpdateModel model)
     {
-        if (!model.Validate().Success)
-        {
-            return BadRequest(model.Validate().Errors);
-        }
+        model.Id = id;
 
-        using var connection = _dbFactory.CreateDbConnection();
-        connection.Open();
-        var providerId = _userContext.Get().Party;
-        var offer = await Db.GetProductOfferByIdAsync(id, connection);
-        if (offer is null)
-        {
-            return NotFound();
-        }
-        if (providerId != offer.Provider)
-        {
-            return Unauthorized("can't edit another provider products");
-        }
-        try
-        {
-            var updated = await Db.UpdateProductOfferAsync(connection,
-                id,
-                model.Product,
-                model.Price,
-                model.OffPercentage,
-                model.FromDate,
-                model.ToDate,
-                model.Quantity,
-                providerId,
-                model.IsActive);
+        var result = await ProductOfferService.Update(_dbFactory, _userContext.Get(), model);
 
-            return Ok(new { UpdatedData = updated });
-        }
-        catch (Exception ex)
+        if (result.Success)
         {
-            return StatusCode(500, new { Errors = new List<string>() { ex.Message } });
+            return Ok(result.Data);
+        }
+        else
+        {
+            if (result.Errors.Contains("Not Found"))
+            {
+                return NotFound();
+            }
+            else
+            {
+                return BadRequest(result.Errors);
+            }
         }
     }
-
-    [HttpGet("{id}")]
-    public async Task<ActionResult<ProductOffer>> GetProductOfferAsync(int id)
-    {
-        using var connection = _dbFactory.CreateDbConnection();
-        connection.Open();
-        var productOffer = await Db.GetProductOfferByIdAsync(id, connection);
-        return productOffer is not null ? Ok(productOffer) : NotFound();
-    }
-}
-
-
-public class AddProductOfferDto
-{
-    public int Product { get; set; }
-    public decimal Price { get; set; }
-    public decimal OffPercentage { get; set; }
-    public DateTime FromDate { get; set; }
-    public DateTime? ToDate { get; set; }
-    public float Quantity { get; set; }
-
-    public (bool Success, string[] Errors) Validate()
-    {
-        var errors = new List<string>();
-        if (Quantity <= 0)
-            errors.Add("Quantity must be greater than zero");
-        if (OffPercentage < 0 || OffPercentage > 100)
-            errors.Add("Off percentage must be between 0 and 100");
-        if (Price <= 0)
-            errors.Add("Price must be greater than zero");
-        return (errors.Count == 0, errors.ToArray());
-    }
-}
-
-public class UpdateProductOfferDto : AddProductOfferDto
-{
-    public bool IsActive { get; set; }
 }

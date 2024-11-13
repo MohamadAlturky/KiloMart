@@ -81,11 +81,8 @@ GuardAttribute.AUDIENCE = builder.Configuration["Jwt:Audience"]!;
 var app = builder.Build();
 app.MapHub<NotificationHub>("/notificationHub");
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseStaticFiles();
 app.UseHttpsRedirection();

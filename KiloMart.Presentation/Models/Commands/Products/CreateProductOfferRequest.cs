@@ -18,7 +18,7 @@ public class CreateProductOfferRequest
             errors.Add("Price must be greater than zero");
         if (OffPercentage < 0 || OffPercentage > 100)
             errors.Add("Off percentage must be between 0 and 100");
-        if (FromDate < DateTime.Now)
+        if (FromDate.AddMinutes(1) < DateTime.UtcNow)
             errors.Add("From date must be in the future");
         if (Quantity <= 0)
             errors.Add("Quantity must be greater than zero");

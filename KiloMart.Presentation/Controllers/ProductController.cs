@@ -65,24 +65,24 @@ public class ProductController : ControllerBase
         return result.Success ? Ok(result.Data) : StatusCode(500, result.Errors);
     }
 
-[HttpGet("paginated")]
-public async Task<IActionResult> GetAllLocalizedPaginatedForAdmin(
-    [FromQuery] byte language = 1,
-    [FromQuery] int page = 1,
-    [FromQuery] int pageSize = 10,
-    [FromQuery] bool isActive = true)
-{
-    using var connection = _dbFactory.CreateDbConnection();
-    connection.Open();
+    [HttpGet("paginated")]
+    public async Task<IActionResult> GetAllLocalizedPaginatedForAdmin(
+        [FromQuery] byte language = 1,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] bool isActive = true)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
 
-    // Calculate OFFSET for pagination
-    int offset = (page - 1) * pageSize;
+        // Calculate OFFSET for pagination
+        int offset = (page - 1) * pageSize;
 
-    var countSql = "SELECT COUNT(*) FROM Product WITH (NOLOCK) WHERE IsActive = @isActive";
-    int totalCount = await connection.ExecuteScalarAsync<int>(countSql, new { isActive });
+        var countSql = "SELECT COUNT(*) FROM Product WITH (NOLOCK) WHERE IsActive = @isActive";
+        int totalCount = await connection.ExecuteScalarAsync<int>(countSql, new { isActive });
 
-    // SQL query with pagination, using OFFSET and FETCH
-    string sql = @"
+        // SQL query with pagination, using OFFSET and FETCH
+        string sql = @"
         SELECT
             p.[Id]
             , p.[ImageUrl]
@@ -103,56 +103,157 @@ public async Task<IActionResult> GetAllLocalizedPaginatedForAdmin(
         ORDER BY p.[Id]
         OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
 
-    // Query execution with pagination parameters
-    var products = await connection.QueryAsync<ProductApiResponse>(
-        sql,
-        new { language, offset, pageSize, isActive }
-    );
+        // Query execution with pagination parameters
+        var products = await connection.QueryAsync<ProductApiResponse>(
+            sql,
+            new { language, offset, pageSize, isActive }
+        );
 
-    // Transforming results
-    List<ProductApiResponseDto> result = [];
-    foreach (var product in products)
-    {
-        result.Add(new()
+        // Transforming results
+        List<ProductApiResponseDto> result = [];
+        foreach (var product in products)
         {
-            Id = product.Id,
-            Name = product.LocalizedName ?? product.Name,
-            IsActive = product.IsActive,
-            ImageUrl = product.ImageUrl
+            result.Add(new()
+            {
+                Id = product.Id,
+                Name = product.LocalizedName ?? product.Name,
+                IsActive = product.IsActive,
+                ImageUrl = product.ImageUrl
+            });
+        }
+
+        return Ok(new
+        {
+            data = result,
+            totalCount = totalCount
         });
     }
 
-    return Ok(new
+
+
+
+    public class ProductApiResponseDto
     {
-        data = result,
-        totalCount = totalCount
-    });
-}
+        public int Id { get; set; }
+        public string Name { get; set; } = null!;
+        public bool IsActive { get; set; }
+        public string? ImageUrl { get; set; }
+    }
 
-public class ProductApiResponseDto
-{
-    public int Id { get; set; }
-    public string Name { get; set; } = null!;
-    public bool IsActive { get; set; }
-    public string? ImageUrl { get; set; }
-}
-
-public class ProductApiResponse
-{
-    public int Id { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public bool IsActive { get; set; }
-    public string? ImageUrl { get; set; }
-    // Localized properties
-    public byte? Language { get; set; }
-    public int? Product { get; set; }
-    public string? LocalizedMeasurementUnit { get; set; }
-    public string? LocalizedDescription { get; set; }
-    public string? LocalizedName { get; set; }
-}
+    public class ProductApiResponse
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public bool IsActive { get; set; }
+        public string? ImageUrl { get; set; }
+        // Localized properties
+        public byte? Language { get; set; }
+        public int? Product { get; set; }
+        public string? LocalizedMeasurementUnit { get; set; }
+        public string? LocalizedDescription { get; set; }
+        public string? LocalizedName { get; set; }
+    }
 
 
+    [HttpGet("paginated-with-offer")]
+    public async Task<IActionResult> GetProductsWithOfferPaginatedForAdmin(
+        [FromQuery] byte language = 1,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] bool isActive = true)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
 
+        // Calculate OFFSET for pagination
+        int offset = (page - 1) * pageSize;
 
+        var countSql = "SELECT COUNT(*) FROM Product WITH (NOLOCK) WHERE IsActive = @isActive";
+        int totalCount = await connection.ExecuteScalarAsync<int>(countSql, new { isActive });
+
+        // SQL query with pagination, using OFFSET and FETCH
+        string sql = @"
+                SELECT
+                    p.[Id]
+                    , p.[ImageUrl]
+                    , p.[ProductCategory]
+                    , p.[IsActive]
+                    , p.[MeasurementUnit]
+                    , p.[Description]
+                    , p.[Name]
+                    , pl.[Language]
+                    , pl.[Product]
+                    , pl.[MeasurementUnit] AS LocalizedMeasurementUnit
+                    , pl.[Description] AS LocalizedDescription
+                    , pl.[Name] AS LocalizedName
+                    , po.MaxPrice
+                    , po.MinPrice
+                FROM Product p WITH (NOLOCK)
+                LEFT JOIN ProductLocalized pl WITH (NOLOCK)
+                    ON p.Id = pl.Product AND pl.Language = @language
+                INNER JOIN (
+                    SELECT Product, MAX(Price) AS MaxPrice, MIN(Price) AS MinPrice
+                    FROM ProductOffer
+                    GROUP BY Product
+                ) po
+                ON p.Id = po.Product
+                WHERE p.IsActive = @isActive
+                ORDER BY p.[Id]
+                OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
+
+        // Query execution with pagination parameters
+        var products = await connection.QueryAsync<ProductApiResponseWithOffer>(
+            sql,
+            new { language, offset, pageSize, isActive }
+        );
+
+        // Transforming results
+        List<ProductApiResponseWithOfferDto> result = new();
+        foreach (var product in products)
+        {
+            result.Add(new()
+            {
+                Id = product.Id,
+                Name = product.LocalizedName ?? product.Name,
+                IsActive = product.IsActive,
+                ImageUrl = product.ImageUrl,
+                MinPrice = product.MinPrice,
+                MaxPrice = product.MaxPrice,
+            });
+        }
+
+        return Ok(new
+        {
+            data = result,
+            totalCount = totalCount
+        });
+    }
+
+    public class ProductApiResponseWithOffer
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public bool IsActive { get; set; }
+        public string? ImageUrl { get; set; }
+        // Localized properties
+        public byte? Language { get; set; }
+        public int? Product { get; set; }
+        public string? LocalizedMeasurementUnit { get; set; }
+        public string? LocalizedDescription { get; set; }
+        public string? LocalizedName { get; set; }
+        // ProductOffer properties
+        public decimal? MinPrice { get; set; }
+        public decimal? MaxPrice { get; set; }
+    }
+
+    public class ProductApiResponseWithOfferDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public bool IsActive { get; set; }
+        public string? ImageUrl { get; set; }
+        public decimal? MinPrice { get; set; }
+        public decimal? MaxPrice { get; set; }
+    }
 }
 

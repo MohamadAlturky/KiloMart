@@ -8,8 +8,6 @@ namespace KiloMart.Commands.Services;
 public class PhoneNumberInsertModel
 {
     public string Value { get; set; } = null!;
-    public int Party { get; set; }
-    public bool IsActive { get; set; }
 
     public (bool Success, string[] Errors) Validate()
     {
@@ -17,9 +15,6 @@ public class PhoneNumberInsertModel
 
         if (string.IsNullOrWhiteSpace(Value))
             errors.Add("Value is required.");
-
-        if (Party <= 0)
-            errors.Add("Party must be a positive number.");
 
         return (errors.Count == 0, errors.ToArray());
     }
@@ -29,7 +24,6 @@ public class PhoneNumberUpdateModel
 {
     public int Id { get; set; }
     public string? Value { get; set; }
-    public int? Party { get; set; }
     public bool? IsActive { get; set; }
 
     public (bool Success, string[] Errors) Validate()
@@ -60,13 +54,13 @@ public static class PhoneNumberService
         {
             var connection = dbFactory.CreateDbConnection();
             connection.Open();
-            var id = await Db.InsertPhoneNumberAsync(connection, model.Value, model.Party);
+            var id = await Db.InsertPhoneNumberAsync(connection, model.Value, userPayLoad.Party);
             var phoneNumber = new PhoneNumber
             {
                 Id = id,
                 Value = model.Value,
-                Party = model.Party,
-                IsActive = model.IsActive
+                Party = userPayLoad.Party,
+                IsActive = true
             };
 
             return Result<PhoneNumber>.Ok(phoneNumber);
@@ -99,8 +93,12 @@ public static class PhoneNumberService
                 return Result<PhoneNumber>.Fail(["Not Found"]);
             }
 
+            if(existingModel.Party != userPayLoad.Party)
+            {
+                return Result<PhoneNumber>.Fail(["Un Authorized"]);
+            }
+
             existingModel.Value = model.Value ?? existingModel.Value;
-            existingModel.Party = model.Party ?? existingModel.Party;
             existingModel.IsActive = model.IsActive ?? existingModel.IsActive;
 
             await Db.UpdatePhoneNumberAsync(connection,

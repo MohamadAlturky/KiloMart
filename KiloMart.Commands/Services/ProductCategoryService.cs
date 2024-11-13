@@ -173,8 +173,8 @@ public static class ProductCategoryService
 
 public class ProductCategoryLocalizedRequest
 {
-    public ProductCategoryLocalizedRecord Arabic = new();
-    public ProductCategoryLocalizedRecord Endlish = new();
+    public ProductCategoryLocalizedRecord Arabic { get; set; }
+    public ProductCategoryLocalizedRecord Endlish { get; set; }
 
     public (bool Success, string[] Errors) Validate()
     {

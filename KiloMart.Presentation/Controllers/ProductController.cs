@@ -2,8 +2,7 @@ using KiloMart.Core.Contracts;
 using KiloMart.Domain.Languages.Models;
 using KiloMart.Domain.Products.Add.Models;
 using KiloMart.Domain.Products.Add.Services;
-using KiloMart.Domain.Products.Offers.Models;
-using KiloMart.Domain.Products.Offers.Services;
+
 using KiloMart.Presentation.Models.Commands.Products;
 using KiloMart.Presentation.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -12,18 +11,18 @@ namespace KiloMart.Presentation.Commands;
 
 [ApiController]
 [Route("api/product")]
-public class ProductCommandController : ControllerBase
+public class ProductController : ControllerBase
 {
     private readonly IDbFactory _dbFactory;
     private readonly IWebHostEnvironment _environment;
 
-    public ProductCommandController(IDbFactory dbFactory, IWebHostEnvironment environment)
+    public ProductController(IDbFactory dbFactory, IWebHostEnvironment environment)
     {
         _dbFactory = dbFactory;
         _environment = environment;
     }
 
-    [HttpPost("add")]
+    [HttpPost]
     public async Task<IActionResult> Insert([FromForm] CreateProductRequest product)
     {
         var (success, errors) = product.Validate();

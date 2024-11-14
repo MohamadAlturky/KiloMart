@@ -1,12 +1,32 @@
 using KiloMart.Core.Contracts;
 using KiloMart.Core.Models;
+using KiloMart.Core.Settings;
 using KiloMart.DataAccess.Database;
 using KiloMart.Domain.Orders.Shared;
 
 namespace KiloMart.Domain.Orders.Step1;
 
-public class OrderFactory
+public static class OrderFactory
 {
+    public static int GetMostCommonProvider(List<ProductOffer> productOffers)
+    {
+        if (productOffers == null || productOffers.Count == 0)
+        {
+            throw new ArgumentException("Product offers list cannot be empty or null.");
+        }
+
+        IGrouping<int, ProductOffer>? mostCommonProvider = productOffers
+            .GroupBy(p => p.Provider)
+            .OrderByDescending(g => g.Count())
+            .FirstOrDefault();
+
+        if (mostCommonProvider is null)
+        {
+            throw new Exception("Error in GetMostCommonProvider");
+        }
+
+        return mostCommonProvider.Key;
+    }
     public static async Task<Result<DomainOrder>> Create(
         IDbFactory dbFactory,
         CreateOrderRequest request,
@@ -14,8 +34,8 @@ public class OrderFactory
     {
         using var connection = dbFactory.CreateDbConnection();
         connection.Open();
-        
-        if(request.OrderItems.Count == 0)
+
+        if (request.OrderItems.Count == 0)
         {
             return Result<DomainOrder>.Fail([$"can't create empty order"]);
         }
@@ -25,7 +45,7 @@ public class OrderFactory
         foreach (var item in request.OrderItems)
         {
             ProductOffer? offer = await Db.GetProductOfferByIdAsync(item.ProductOffer, connection);
-            
+
             if (offer is null)
             {
                 return Result<DomainOrder>.Fail([$"product offer with id = {item.ProductOffer} not found"]);
@@ -33,32 +53,57 @@ public class OrderFactory
             if (offer.IsActive == false)
             {
                 return Result<DomainOrder>.Fail([$"product offer with id = {item.ProductOffer} not found not active"]);
-            }          
+            }
             if (offer.Quantity < item.Quantity)
             {
                 return Result<DomainOrder>.Fail([$"product offer with id = {item.ProductOffer} don't have enough quantity the requested quantity is {item.Quantity} and the stock is {offer.Quantity}"]);
             }
-            orderItems.Add(new()
-            {
-                ProductOffer = offer.Id,
-                Quantity = item.Quantity,
-                UnitPrice = offer.Price,
-                Order = 0
-            });
             offers.Add(offer);
         }
 
-        int provider = offers[0].Provider; 
+        int provider = offers[0].Provider;
+        bool orderedFromMultipleProviders = false;
         foreach (var offer in offers)
         {
-            if(offer.Provider != provider)
+            if (offer.Provider != provider)
             {
-                return Result<DomainOrder>.Fail([$"can't order form multiple providers"]);
+                orderedFromMultipleProviders = true;
             }
         }
+        if (orderedFromMultipleProviders && AppManager.CancelWhenOrderFromMultiProviders)
+        {
+            return Result<DomainOrder>.Fail([$"can't order form multiple providers"]);
+        }
+        if (orderedFromMultipleProviders && !AppManager.CancelWhenOrderFromMultiProviders)
+        {
 
+        }
+        int mostOccuredProvider = GetMostCommonProvider(offers);
+        offers = offers.Where(e => e.Provider == mostOccuredProvider).ToList();
+        List<OrderItemRequest> skipped = [];
+        foreach (var item in request.OrderItems)
+        {
+            ProductOffer? offer = offers.FirstOrDefault(e => e.Id == item.ProductOffer);
+
+            if (offer is null)
+            {
+                skipped.Add(item);
+            }
+            else
+            {
+
+                orderItems.Add(new()
+                {
+                    ProductOffer = offer.Id,
+                    Quantity = item.Quantity,
+                    UnitPrice = offer.Price,
+                    Order = 0
+                });
+            }
+        }
         return Result<DomainOrder>.Ok(new DomainOrder
         {
+            Skipped = skipped,
             Order = new()
             {
                 Provider = provider,

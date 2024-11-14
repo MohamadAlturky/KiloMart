@@ -8,7 +8,7 @@ public static partial class Db
     public static async Task<long> InsertOrderActivityAsync(IDbConnection connection,
         long orderId,
         DateTime date,
-        OrderActivityType orderActivityType,
+        byte orderActivityType,
         int operatedBy,
         IDbTransaction? transaction = null)
     {
@@ -30,7 +30,7 @@ public static partial class Db
         long id,
         long orderId,
         DateTime date,
-        OrderActivityType orderActivityType,
+        byte orderActivityType,
         int operatedBy,
         IDbTransaction? transaction = null)
     {
@@ -85,16 +85,12 @@ public static partial class Db
     }
 }
 
-public enum OrderActivityType : byte
-{
-    // Define your OrderActivityType enum values here
-}
 
 public class OrderActivity
 {
     public long Id { get; set; }
     public long Order { get; set; }
     public DateTime Date { get; set; }
-    public OrderActivityType OrderActivityType { get; set; }
+    public byte OrderActivityType { get; set; }
     public int OperatedBy { get; set; }
 }

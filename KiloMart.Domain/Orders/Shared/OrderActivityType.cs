@@ -2,7 +2,7 @@ namespace KiloMart.Domain.Orders.Shared;
 
 public enum OrderActivityType
 {
-    Pending,
+    InitByCustomer = 1,
     Confirmed,
     Shipped,
     Delivered,

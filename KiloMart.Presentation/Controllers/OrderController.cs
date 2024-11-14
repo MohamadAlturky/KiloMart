@@ -21,7 +21,7 @@ public class OrderController : AppController
 
         if (result.Success)
         {
-            return CreatedAtAction(nameof(Init), new { id = result.Data.Id }, result.Data);
+            return CreatedAtAction(nameof(Init), new { id = result.Data.Order.Id }, result.Data);
         }
         else
         {

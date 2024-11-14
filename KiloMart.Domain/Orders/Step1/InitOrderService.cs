@@ -3,6 +3,7 @@ using KiloMart.Core.Contracts;
 using KiloMart.Core.Models;
 using KiloMart.DataAccess.Database;
 using KiloMart.Domain.Orders.Shared;
+using OrderActivity = KiloMart.DataAccess.Database.OrderActivity;
 
 namespace KiloMart.Domain.Orders.Step1;
 public static class InitOrderService
@@ -50,7 +51,23 @@ public static class InitOrderService
                 item.Quantity,
                 transaction);
             }
+            OrderActivity orderActivity = new()
+            {
+                Date = DateTime.Now,
+                OperatedBy = userPayLoad.Party,
+                Order = orderId,
+                OrderActivityType = (byte)OrderActivityType.InitByCustomer
+            };
 
+            orderActivity.Id = await Db.InsertOrderActivityAsync(connection,
+                orderActivity.Order,
+                orderActivity.Date,
+                orderActivity.OrderActivityType,
+                orderActivity.OperatedBy,
+                transaction);
+
+            orderCreationResult.Data.OrderActivity = orderActivity;
+            
             transaction.Commit();
             return Result<DomainOrder>.Ok(orderCreationResult.Data);
         }

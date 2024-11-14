@@ -52,6 +52,7 @@ public class CardUpdateModel
         return (errors.Count == 0, errors.ToArray());
     }
 }
+
 public static class CardService
 {
     public static async Task<Result<Card>> Insert(

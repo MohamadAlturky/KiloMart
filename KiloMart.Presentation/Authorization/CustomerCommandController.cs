@@ -1,3 +1,4 @@
+using Dapper;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.Domain.Customers.Profile.Models;
@@ -71,4 +72,37 @@ public class CustomerCommandController : ControllerBase
         return result.Success ? Ok(result) : StatusCode(500, result.Errors);
     }
     #endregion
+
+    [HttpGet("mine")]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> GetMine()
+    {
+        var customer = _userContext.Get().Party;
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+        var query = @"
+        SELECT
+            [Id]
+            ,[Customer]
+            ,[FirstName]
+            ,[SecondName]
+            ,[NationalName]
+            ,[NationalId]
+        FROM [dbo].[CustomerProfile]
+        WHERE [Customer] = @Customer";
+        var result = await connection.QueryFirstOrDefaultAsync<CustomerProfile>(query, new { Customer = customer });
+        return Ok(result);
+    }
+
+    // Assuming CustomerProfile class is defined as
+    public class CustomerProfile
+    {
+        public int Id { get; set; }
+        public int Customer { get; set; }
+        public string FirstName { get; set; }
+        public string SecondName { get; set; }
+        public string NationalName { get; set; }
+        public string NationalId { get; set; }
+    }
+
 }

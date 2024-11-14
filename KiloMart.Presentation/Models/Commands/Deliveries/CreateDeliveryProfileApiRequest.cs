@@ -1,7 +1,6 @@
 namespace KiloMart.Presentation.Models.Commands.Deliveries;
 public class CreateDeliveryProfileApiRequest
 {
-    public int Delivery { get; set; }
     public string FirstName { get; set; } = string.Empty;
     public string SecondName { get; set; } = string.Empty;
     public string NationalName { get; set; } = string.Empty;
@@ -17,8 +16,6 @@ public class CreateDeliveryProfileApiRequest
     {
         var errors = new List<string>();
 
-        if (Delivery <= 0)
-            errors.Add("Delivery is required");
         if (string.IsNullOrEmpty(FirstName))
             errors.Add("First name is required");
         if (string.IsNullOrEmpty(SecondName))

@@ -1,20 +1,16 @@
 public class CreateProviderProfileApiRequest
 {
-    public int Provider { get; set; }
     public string FirstName { get; set; }
     public string SecondName { get; set; }
     public string NationalApprovalId { get; set; }
     public string CompanyName { get; set; }
     public string OwnerName { get; set; }
     public string OwnerNationalId { get; set; }
-    public byte LanguageId { get; set; }
 
     public (bool success, List<string> errors) Validate()
     {
         var errors = new List<string>();
 
-        if (Provider == 0)
-            errors.Add("Provider is required");
         if (string.IsNullOrEmpty(FirstName))
             errors.Add("First name is required");
         if (string.IsNullOrEmpty(SecondName))
@@ -27,8 +23,6 @@ public class CreateProviderProfileApiRequest
             errors.Add("Owner name is required");
         if (string.IsNullOrEmpty(OwnerNationalId))
             errors.Add("Owner national ID is required");
-        if (LanguageId == 0)
-            errors.Add("Language ID is required");
 
         return (errors.Count == 0, errors);
     }

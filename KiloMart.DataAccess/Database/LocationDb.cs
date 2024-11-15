@@ -98,6 +98,23 @@ public static partial class Db
             Id = id
         });
     }
+    public static async Task<Location?> GetLocationByPartyAsync(int party, IDbConnection connection)
+    {
+        const string query = @"SELECT 
+                            [Id], 
+                            [Longitude], 
+                            [Latitude], 
+                            [Name], 
+                            [Party], 
+                            [IsActive]
+                            FROM [dbo].[Location]
+                            WHERE [Party] = @Party AND [IsActive] = 1";
+
+        return await connection.QueryFirstOrDefaultAsync<Location>(query, new
+        {
+            Party = party
+        });
+    }
 }
 
 public class Location

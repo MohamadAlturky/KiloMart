@@ -79,6 +79,11 @@ public static class OrderFactory
 
         }
         int mostOccuredProvider = GetMostCommonProvider(offers);
+        Location? providerLocation = await Db.GetLocationByPartyAsync(mostOccuredProvider, connection);
+        if (providerLocation is null)
+        {
+            return Result<DomainOrder>.Fail([$"provider don't have location"]);
+        }
         offers = offers.Where(e => e.Provider == mostOccuredProvider).ToList();
         List<OrderItemRequest> skipped = [];
         foreach (var item in request.OrderItems)
@@ -109,7 +114,7 @@ public static class OrderFactory
                 Provider = provider,
                 Customer = customer,
                 CustomerLocation = request.CustomerLocation,
-                ProviderLocation = request.ProviderLocation,
+                ProviderLocation = providerLocation.Id,
                 TransactionId = Guid.NewGuid().ToString(),
                 TotalPrice = orderItems.Sum(x => ((decimal)x.Quantity) * x.UnitPrice),
                 OrderStatus = (byte)OrderStatus.Initiated

@@ -5,7 +5,7 @@ namespace KiloMart.DataAccess.Database
 {
     public static partial class Db
     {
-        public static async Task<int> InsertProductRequestDataLocalizedAsync(IDbConnection connection,
+        public static async Task InsertProductRequestDataLocalizedAsync(IDbConnection connection,
             int productRequest, 
             short language, 
             string name, 
@@ -15,10 +15,9 @@ namespace KiloMart.DataAccess.Database
         {
             const string query = @"INSERT INTO [dbo].[ProductRequestDataLocalized]
                                 ([ProductRequest], [Language], [Name], [Description], [MeasurementUnit])
-                                VALUES (@ProductRequest, @Language, @Name, @Description, @MeasurementUnit)
-                                SELECT CAST(SCOPE_IDENTITY() AS INT)";
+                                VALUES (@ProductRequest, @Language, @Name, @Description, @MeasurementUnit);";
 
-            return await connection.ExecuteScalarAsync<int>(query, new
+            await connection.ExecuteAsync(query, new
             {
                 ProductRequest = productRequest,
                 Language = language,

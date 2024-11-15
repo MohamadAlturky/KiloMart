@@ -47,4 +47,19 @@ public class OrderController : AppController
             return BadRequest(result.Errors);
         }
     }
+    [HttpPost("reject")]
+    [Guard([Roles.Provider])]
+    public async Task<IActionResult> Reject([FromQuery] long id)
+    {
+        var result = await RejectOrderService.Reject(_dbFactory, _userContext.Get(), id);
+
+        if (result.Success)
+        {
+            return Ok(new { Status = true });
+        }
+        else
+        {
+            return BadRequest(result.Errors);
+        }
+    }
 }

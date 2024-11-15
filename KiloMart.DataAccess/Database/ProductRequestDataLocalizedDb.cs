@@ -90,6 +90,42 @@ namespace KiloMart.DataAccess.Database
                 Language = language
             });
         }
+        public static async Task<ProductRequestDataLocalized?> GetProductRequestDataLocalizedAsync(int productRequest,
+            IDbConnection connection)
+        {
+            const string query = @"SELECT 
+                                    [ProductRequest], 
+                                    [Language], 
+                                    [Name], 
+                                    [Description], 
+                                    [MeasurementUnit]
+                                    FROM [dbo].[ProductRequestDataLocalized]
+                                    WHERE [ProductRequest] = @ProductRequest";
+
+            return await connection.QueryFirstOrDefaultAsync<ProductRequestDataLocalized>(query, new
+            {
+                ProductRequest = productRequest
+            });
+        }
+        public static async Task<List<ProductRequestDataLocalized>> ListProductRequestDataLocalizedAsync(int productRequest,
+            IDbConnection connection)
+        {
+            const string query = @"SELECT 
+                                    [ProductRequest], 
+                                    [Language], 
+                                    [Name], 
+                                    [Description], 
+                                    [MeasurementUnit]
+                                    FROM [dbo].[ProductRequestDataLocalized]
+                                    WHERE [ProductRequest] = @ProductRequest";
+
+            var result = await connection.QueryAsync<ProductRequestDataLocalized>(query, new
+            {
+                ProductRequest = productRequest
+            });
+
+            return result.ToList();
+        }
     }
 
     public class ProductRequestDataLocalized

@@ -3,7 +3,7 @@ using KiloMart.Core.Contracts;
 using KiloMart.Core.Models;
 using KiloMart.DataAccess.Database;
 
-namespace KiloMart.Domain.ProductRequests;
+namespace KiloMart.Domain.ProductRequests.Add;
 
 
 public class ProductRequestInsertModel

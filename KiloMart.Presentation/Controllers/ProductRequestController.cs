@@ -1,6 +1,7 @@
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
-using KiloMart.Domain.ProductRequests;
+using KiloMart.Domain.ProductRequests.Accept;
+using KiloMart.Domain.ProductRequests.Add;
 using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Authorization;
 using KiloMart.Presentation.Models.Commands.ProductRequests;
@@ -40,8 +41,8 @@ public class ProductRequestController : ControllerBase
             _environment.WebRootPath,
             fileName);
 
-        
-        var result = await ProductRequestService.Insert(_dbFactory, _userContext.Get(),new ProductRequestInsertModel()
+
+        var result = await ProductRequestService.Insert(_dbFactory, _userContext.Get(), new ProductRequestInsertModel()
         {
             Date = DateTime.Now,
             Description = request.Description,
@@ -55,6 +56,15 @@ public class ProductRequestController : ControllerBase
             Quantity = request.Quantity
         });
         return result.Success ? Ok(result.Data) : StatusCode(500, result.Errors);
+    }
+
+    [HttpPost("accept")]
+    [Guard([Roles.Provider])]
+    public async Task<IActionResult> Accept([FromQuery] int id)
+    {
+        var result = await AcceptProductRequestService.Accept(_dbFactory, _userContext.Get(), id);
+        return result.Success ? Ok(result.Data) : StatusCode(500, result.Errors);
+
     }
 }
 

@@ -32,6 +32,22 @@ public class OrderController : AppController
         return BadRequest(result.Errors);
     }
 
+    [HttpPost("cancel")]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> Cancel(long id)
+    {
+        var result = await CancelOrderService.Cancel(_dbFactory, _userContext.Get(), id);
+
+        if (result.Success)
+        {
+            return Ok(new { Status = true });
+        }
+        else
+        {
+            return BadRequest(result.Errors);
+        }
+    }
+
     [HttpPost("accept")]
     [Guard([Roles.Provider])]
     public async Task<IActionResult> Accept([FromQuery] long id)

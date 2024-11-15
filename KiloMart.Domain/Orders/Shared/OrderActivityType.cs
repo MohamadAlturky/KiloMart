@@ -5,6 +5,8 @@ public enum OrderActivityType
     InitByCustomer = 1,
     AcceptedFromProvider = 2,
     RejectedFromProvider = 3,
+    CancelledByCustomer = 4,
+    
     Shipped,
     Delivered,
     Cancelled

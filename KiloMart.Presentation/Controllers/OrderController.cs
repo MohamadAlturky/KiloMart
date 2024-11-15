@@ -100,4 +100,11 @@ public class OrderController : AppController
         var result = await Query.GetOrderByCustomerAndStatusWithDiscount(_dbFactory, _userContext.Get(), status);
         return Ok(result);
     }
+    [HttpGet("details/{orderId}")]
+    public async Task<ActionResult<List<Query.OrderDetails>>> GetOrderDetails(long orderId)
+    {
+        var result = await Query.GetOrderDetails(_dbFactory, orderId);
+        return Ok(result);
+    }
+
 }

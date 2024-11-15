@@ -11,7 +11,7 @@ public class Result<T> : Result
     }
 
     public static Result<T> Ok(T data) => new Result<T>(true, data, Array.Empty<string>());
-    public static new Result<T> Fail(string[] errors) => new Result<T>(false, default!, errors);
+    public new static  Result<T> Fail(string[] errors) => new Result<T>(false, default!, errors);
 }
 
 

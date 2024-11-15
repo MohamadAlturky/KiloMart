@@ -6,72 +6,88 @@ namespace KiloMart.Requests.Queries;
 
 public static partial class Query
 {
-    public static async Task<List<OrderJoinParty>> GetOrderByProvider(IDbFactory factory, UserPayLoad payLoad,
-        int provider)
+    public static async Task<List<OrderJoinParty>> GetOrderByProvider(IDbFactory factory, UserPayLoad payLoad)
     {
         using var connection = factory.CreateDbConnection();
         connection.Open();
         const string query =
-            @"SELECT p.Id,p.DisplayName,p.IsActive oid FROM [Order] o inner join Party p  on o.Provider=p.Id where o.Provider=@provider";
+            @"SELECT p.Id as PartyId, p.DisplayName as PartyDisplayName, p.IsActive as PartyIsActive, 
+            o.Id as OrderId, o.TotalPrice, o.TransactionId, o.CustomerLocation, o.ProviderLocation, 
+            o.Customer, o.Provider 
+            FROM [Order] o inner join Party p on o.Provider=p.Id where o.Provider=@provider";
 
         var result = await connection.QueryAsync<OrderJoinParty>(query, new
         {
-            provider = provider,
+            provider = payLoad.Party,
         });
         return result.ToList();
     }
 
     public static async Task<List<OrderJoinParty>> GetOrderByProviderAndStatus(IDbFactory factory, UserPayLoad payLoad,
-        int provider, bool status)
+        bool status)
     {
         using var connection = factory.CreateDbConnection();
         connection.Open();
         const string query =
-            @"SELECT p.Id,p.DisplayName,p.IsActive oid FROM [Order] o inner join Party p  on o.Provider=p.Id where o.Provider=@provider and o.OrderStatus=@status";
+            @"SELECT p.Id as PartyId, p.DisplayName as PartyDisplayName, p.IsActive as PartyIsActive, 
+            o.Id as OrderId, o.TotalPrice, o.TransactionId, o.CustomerLocation, o.ProviderLocation, 
+            o.Customer, o.Provider 
+            FROM [Order] o inner join Party p on o.Provider=p.Id where o.Provider=@provider and o.OrderStatus=@status";
 
         var result = await connection.QueryAsync<OrderJoinParty>(query, new
         {
-            provider = provider,
-            status = status,
+            provider = payLoad.Party, status,
         });
         return result.ToList();
     }
 
-    public static async Task<List<OrderJoinParty>> GetOrderByCustomer(IDbFactory factory, UserPayLoad payLoad,
-        int customer)
+    public static async Task<List<OrderJoinParty>> GetOrderByCustomer(IDbFactory factory, UserPayLoad payLoad)
     {
         using var connection = factory.CreateDbConnection();
         connection.Open();
         const string query =
-            @"SELECT p.Id,p.DisplayName,p.IsActive oid FROM [Order] o inner join Party p  on o.Customer=p.Id";
+            @"SELECT p.Id as PartyId, p.DisplayName as PartyDisplayName, p.IsActive as PartyIsActive, 
+            o.Id as OrderId, o.TotalPrice, o.TransactionId, o.CustomerLocation, o.ProviderLocation, 
+            o.Customer, o.Provider 
+            FROM [Order] o inner join Party p on o.Customer=p.Id";
 
         var result = await connection.QueryAsync<OrderJoinParty>(query, new
         {
-            customer = customer,
+            customer = payLoad.Party,
         });
         return result.ToList();
     }
 
     public static async Task<List<OrderJoinParty>> GetOrderByCustomerAndStatus(IDbFactory factory, UserPayLoad payLoad,
-        int customer, bool status)
+        bool status)
     {
         using var connection = factory.CreateDbConnection();
         connection.Open();
         const string query =
-            @"SELECT p.Id,p.DisplayName,p.IsActive oid FROM [Order] o inner join Party p  on o.Customer=p.Id and o.OrderStatus=@status";
+            @"SELECT p.Id as PartyId, p.DisplayName as PartyDisplayName, p.IsActive as PartyIsActive, 
+            o.Id as OrderId, o.TotalPrice, o.TransactionId, o.CustomerLocation, o.ProviderLocation, 
+            o.Customer, o.Provider 
+            FROM [Order] o inner join Party p on o.Customer=p.Id and o.OrderStatus=@status";
 
         var result = await connection.QueryAsync<OrderJoinParty>(query, new
         {
-            customer = customer,
-            status = status,
+            customer = payLoad.Party, status,
         });
         return result.ToList();
     }
 
     public class OrderJoinParty
     {
-        public long Id { get; set; }
-        public string DisplayName { get; set; }
-        public bool IsActive { get; set; }
+        public long PartyId { get; set; }
+        public string PartyDisplayName { get; set; }
+        public bool PartyIsActive { get; set; }
+        public byte OrderId { get; set; }
+        public int TotalPrice { get; set; }
+        public string TransactionId { get; set; }
+        public int CustomerLocation { get; set; }
+        public int ProviderLocation { get; set; }
+        public int Customer { get; set; }
+        public int Provider { get; set; }
     }
+    
 }

@@ -4,7 +4,7 @@ using KiloMart.Core.Models;
 using KiloMart.DataAccess.Database;
 using KiloMart.Domain.Orders.Shared;
 
-namespace KiloMart.Domain.Orders.Step2;
+namespace KiloMart.Domain.Orders.Step1.Cancel;
 public static class CancelOrderService
 {
     public static async Task<Result<bool>> Cancel(
@@ -21,17 +21,17 @@ public static class CancelOrderService
         try
         {
             var order = await Db.GetOrderByIdAsync(id, readConnection);
-            if(order is null)
+            if (order is null)
             {
                 return Result<bool>.Fail(["Not Found"]);
             }
-            if(order.Customer != userPayLoad.Party)
+            if (order.Customer != userPayLoad.Party)
             {
                 return Result<bool>.Fail(["Un Authorized"]);
             }
             await Db.UpdateOrderAsync
                 (connection,
-                id, ((byte)OrderStatus.Cancelled),
+                id, (byte)OrderStatus.Cancelled,
                 order.TotalPrice,
                 order.TransactionId,
                 order.CustomerLocation,

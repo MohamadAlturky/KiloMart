@@ -4,7 +4,7 @@ using KiloMart.Core.Settings;
 using KiloMart.DataAccess.Database;
 using KiloMart.Domain.Orders.Shared;
 
-namespace KiloMart.Domain.Orders.Step1;
+namespace KiloMart.Domain.Orders.Step1.Create;
 
 public static class OrderFactory
 {
@@ -116,7 +116,7 @@ public static class OrderFactory
                 CustomerLocation = request.CustomerLocation,
                 ProviderLocation = providerLocation.Id,
                 TransactionId = Guid.NewGuid().ToString(),
-                TotalPrice = orderItems.Sum(x => ((decimal)x.Quantity) * x.UnitPrice),
+                TotalPrice = orderItems.Sum(x => (decimal)x.Quantity * x.UnitPrice),
                 OrderStatus = (byte)OrderStatus.Initiated
             },
             Items = orderItems

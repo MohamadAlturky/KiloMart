@@ -4,7 +4,7 @@ using KiloMart.Core.Models;
 using KiloMart.DataAccess.Database;
 using KiloMart.Domain.Orders.Shared;
 
-namespace KiloMart.Domain.Orders.Step2;
+namespace KiloMart.Domain.Orders.Step2.Reject;
 public static class RejectOrderService
 {
     public static async Task<Result<bool>> Reject(
@@ -21,17 +21,17 @@ public static class RejectOrderService
         try
         {
             var order = await Db.GetOrderByIdAsync(id, readConnection);
-            if(order is null)
+            if (order is null)
             {
                 return Result<bool>.Fail(["Not Found"]);
             }
-            if(order.Provider != userPayLoad.Party)
+            if (order.Provider != userPayLoad.Party)
             {
                 return Result<bool>.Fail(["Un Authorized"]);
             }
             await Db.UpdateOrderAsync
                 (connection,
-                id, ((byte)OrderStatus.RejectedFromProvider),
+                id, (byte)OrderStatus.RejectedFromProvider,
                 order.TotalPrice,
                 order.TransactionId,
                 order.CustomerLocation,

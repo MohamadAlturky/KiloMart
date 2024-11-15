@@ -5,7 +5,7 @@ using KiloMart.DataAccess.Database;
 using KiloMart.Domain.Orders.Shared;
 using OrderActivity = KiloMart.DataAccess.Database.OrderActivity;
 
-namespace KiloMart.Domain.Orders.Step1;
+namespace KiloMart.Domain.Orders.Step1.Create;
 public static class InitOrderService
 {
     public static async Task<Result<DomainOrder>> Insert(
@@ -67,7 +67,7 @@ public static class InitOrderService
                 transaction);
 
             orderCreationResult.Data.OrderActivity = orderActivity;
-            
+
             transaction.Commit();
             return Result<DomainOrder>.Ok(orderCreationResult.Data);
         }

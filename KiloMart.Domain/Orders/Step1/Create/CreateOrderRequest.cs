@@ -1,8 +1,8 @@
-namespace KiloMart.Domain.Orders.Step1;
+namespace KiloMart.Domain.Orders.Step1.Create;
 
 public class CreateOrderRequest
 {
-    public int CustomerLocation {get;set;}
+    public int CustomerLocation { get; set; }
     public List<OrderItemRequest> OrderItems { get; set; } = [];
 
     // Validate method to check if the request data meets the required criteria
@@ -12,8 +12,8 @@ public class CreateOrderRequest
 
         if (OrderItems == null || !OrderItems.Any())
             errors.Add("Order must contain at least one order item.");
-        
-        if(CustomerLocation <= 0)
+
+        if (CustomerLocation <= 0)
             errors.Add("Customer Location is required");
         if (OrderItems is not null)
         {

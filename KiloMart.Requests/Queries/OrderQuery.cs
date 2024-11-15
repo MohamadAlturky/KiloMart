@@ -89,5 +89,52 @@ public static partial class Query
         public int Customer { get; set; }
         public int Provider { get; set; }
     }
-    
+
+    public static async Task<List<OrderJoinOrderDiscount>> GetOrderByCustomerWithDiscount(IDbFactory factory,
+        UserPayLoad payLoad)
+    {
+        using var connection = factory.CreateDbConnection();
+        connection.Open();
+        const string query =
+            @"SELECT o.Id as OrderId, o.Customer, o.Provider, o.CustomerLocation, o.ProviderLocation, 
+            o.TransactionId, o.TotalPrice, od.DiscountCode, o.OrderStatus as orderStatus
+            FROM [Order] o inner join OrderDiscount od on o.Id=od.OrderId";
+
+        var result = await connection.QueryAsync<OrderJoinOrderDiscount>(query, new
+        {
+            customer = payLoad.Party,
+        });
+        return result.ToList();
+    }
+
+    public static async Task<List<OrderJoinOrderDiscount>> GetOrderByCustomerAndStatusWithDiscount(IDbFactory factory,
+        UserPayLoad payLoad,
+        bool status)
+    {
+        using var connection = factory.CreateDbConnection();
+        connection.Open();
+        const string query =
+            @"SELECT o.Id as OrderId, o.Customer, o.Provider, o.CustomerLocation, o.ProviderLocation, 
+            o.TransactionId, o.TotalPrice, od.DiscountCode, o.OrderStatus as orderStatus
+            FROM [Order] o inner join OrderDiscount od on o.Id=od.OrderId and o.OrderStatus=@status";
+
+        var result = await connection.QueryAsync<OrderJoinOrderDiscount>(query, new
+        {
+            customer = payLoad.Party, status,
+        });
+        return result.ToList();
+    }
+
+    public class OrderJoinOrderDiscount
+    {
+        public long OrderId { get; set; }
+        public string Customer { get; set; }
+        public string Provider { get; set; }
+        public string CustomerLocation { get; set; }
+        public string ProviderLocation { get; set; }
+        public string TransactionId { get; set; }
+        public int TotalPrice { get; set; }
+        public string DiscountCode { get; set; }
+        public bool orderStatus { get; set; }
+    }
 }

@@ -10,15 +10,16 @@ public static class AcceptProductRequestService
 {
     public static async Task<Result<bool>> Accept(
         IDbFactory dbFactory,
-        UserPayLoad userPayLoad,
         int id)
     {
-        var connection = dbFactory.CreateDbConnection();
+        using var connection = dbFactory.CreateDbConnection();
+        using var readerconnection = dbFactory.CreateDbConnection();
+        readerconnection.Open();
         connection.Open();
         using var transaction = connection.BeginTransaction();
         try
         {
-            ProductRequest? productRequest = await Db.GetProductRequestByIdAsync(id, connection);
+            ProductRequest? productRequest = await Db.GetProductRequestByIdAsync(id, readerconnection);
             
             if (productRequest is null)
             {
@@ -30,7 +31,7 @@ public static class AcceptProductRequestService
                 return Result<bool>.Fail(["Can't Accept a request of type not Pending"]);
             }
             List<ProductRequestDataLocalized> localizations = 
-                await Db.ListProductRequestDataLocalizedAsync(productRequest.Id, connection);
+                await Db.ListProductRequestDataLocalizedAsync(productRequest.Id, readerconnection);
             
             if(localizations is null || localizations.Count == 0)
             {

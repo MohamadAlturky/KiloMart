@@ -15,7 +15,7 @@ public static partial class Db
         const string query = @"INSERT INTO [dbo].[ProductLocalized]
                             ([Language], [Product], [MeasurementUnit], [Description], [Name])
                             VALUES (@Language, @Product, @MeasurementUnit, @Description, @Name)
-                            SELECT CAST(SCOPE_IDENTITY() AS INT)];";
+                            SELECT CAST(SCOPE_IDENTITY() AS INT);";
 
         // However the above SQL Insert will not get the last identity inserted.
         // There is no SCOPE_IDENTITY so we use OUTPUT.

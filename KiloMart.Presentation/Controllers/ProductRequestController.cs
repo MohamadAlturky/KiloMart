@@ -59,10 +59,9 @@ public class ProductRequestController : ControllerBase
     }
 
     [HttpPost("accept")]
-    [Guard([Roles.Provider])]
     public async Task<IActionResult> Accept([FromQuery] int id)
     {
-        var result = await AcceptProductRequestService.Accept(_dbFactory, _userContext.Get(), id);
+        var result = await AcceptProductRequestService.Accept(_dbFactory, id);
         return result.Success ? Ok(result.Data) : StatusCode(500, result.Errors);
 
     }

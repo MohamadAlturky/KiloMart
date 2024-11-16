@@ -1,9 +1,8 @@
 using Dapper;
 using KiloMart.Core.Contracts;
 using KiloMart.Core.Models;
-using KiloMart.Domain.Delivery.Profile.Models;
 
-namespace KiloMart.Domain.Delivery.Profile.Services;
+namespace KiloMart.Domain.Delivery.Profile;
 
 public static class DeliveryProfileService
 {
@@ -38,7 +37,7 @@ public static class DeliveryProfileService
                 deliveryProfileRequest.DrivingLicenseExpiredDate
             });
 
-            
+
 
             return Result<CreateDeliveryProfileResponse>.Ok(new CreateDeliveryProfileResponse
             {

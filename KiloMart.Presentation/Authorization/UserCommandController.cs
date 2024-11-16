@@ -5,7 +5,7 @@ using KiloMart.Domain.Login.Services;
 using KiloMart.Domain.Register.Activate;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KiloMart.Presentation.Commands;
+namespace KiloMart.Presentation.Authorization;
 
 [ApiController]
 [Route("api/user")]

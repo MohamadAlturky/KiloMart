@@ -2,7 +2,7 @@ using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KiloMart.Presentation.Commands;
+namespace KiloMart.Presentation.Controllers;
 
 [ApiController]
 public class AppController : ControllerBase

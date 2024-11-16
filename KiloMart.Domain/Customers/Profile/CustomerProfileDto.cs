@@ -1,4 +1,4 @@
-namespace KiloMart.Domain.Customers.Profile.Models;
+namespace KiloMart.Domain.Customers.Profile;
 
 
 public class CreateCustomerProfileRequest

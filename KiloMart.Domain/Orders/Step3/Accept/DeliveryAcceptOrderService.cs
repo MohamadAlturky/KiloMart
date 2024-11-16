@@ -4,7 +4,7 @@ using KiloMart.Core.Models;
 using KiloMart.DataAccess.Database;
 using KiloMart.Domain.Orders.Shared;
 
-namespace KiloMart.Domain.Orders.Step2.Accept;
+namespace KiloMart.Domain.Orders.Step3.Accept;
 public static class DeliveryAcceptOrderService
 {
     public static async Task<Result<bool>> Accept(

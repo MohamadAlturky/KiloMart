@@ -1,8 +1,8 @@
 using Dapper;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
+using KiloMart.Domain.Customers.Profile;
 using KiloMart.Domain.Customers.Profile.Models;
-using KiloMart.Domain.Customers.Profile.Services;
 using KiloMart.Domain.Register.Customer.Models;
 using KiloMart.Domain.Register.Customer.Services;
 using KiloMart.Domain.Register.Utils;

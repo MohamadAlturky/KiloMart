@@ -8,7 +8,7 @@ using KiloMart.Presentation.Models.Commands.ProductRequests;
 using KiloMart.Presentation.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KiloMart.Presentation.Commands;
+namespace KiloMart.Presentation.Controllers;
 
 [ApiController]
 [Route("api/product-request")]

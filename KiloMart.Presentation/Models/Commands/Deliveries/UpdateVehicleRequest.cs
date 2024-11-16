@@ -1,4 +1,4 @@
-namespace KiloMart.Presentation.Commands;
+namespace KiloMart.Presentation.Models.Commands.Deliveries;
 
 public class UpdateVehicleRequest
 {

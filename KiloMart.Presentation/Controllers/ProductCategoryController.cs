@@ -1,39 +1,99 @@
+using Dapper;
 using KiloMart.Commands.Services;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
-using KiloMart.Presentation.Commands;
-using KiloMart.Requests.Queries;
 using Microsoft.AspNetCore.Mvc;
+
+namespace KiloMart.Presentation.Controllers;
 
 [ApiController]
 [Route("api/product-categories")]
 public class ProductCategoryController : AppController
 {
-      public ProductCategoryController(IDbFactory dbFactory, IUserContext userContext) 
-            : base(dbFactory, userContext)
-      {
-      }
+    public ProductCategoryController(IDbFactory dbFactory, IUserContext userContext) : base(dbFactory, userContext)
+    {
+    }
+    [HttpPost]
+    public async Task<IActionResult> Insert(ProductCategoryLocalizedRequest model)
+    {
+        var result = await ProductCategoryService.InsertProductWithLocalization(_dbFactory, _userContext.Get(), model);
+        if (result.Success)
+        {
+            return CreatedAtAction(nameof(Insert), new { id = result.Data.ProductCategory.Id, result.Data }, result.Data);
+        }
+        else
+        {
+            return BadRequest(result.Errors);
+        }
+    }
 
-      [HttpPost]
-      public async Task<IActionResult> Insert(ProductCategoryLocalizedRequest model)
-      {
-            var result = await ProductCategoryService.InsertProductWithLocalization(_dbFactory, _userContext.Get(), model);
-            return result.Success ? 
-                  CreatedAtAction(nameof(Insert), new { id = result.Data.ProductCategory.Id, Data = result.Data }, result.Data) : 
-                  BadRequest(result.Errors);
-      }
+    [HttpGet("paginated")]
+    public async Task<IActionResult> GetAllLocalizedPaginatedForAdmin(
+        [FromQuery] byte language,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] bool isActive = true)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
 
-      [HttpGet("paginated")]
-      public async Task<IActionResult> GetAllLocalizedPaginatedForAdmin(
-            [FromQuery] byte language,
-            [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 10,
-            [FromQuery] bool isActive = true)
-      {
-            using var connection = _dbFactory.CreateDbConnection();
-            connection.Open();
-            var (data, totalCount) = await Query.GetAllLocalizedPaginated(
-                  connection, language, page, pageSize, isActive);
-            return Ok(new { data, totalCount });
-      }
+        // Calculate OFFSET for pagination
+        int offset = (page - 1) * pageSize;
+        var countSql = "SELECT COUNT(*) FROM ProductCategory WITH (NOLOCK) WHERE IsActive = @isActive";
+        int totalCount = await connection.ExecuteScalarAsync<int>(countSql, new { isActive });
+
+        // SQL query with pagination, using OFFSET and FETCH
+        string sql = @"
+        SELECT 
+            ProductCategory.[Id], 
+            ProductCategory.[Name], 
+            ProductCategory.[IsActive], 
+            ProductCategoryLocalized.[Name] AS LocalizedName, 
+            ProductCategoryLocalized.[Language]
+        FROM ProductCategory WITH (NOLOCK)
+        LEFT JOIN ProductCategoryLocalized WITH (NOLOCK)
+            ON ProductCategory.Id = ProductCategoryLocalized.ProductCategory 
+            AND ProductCategoryLocalized.Language = @language
+            WHERE ProductCategory.IsActive = @isActive
+        ORDER BY ProductCategory.[Id]
+        OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
+
+        // Query execution with pagination parameters
+        var categories = await connection.QueryAsync<ProductCategoryApiResponse>(
+            sql,
+            new { language, offset, pageSize, isActive });
+
+        // Transforming results
+        List<ProductCategoryApiResponseDto> result = [];
+        foreach (var category in categories)
+        {
+            result.Add(new()
+            {
+                Id = category.Id,
+                Name = category.LocalizedName ?? category.Name,
+                IsActive = category.IsActive,
+            });
+        }
+
+        return Ok(new
+        {
+            data = result,
+            totalCount
+        });
+    }
+}
+public class ProductCategoryApiResponseDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = null!;
+    public bool IsActive { get; set; }
+}
+public class ProductCategoryApiResponse
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public bool IsActive { get; set; }
+    // Localized properties
+    public string? LocalizedName { get; set; }
+    public byte? Language { get; set; }
 }

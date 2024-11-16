@@ -1,7 +1,7 @@
 using Dapper;
 using KiloMart.Core.Contracts;
 
-namespace KiloMart.Domain.Products.DataAccess;
+namespace KiloMart.Domain.Products.Offers.DataAccess;
 
 public static class ProductOfferRepository
 {

@@ -4,7 +4,7 @@ using KiloMart.Core.Models;
 using KiloMart.DataAccess.Database;
 using KiloMart.Domain.Orders.Shared;
 
-namespace KiloMart.Domain.Orders.Step2.Reject;
+namespace KiloMart.Domain.Orders.Step3.Reject;
 public static class DeliveryRejectOrderService
 {
     public static async Task<Result<bool>> Reject(

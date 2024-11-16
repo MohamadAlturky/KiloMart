@@ -1,4 +1,4 @@
-namespace KiloMart.Domain.Delivery.Profile.Models;
+namespace KiloMart.Domain.Delivery.Profile;
 public class CreateDeliveryProfileRequest
 {
     public int Delivery { get; set; }

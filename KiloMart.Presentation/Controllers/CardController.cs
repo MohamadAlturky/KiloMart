@@ -3,7 +3,7 @@ using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Authorization;
-using KiloMart.Presentation.Commands;
+using KiloMart.Presentation.Controllers;
 using KiloMart.Requests.Queries;
 using Microsoft.AspNetCore.Mvc;
 

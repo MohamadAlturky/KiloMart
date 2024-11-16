@@ -1,9 +1,8 @@
 using Dapper;
 using KiloMart.Core.Contracts;
 using KiloMart.Core.Models;
-using KiloMart.Domain.Customers.Profile.Models;
 
-namespace KiloMart.Domain.Customers.Profile.Services
+namespace KiloMart.Domain.Customers.Profile
 {
     public static class CustomerProfileService
     {
@@ -32,7 +31,7 @@ namespace KiloMart.Domain.Customers.Profile.Services
                     customerProfileRequest.NationalId
                 });
 
-                
+
                 return Result<CreateCustomerProfileResponse>.Ok(new CreateCustomerProfileResponse
                 {
                     Id = customerProfileId,

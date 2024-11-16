@@ -6,6 +6,7 @@ using KiloMart.Core.Configurations;
 using KiloMart.Presentation.Authorization;
 using KiloMart.Presentation.RealTime;
 using KiloMart.Core.Authentication;
+using KiloMart.DataAccess.EFCore.Configuration;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,7 +36,7 @@ builder.Services.AddAuthentication(options =>
 });
 #endregion
 builder.Services.AddControllers();
-
+builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -70,6 +71,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 builder.Services.AddDataAccess(builder.Configuration);
+builder.Services.AddEFDataAccess(builder.Configuration.GetConnectionString("DefaultConnection")!);
 builder.Services.AddSignalR();
 
 // configuration
@@ -77,20 +79,28 @@ GuardAttribute.SECRET_KEY = builder.Configuration["Jwt:Key"]!;
 GuardAttribute.ISSUER = builder.Configuration["Jwt:Issuer"]!;
 GuardAttribute.AUDIENCE = builder.Configuration["Jwt:Audience"]!;
 
-
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy
+            .AllowAnyOrigin() 
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 var app = builder.Build();
-app.MapHub<NotificationHub>("/notificationHub");
 
 app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseStaticFiles();
 app.UseHttpsRedirection();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
+app.MapHub<NotificationHub>("/notificationHub");
 app.Run();
 

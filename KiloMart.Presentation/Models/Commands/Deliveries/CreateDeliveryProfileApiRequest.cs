@@ -5,7 +5,6 @@ public class CreateDeliveryProfileApiRequest
     public string SecondName { get; set; } = string.Empty;
     public string NationalName { get; set; } = string.Empty;
     public string NationalId { get; set; } = string.Empty;
-    public byte LanguageId { get; set; }
 
     public string LicenseNumber { get; set; } = string.Empty;
     public DateTime LicenseExpiredDate { get; set; }
@@ -24,8 +23,6 @@ public class CreateDeliveryProfileApiRequest
             errors.Add("National name is required");
         if (string.IsNullOrEmpty(NationalId))
             errors.Add("National ID is required");
-        if (LanguageId == 0)
-            errors.Add("Language ID is required");
         if (string.IsNullOrEmpty(LicenseNumber))
             errors.Add("License number is required");
         if (LicenseExpiredDate == default)

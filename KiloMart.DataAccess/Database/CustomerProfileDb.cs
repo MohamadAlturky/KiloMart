@@ -99,6 +99,23 @@ namespace KiloMart.DataAccess.Database
                 Id = id
             });
         }
+        public static async Task<CustomerProfile?> GetCustomerProfileByCustomerIdAsync(int id, IDbConnection connection)
+        {
+            const string query = @"SELECT 
+                                [Id], 
+                                [Customer], 
+                                [FirstName], 
+                                [SecondName], 
+                                [NationalName], 
+                                [NationalId]
+                                FROM [dbo].[CustomerProfile]
+                                WHERE [Customer] = @Id";
+
+            return await connection.QueryFirstOrDefaultAsync<CustomerProfile>(query, new
+            {
+                Id = id
+            });
+        }
     }
 
     public class CustomerProfile

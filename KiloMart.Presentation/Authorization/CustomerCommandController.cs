@@ -72,6 +72,19 @@ public class CustomerCommandController : ControllerBase
     }
     #endregion
 
+    #region profile
+    [HttpPost("profile/edit")]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> EditProfile(UpdateCustomerProfileRequest request)
+    {
+     
+        var result = await CustomerProfileService.UpdateAsync(_dbFactory,
+            _userContext.Get(), request);
+
+        return result.Success ? Ok(result) : StatusCode(500, result.Errors);
+    }
+    #endregion
+
     [HttpGet("mine")]
     [Guard([Roles.Customer])]
     public async Task<IActionResult> GetMine()
@@ -90,6 +103,10 @@ public class CustomerCommandController : ControllerBase
         FROM [dbo].[CustomerProfile]
         WHERE [Customer] = @Customer";
         var result = await connection.QueryFirstOrDefaultAsync<CustomerProfile>(query, new { Customer = customer });
+        if (result is null)
+        {
+            return NotFound();
+        }
         return Ok(result);
     }
 

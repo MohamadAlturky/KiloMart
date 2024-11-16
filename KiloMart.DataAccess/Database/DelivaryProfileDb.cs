@@ -27,9 +27,9 @@ public static partial class Db
         string nationalName,
         string nationalId,
         string licenseNumber,
-        DateOnly licenseExpiredDate,
+        DateTime licenseExpiredDate,
         string drivingLicenseNumber,
-        DateOnly drivingLicenseExpiredDate,
+        DateTime drivingLicenseExpiredDate,
         IDbTransaction? transaction = null)
     {
         const string query = @"INSERT INTO [dbo].[DelivaryProfile]
@@ -58,9 +58,9 @@ public static partial class Db
         string nationalName,
         string nationalId,
         string licenseNumber,
-        DateOnly licenseExpiredDate,
+        DateTime licenseExpiredDate,
         string drivingLicenseNumber,
-        DateOnly drivingLicenseExpiredDate,
+        DateTime drivingLicenseExpiredDate,
         IDbTransaction? transaction = null)
     {
         const string query = @"UPDATE [dbo].[DelivaryProfile]
@@ -122,6 +122,26 @@ public static partial class Db
             Id = id
         });
     }
+    public static async Task<DelivaryProfile?> GetDeliveryProfileByDeliveryIdAsync(int id, IDbConnection connection)
+    {
+        const string query = @"SELECT 
+                                [Id], 
+                                [Delivary], 
+                                [FirstName], 
+                                [SecondName], 
+                                [NationalName], 
+                                [NationalId], 
+                                [LicenseNumber], 
+                                [LicenseExpiredDate], 
+                                [DrivingLicenseNumber], 
+                                [DrivingLicenseExpiredDate]
+                                FROM [dbo].[DelivaryProfile]
+                                WHERE [Delivary] = @Id";
+        return await connection.QueryFirstOrDefaultAsync<DelivaryProfile>(query, new
+        {
+            Id = id
+        });
+    }
 }
 
 public class DelivaryProfile
@@ -133,7 +153,7 @@ public class DelivaryProfile
     public string NationalName { get; set; } = null!;
     public string NationalId { get; set; } = null!;
     public string LicenseNumber { get; set; } = null!;
-    public DateOnly LicenseExpiredDate { get; set; }
+    public DateTime LicenseExpiredDate { get; set; }
     public string DrivingLicenseNumber { get; set; } = null!;
-    public DateOnly DrivingLicenseExpiredDate { get; set; }
+    public DateTime DrivingLicenseExpiredDate { get; set; }
 }

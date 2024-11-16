@@ -1,7 +1,7 @@
 using Dapper;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
-using KiloMart.Domain.Delivery.Profile;
+using KiloMart.Domain.Deliveries.Profile;
 using KiloMart.Domain.Register.Delivery.Models;
 using KiloMart.Domain.Register.Delivery.Services;
 using KiloMart.Domain.Register.Utils;
@@ -72,6 +72,18 @@ public class DeliveryCommandController : ControllerBase
         return result.Success ? Ok(result) : StatusCode(500, result.Errors);
     }
 
+    #region profile
+    [HttpPost("profile/edit")]
+    [Guard([Roles.Delivery])]
+    public async Task<IActionResult> EditProfile(UpdateDeliveryProfileRequest request)
+    {
+
+        var result = await DeliveryProfileService.UpdateAsync(_dbFactory,
+            _userContext.Get(), request);
+
+        return result.Success ? Ok(result) : StatusCode(500, result.Errors);
+    }
+    #endregion
 
     [HttpGet("mine")]
     [Guard([Roles.Delivery])]
@@ -80,8 +92,12 @@ public class DeliveryCommandController : ControllerBase
         var party = _userContext.Get().Party;
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
-        var query = "SELECT [Id], [Delivary], [FirstName], [SecondName], [NationalName], [NationalId], [LicenseNumber], [LicenseExpiredDate], [DrivingLicenseNumber], [DrivingLicenseExpiredDate] FROM [dbo].[DelivaryProfile] WHERE [Party] = @Party";
+        var query = "SELECT [Id], [Delivary], [FirstName], [SecondName], [NationalName], [NationalId], [LicenseNumber], [LicenseExpiredDate], [DrivingLicenseNumber], [DrivingLicenseExpiredDate] FROM [dbo].[DelivaryProfile] WHERE [Delivary] = @Party";
         var result = await connection.QueryFirstOrDefaultAsync<DelivaryProfile>(query, new { Party = party });
+        if (result is null)
+        {
+            return NotFound();
+        }
         return Ok(result);
     }
     public class DelivaryProfile

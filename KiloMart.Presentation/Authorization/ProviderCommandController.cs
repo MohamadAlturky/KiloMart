@@ -1,8 +1,7 @@
 using Dapper;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
-using KiloMart.Domain.Provider.Profile.Models;
-using KiloMart.Domain.Provider.Profile.Services;
+using KiloMart.Domain.Providers.Profile;
 using KiloMart.Domain.Register.Provider.Models;
 using KiloMart.Domain.Register.Provider.Services;
 using KiloMart.Domain.Register.Utils;
@@ -70,6 +69,19 @@ public class ProviderCommandController : ControllerBase
         return result.Success ? Ok(result) : StatusCode(500, result.Errors);
     }
 
+    #region profile
+    [HttpPost("profile/edit")]
+    [Guard([Roles.Provider])]
+    public async Task<IActionResult> EditProfile(UpdateProviderProfileRequest request)
+    {
+
+        var result = await ProviderProfileService.UpdateAsync(_dbFactory,
+            _userContext.Get(), request);
+
+        return result.Success ? Ok(result) : StatusCode(500, result.Errors);
+    }
+    #endregion
+
     [HttpGet("mine")]
     [Guard([Roles.Provider])]
     public async Task<IActionResult> GetMine()
@@ -79,6 +91,10 @@ public class ProviderCommandController : ControllerBase
         connection.Open();
         var query = "SELECT * FROM [dbo].[ProviderProfile] WHERE [Provider] = @Provider";
         var result = await connection.QueryFirstOrDefaultAsync<ProviderProfile>(query, new { Provider = provider });
+        if(result is null)
+        {
+            return NotFound();
+        }
         return Ok(result);
     }
 

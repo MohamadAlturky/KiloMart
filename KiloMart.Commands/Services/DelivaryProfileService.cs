@@ -13,9 +13,9 @@ public class DelivaryProfileInsertModel
     public string NationalName { get; set; } = null!;
     public string NationalId { get; set; } = null!;
     public string LicenseNumber { get; set; } = null!;
-    public DateOnly LicenseExpiredDate { get; set; }
+    public DateTime LicenseExpiredDate { get; set; }
     public string DrivingLicenseNumber { get; set; } = null!;
-    public DateOnly DrivingLicenseExpiredDate { get; set; }
+    public DateTime DrivingLicenseExpiredDate { get; set; }
 
     public (bool Success, string[] Errors) Validate()
     {
@@ -36,13 +36,13 @@ public class DelivaryProfileInsertModel
         if (string.IsNullOrWhiteSpace(LicenseNumber))
             errors.Add("License number is required.");
 
-        if (LicenseExpiredDate < DateOnly.FromDateTime(DateTime.Now))
+        if (LicenseExpiredDate < DateTime.Now)
             errors.Add("License expire date must be in the future.");
 
         if (string.IsNullOrWhiteSpace(DrivingLicenseNumber))
             errors.Add("Driving license number is required.");
 
-        if (DrivingLicenseExpiredDate < DateOnly.FromDateTime(DateTime.Now))
+        if (DrivingLicenseExpiredDate < DateTime.Now)
             errors.Add("Driving license expire date must be in the future.");
 
         return (errors.Count == 0, errors.ToArray());
@@ -58,9 +58,9 @@ public class DelivaryProfileUpdateModel
     public string? NationalName { get; set; }
     public string? NationalId { get; set; }
     public string? LicenseNumber { get; set; }
-    public DateOnly? LicenseExpiredDate { get; set; }
+    public DateTime? LicenseExpiredDate { get; set; }
     public string? DrivingLicenseNumber { get; set; }
-    public DateOnly? DrivingLicenseExpiredDate { get; set; }
+    public DateTime? DrivingLicenseExpiredDate { get; set; }
 
     public (bool Success, string[] Errors) Validate()
     {

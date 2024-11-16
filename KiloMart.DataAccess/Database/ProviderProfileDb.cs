@@ -101,6 +101,25 @@ public static partial class Db
             Id = id
         });
     }
+    public static async Task<ProviderProfile?> GetProviderProfileByProviderIdAsync(int id, IDbConnection connection)
+    {
+        const string query = @"SELECT 
+                            [Id], 
+                            [Provider], 
+                            [FirstName], 
+                            [SecondName], 
+                            [OwnerNationalId], 
+                            [NationalApprovalId], 
+                            [CompanyName], 
+                            [OwnerName]
+                            FROM [dbo].[ProviderProfile]
+                            WHERE [Provider] = @Id";
+
+        return await connection.QueryFirstOrDefaultAsync<ProviderProfile>(query, new
+        {
+            Id = id
+        });
+    }
 }
 
 public class ProviderProfile

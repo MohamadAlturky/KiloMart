@@ -2,6 +2,7 @@ using Dapper;
 using KiloMart.Commands.Services;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
+using KiloMart.DataAccess.Database;
 using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Authorization;
 using KiloMart.Presentation.Controllers;
@@ -57,6 +58,32 @@ public class VehicleController : AppController
             }
         }
     }
+
+    [HttpDelete("{id:int}")]
+    [Guard([Roles.Delivery])]
+    public async Task<IActionResult> Delete(int id)
+    {
+
+        var result = await VehicleService.Delete(_dbFactory, _userContext.Get(), id);
+
+        if (result.Success)
+        {
+            return Ok(result.Data);
+        }
+        else
+        {
+            if (result.Errors.Contains("Not Found"))
+            {
+                return NotFound();
+            }
+            else
+            {
+                return BadRequest(result.Errors);
+            }
+        }
+    }
+
+
     [HttpGet("mine")]
     [Guard([Roles.Delivery])]
     public async Task<IActionResult> GetMine()

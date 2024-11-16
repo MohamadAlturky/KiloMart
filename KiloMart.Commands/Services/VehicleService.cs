@@ -7,6 +7,35 @@ namespace KiloMart.Commands.Services;
 
 public static class VehicleService
 {
+    public static async Task<Result<bool>> Delete(IDbFactory dbFactory,
+        UserPayLoad userPayLoad,
+        int id)
+    {
+        try
+        {
+            var connection = dbFactory.CreateDbConnection();
+            connection.Open();
+            var vehicle = await Db.GetVehicleByIdAsync(id, connection);
+
+            if (vehicle is null)
+            {
+                return Result<bool>.Fail(["Not Found"]);
+            }
+            if (vehicle.Delivary != userPayLoad.Party)
+            {
+                return Result<bool>.Fail(["Un Authorized"]);
+            }
+
+            var success = await Db.DeleteVehicleAsync(connection, id);
+
+            return Result<bool>.Ok(success);
+        }
+        catch (Exception e)
+        {
+            return Result<bool>.Fail([e.Message]);
+        }
+    }
+
     public static async Task<Result<Vehicle>> Insert(
         IDbFactory dbFactory,
         UserPayLoad userPayLoad,

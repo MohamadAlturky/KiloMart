@@ -77,6 +77,32 @@ public class OrderController : AppController
 
         return BadRequest(result.Errors);
     }
+    [HttpPost("delivery/reject")]
+    [Guard([Roles.Delivery])]
+    public async Task<IActionResult> DeliveryReject([FromQuery] long id)
+    {
+        var result = await DeliveryRejectOrderService.Reject(_dbFactory, _userContext.Get(), id);
+        if (result.Success)
+        {
+            return Ok(new { Status = true });
+        }
+
+        return BadRequest(result.Errors);
+    }
+    [HttpPost("delivery/accept")]
+    [Guard([Roles.Delivery])]
+    public async Task<IActionResult> AcceptReject([FromQuery] long id)
+    {
+        var result = await DeliveryAcceptOrderService.Accept(_dbFactory, _userContext.Get(), id);
+        if (result.Success)
+        {
+            return Ok(new { Status = true });
+        }
+
+        return BadRequest(result.Errors);
+    }
+
+
 
     [HttpGet("provider")]
     public async Task<ActionResult<List<Query.OrderJoinParty>>> GetOrdersByProvider()

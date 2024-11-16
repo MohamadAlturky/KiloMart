@@ -6,9 +6,11 @@ public enum OrderActivityType
     AcceptedFromProvider = 2,
     RejectedFromProvider = 3,
     CancelledByCustomer = 4,
-    
+    AcceptedFromDelivary = 5,
+
     Shipped,
     Delivered,
-    Cancelled
+    Cancelled,
+    RejectedFromDelivery = 6
 }
 

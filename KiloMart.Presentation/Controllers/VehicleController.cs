@@ -5,6 +5,7 @@ using KiloMart.Core.Contracts;
 using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Authorization;
 using KiloMart.Presentation.Controllers;
+using KiloMart.Requests.Queries;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
@@ -75,6 +76,17 @@ public class VehicleController : AppController
             ",
             new { Delivary = partyId });
         return Ok(cards.ToArray());
+
+    }
+
+    [HttpGet("list")]
+    public async Task<IActionResult> List([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    {
+        var partyId = _userContext.Get().Party;
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+        var result = await Query.GetVehiclesPaginated(connection, pageNumber, pageSize);
+        return Ok(result);
 
     }
 }

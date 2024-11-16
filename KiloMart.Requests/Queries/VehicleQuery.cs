@@ -1,32 +1,89 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Data;
 using Dapper;
+using KiloMart.Core.Models;
 
 namespace KiloMart.Requests.Queries
 {
     public partial class Query
     {
+
+        #region ADMIN
+        public static async Task<PaginatedResult<VehicleApiResponseList>> GetVehiclesPaginated(
+                IDbConnection connection,
+                int pageNumber,
+                int pageSize)
+        {
+            var query = @"
+            SELECT v.[Id] VehicleId,
+                   v.[Number] VehicleNumber,
+                   v.[Model] VehicleModel,
+                   v.[Type] VehicleType,
+                   v.[Year] VehicleYear,
+                   p.[DisplayName] PartyDisplayName,
+                   p.[Id] PartyId,
+                   p.[IsActive] PartyIsActive
+            FROM [dbo].[Vehicle] v
+            INNER JOIN [dbo].[Party] p ON v.Delivary = p.Id
+            ORDER BY v.[Id]
+            OFFSET @Offset ROWS
+            FETCH NEXT @PageSize ROWS ONLY;
+
+
+            SELECT COUNT(*) 
+            FROM [dbo].[Vehicle] v";
+
+            using var multi = await connection.QueryMultipleAsync(
+                query,
+                new
+                {
+                    Offset = (pageNumber - 1) * pageSize,
+                    PageSize = pageSize
+                });
+
+            var vehicles = (await multi.ReadAsync<VehicleApiResponseList>()).ToArray();
+            var totalCount = await multi.ReadFirstAsync<int>();
+
+            return new PaginatedResult<VehicleApiResponseList>
+            {
+                Items = vehicles,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+        }
+
+
+
+
+        public class VehicleApiResponseList
+        {
+            public int VehicleId { get; set; }
+            public string VehicleNumber { get; set; }
+            public string VehicleModel { get; set; }
+            public string VehicleType { get; set; }
+            public string VehicleYear { get; set; }
+            public string PartyDisplayName { get; set; }
+            public int PartyId { get; set; }
+            public bool PartyIsActive { get; set; }
+        }
+        #endregion
         public static async Task<VehicleApiResponse[]> GetVehiclesByDelivery(
-            IDbConnection connection, 
+            IDbConnection connection,
             int deliveryId)
         {
             var query = @"
-            SELECT TOP (1000) [Id]
+            SELECT [Id]
                 ,[Number]
                 ,[Model]
                 ,[Type]
                 ,[Year]
-            FROM [KiloMartMasterDb].[dbo].[Vehicle]
+            FROM [dbo].[Vehicle]
             WHERE [Delivary] = @Delivary";
 
             var vehicles = await connection.QueryAsync<VehicleApiResponse>(
                 query,
                 new { Delivary = deliveryId });
-            
+
             return vehicles.ToArray();
         }
     }

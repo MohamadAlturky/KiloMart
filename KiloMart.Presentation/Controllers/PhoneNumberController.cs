@@ -55,6 +55,28 @@ public class PhoneNumberController : AppController
             }
         }
     }
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+
+        var result = await PhoneNumberService.Delete(_dbFactory, _userContext.Get(), id);
+
+        if (result.Success)
+        {
+            return Ok(result.Data);
+        }
+        else
+        {
+            if (result.Errors.Contains("Not Found"))
+            {
+                return NotFound();
+            }
+            else
+            {
+                return BadRequest(result.Errors);
+            }
+        }
+    }
 
     [HttpGet("mine")]
     [Guard([Roles.Customer, Roles.Provider, Roles.Delivery])]
@@ -64,7 +86,7 @@ public class PhoneNumberController : AppController
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
         var phoneNumbers = await connection.QueryAsync<PhoneNumberApiResponseForMine>(
-            "SELECT [Id], [Value] FROM PhoneNumber WHERE Party = @partyId",
+            "SELECT [Id], [Value] FROM PhoneNumber WHERE Party = @partyId AND IsActive = 1",
             new { partyId });
         return Ok(phoneNumbers.ToArray());
     }
@@ -90,14 +112,17 @@ public class PhoneNumberController : AppController
 
         var sql = """
             SELECT 
-                ph.Id AS PhoneNumberId,
-                ph.Value AS NumberValue,
-                p.Id AS PersonId,
-                p.DisplayName AS PersonName
-                    FROM PhoneNumber ph
-                        INNER JOIN Party p ON ph.Party = p.Id
-                            WHERE p.IsActive = 1
-                                ORDER BY ph.Id
+              ph.Id AS PhoneNumberId,
+              ph.Value AS NumberValue,
+              p.Id AS PersonId,
+              p.DisplayName AS PersonName,
+        	  u.Email UserEmail,
+        	  u.Role UserRole
+                  FROM PhoneNumber ph
+                      INNER JOIN Party p ON ph.Party = p.Id
+                      INNER JOIN MembershipUser u ON u.Party = p.Id
+                          WHERE p.IsActive = 1
+                              ORDER BY ph.Id
                 OFFSET @skip ROWS FETCH NEXT @pageSize ROWS ONLY
         """;
         var phoneNumbers = await connection.QueryAsync<PhoneNumberApiResponse>(sql,
@@ -115,7 +140,9 @@ public class PhoneNumberController : AppController
     {
         public int PhoneNumberId { get; set; }
         public string NumberValue { get; set; } = null!;
+        public string UserEmail { get; set; } = null!;
         public int PersonId { get; set; }
+        public byte UserRole { get; set; }
         public string PersonName { get; set; } = null!;
     }
 

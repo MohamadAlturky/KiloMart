@@ -24,7 +24,6 @@ public class PhoneNumberUpdateModel
 {
     public int Id { get; set; }
     public string? Value { get; set; }
-    public bool? IsActive { get; set; }
 
     public (bool Success, string[] Errors) Validate()
     {
@@ -99,7 +98,6 @@ public static class PhoneNumberService
             }
 
             existingModel.Value = model.Value ?? existingModel.Value;
-            existingModel.IsActive = model.IsActive ?? existingModel.IsActive;
 
             await Db.UpdatePhoneNumberAsync(connection,
                 existingModel.Id,

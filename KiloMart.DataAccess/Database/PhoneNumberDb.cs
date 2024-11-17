@@ -16,8 +16,8 @@ public static partial class Db
     public static async Task<int> InsertPhoneNumberAsync(IDbConnection connection, string value, int party, IDbTransaction? transaction = null)
     {
         const string query = @"INSERT INTO [dbo].[PhoneNumber]
-                            ([Value], [Party])
-                            VALUES (@Value, @Party)
+                            ([Value], [Party],[IsActive])
+                            VALUES (@Value, @Party,1)
                             SELECT CAST(SCOPE_IDENTITY() AS INT)";
 
         return await connection.ExecuteScalarAsync<int>(query, new

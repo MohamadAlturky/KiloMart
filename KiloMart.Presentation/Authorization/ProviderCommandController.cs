@@ -6,6 +6,7 @@ using KiloMart.Domain.Register.Provider.Models;
 using KiloMart.Domain.Register.Provider.Services;
 using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Authorization;
+using KiloMart.Requests.Queries;
 using Microsoft.AspNetCore.Mvc;
 
 
@@ -111,4 +112,24 @@ public class ProviderCommandController : ControllerBase
         public string OwnerName { get; set; }
     }
 
+
+
+
+    [HttpGet("list")]
+    public async Task<IActionResult> List([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        var result = await Query.GetProviderProfilesWithUserInfoPaginated(connection, page, pageSize);
+        if (result.Profiles is null || result.Profiles.Length == 0)
+        {
+            return NotFound();
+        }
+        return Ok(new
+        {
+            Data = result.Profiles,
+            TotalCount = result.TotalCount
+        });
+    }
 }

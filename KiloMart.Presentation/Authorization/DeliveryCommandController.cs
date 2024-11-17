@@ -7,6 +7,7 @@ using KiloMart.Domain.Register.Delivery.Services;
 using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Authorization;
 using KiloMart.Presentation.Models.Commands.Deliveries;
+using KiloMart.Requests.Queries;
 using Microsoft.AspNetCore.Mvc;
 
 
@@ -99,6 +100,25 @@ public class DeliveryCommandController : ControllerBase
             return NotFound();
         }
         return Ok(result);
+    }
+
+
+    [HttpGet("list")]
+    public async Task<IActionResult> List([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        var result = await Query.GetDeliveryProfilesWithUserInfoPaginated(connection, page, pageSize);
+        if (result.Profiles is null || result.Profiles.Length == 0)
+        {
+            return NotFound();
+        }
+        return Ok(new
+        {
+            Data = result.Profiles,
+            TotalCount = result.TotalCount
+        });
     }
     public class DelivaryProfile
     {

@@ -7,6 +7,7 @@ using KiloMart.Domain.Register.Customer.Services;
 using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Authorization;
 using KiloMart.Presentation.Models.Commands.Customers;
+using KiloMart.Requests.Queries;
 using Microsoft.AspNetCore.Mvc;
 
 
@@ -119,6 +120,23 @@ public class CustomerCommandController : ControllerBase
         public string SecondName { get; set; }
         public string NationalName { get; set; }
         public string NationalId { get; set; }
+    }
+    [HttpGet("list")]
+    public async Task<IActionResult> List([FromQuery]int page = 1, [FromQuery] int pageSize = 10)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+        
+        var result = await Query.GetCustomerProfilesWithUserInfoPaginated(connection,page,pageSize);
+        if (result.Profiles is null || result.Profiles.Length == 0)
+        {
+            return NotFound();
+        }
+        return Ok(new
+        {
+            Data = result.Profiles,
+            TotalCount = result.TotalCount
+        });
     }
 
 }

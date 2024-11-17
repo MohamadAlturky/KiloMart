@@ -169,7 +169,7 @@ namespace KiloMart.Commands.Services
                 }
 
                 existingModel.IsActive = false;
-
+                existingModel.ToDate = DateTime.Now;
                 await Db.UpdateProductOfferAsync(connection,
                     existingModel.Id,
                     existingModel.Product,

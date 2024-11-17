@@ -147,4 +147,76 @@ public static class DiscountCodeService
             return Result<DiscountCode>.Fail(new[] { e.Message });
         }
     }
+    public static async Task<Result<DiscountCode>> Deactivate(
+        IDbFactory dbFactory,
+        UserPayLoad userPayLoad,
+        int id)
+    {
+
+        try
+        {
+            var connection = dbFactory.CreateDbConnection();
+            connection.Open();
+            var existingModel = await Db.GetDiscountCodeByIdAsync(id, connection);
+
+            if (existingModel is null)
+            {
+                return Result<DiscountCode>.Fail(["Not Found"]);
+            }
+
+            existingModel.IsActive = false;
+
+            await Db.UpdateDiscountCodeAsync(connection,
+                existingModel.Id,
+                existingModel.Code,
+                existingModel.Value,
+                existingModel.Description,
+                existingModel.StartDate,
+                existingModel.EndDate,
+                existingModel.DiscountType,
+                existingModel.IsActive);
+
+            return Result<DiscountCode>.Ok(existingModel);
+        }
+        catch (Exception e)
+        {
+            return Result<DiscountCode>.Fail([e.Message]);
+        }
+    }
+    public static async Task<Result<DiscountCode>> Activate(
+        IDbFactory dbFactory,
+        UserPayLoad userPayLoad,
+        int id)
+    {
+
+        try
+        {
+            var connection = dbFactory.CreateDbConnection();
+            connection.Open();
+            var existingModel = await Db.GetDiscountCodeByIdAsync(id, connection);
+
+            if (existingModel is null)
+            {
+                return Result<DiscountCode>.Fail(["Not Found"]);
+            }
+
+            existingModel.IsActive = true;
+
+            await Db.UpdateDiscountCodeAsync(connection,
+                existingModel.Id,
+                existingModel.Code,
+                existingModel.Value,
+                existingModel.Description,
+                existingModel.StartDate,
+                existingModel.EndDate,
+                existingModel.DiscountType,
+                existingModel.IsActive);
+
+            return Result<DiscountCode>.Ok(existingModel);
+        }
+        catch (Exception e)
+        {
+            return Result<DiscountCode>.Fail([e.Message]);
+        }
+    }
 }

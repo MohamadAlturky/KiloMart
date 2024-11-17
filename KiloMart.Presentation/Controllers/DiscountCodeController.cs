@@ -2,6 +2,7 @@ using Dapper;
 using KiloMart.Commands.Services;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
+using KiloMart.Requests.Queries;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KiloMart.Presentation.Controllers
@@ -53,48 +54,69 @@ namespace KiloMart.Presentation.Controllers
                 }
             }
         }
+        [HttpPut("deactivate/{id}")]
+        public async Task<IActionResult> Deactivate(int id)
+        {
+            
 
+            var result = await DiscountCodeService.Deactivate(_dbFactory, _userContext.Get(), id);
+
+            if (result.Success)
+            {
+                return Ok(result.Data);
+            }
+            else
+            {
+                if (result.Errors.Contains("Not Found"))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    return BadRequest(result.Errors);
+                }
+            }
+        }
+        [HttpPut("activate/{id}")]
+        public async Task<IActionResult> Activate(int id)
+        {
+
+
+            var result = await DiscountCodeService.Activate(_dbFactory, _userContext.Get(), id);
+
+            if (result.Success)
+            {
+                return Ok(result.Data);
+            }
+            else
+            {
+                if (result.Errors.Contains("Not Found"))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    return BadRequest(result.Errors);
+                }
+            }
+        }
 
         [HttpGet("list")]
-        // [Guard([Roles.Admin])]
-        public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> List([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             using var connection = _dbFactory.CreateDbConnection();
             connection.Open();
-            int skip = (page - 1) * pageSize;
 
-            var query = @"
-                SELECT 
-                    [d].[Id],
-                    [d].[Code],
-                    [d].[Value],
-                    [d].[Description],
-                    [d].[StartDate],
-                    [d].[EndDate],
-                    [d].[DiscountType],
-                    [d].[IsActive]
-                FROM DiscountCode [d]
-                WHERE [d].[IsActive] = 1  
-                ORDER BY [d].[Id] 
-                OFFSET @skip ROWS FETCH NEXT @pageSize ROWS ONLY;";
-
-            var discountCodes = await connection.QueryAsync<DiscountCodeApiResponse>(
-                query,
-                new { skip, pageSize });
-
-            return Ok(discountCodes.ToArray());
+            var result = await Query.GetDiscountCodesPaginated(connection, page, pageSize);
+            if (result.DiscountCodes is null || result.DiscountCodes.Length == 0)
+            {
+                return NotFound();
+            }
+            return Ok(new
+            {
+                Data = result.DiscountCodes,
+                TotalCount = result.TotalCount
+            });
         }
-    }
-
-    public class DiscountCodeApiResponse
-    {
-        public int Id { get; set; }
-        public string Code { get; set; } = string.Empty;
-        public decimal Value { get; set; }
-        public string Description { get; set; } = string.Empty;
-        public DateTime StartDate { get; set; }
-        public DateTime? EndDate { get; set; }
-        public byte DiscountType { get; set; }
-        public bool IsActive { get; set; }
     }
 }

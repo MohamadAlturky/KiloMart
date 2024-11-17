@@ -135,4 +135,43 @@ public static class LocationService
             return Result<Location>.Fail([e.Message]);
         }
     }
+    public static async Task<Result<Location>> DeActivate(
+        IDbFactory dbFactory,
+        UserPayLoad userPayLoad,
+        int id)
+    {
+        try
+        {
+            var connection = dbFactory.CreateDbConnection();
+            connection.Open();
+            var existingModel = await Db.GetLocationByIdAsync(id, connection);
+
+            if (existingModel is null)
+            {
+                return Result<Location>.Fail(["Not Found"]);
+            }
+
+            if (existingModel.Party != userPayLoad.Party)
+            {
+                return Result<Location>.Fail(["Un Authorized"]);
+            }
+
+
+            existingModel.IsActive = false;
+
+            await Db.UpdateLocationAsync(connection,
+                existingModel.Id,
+                existingModel.Longitude,
+                existingModel.Latitude,
+                existingModel.Name,
+                existingModel.Party,
+                existingModel.IsActive);
+
+            return Result<Location>.Ok(existingModel);
+        }
+        catch (Exception e)
+        {
+            return Result<Location>.Fail([e.Message]);
+        }
+    }
 }

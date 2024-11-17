@@ -3,6 +3,7 @@ using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Authorization;
+using KiloMart.Requests.Queries;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KiloMart.Presentation.Controllers;
@@ -54,6 +55,28 @@ public class ProductOfferController : ControllerBase
             }
         }
     }
+    [HttpPut("change-price/{id}/{price}")]
+    [Guard([Roles.Provider])]
+    public async Task<IActionResult> ChangePrice(int id, decimal price)
+    {
+        var result = await ProductOfferService.ChangePrice(_dbFactory, _userContext.Get(), id,price);
+
+        if (result.Success)
+        {
+            return Ok(result.Data);
+        }
+        else
+        {
+            if (result.Errors.Contains("Not Found"))
+            {
+                return NotFound();
+            }
+            else
+            {
+                return BadRequest(result.Errors);
+            }
+        }
+    }
     [HttpDelete("{id}")]
     [Guard([Roles.Provider])]
     public async Task<IActionResult> Delete(int id)
@@ -75,5 +98,23 @@ public class ProductOfferController : ControllerBase
                 return BadRequest(result.Errors);
             }
         }
+    }
+
+    [HttpGet("list")]
+    public async Task<IActionResult> List([FromQuery] int provider, [FromQuery] byte language, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        var result = await Query.GetProductOffersPaginated(connection, provider, language, page, pageSize);
+        if (result.ProductOffers is null || result.ProductOffers.Length == 0)
+        {
+            return NotFound();
+        }
+        return Ok(new
+        {
+            Data = result.ProductOffers,
+            TotalCount = result.TotalCount
+        });
     }
 }

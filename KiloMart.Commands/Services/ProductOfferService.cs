@@ -10,7 +10,7 @@ namespace KiloMart.Commands.Services
         public int Product { get; set; }
         public decimal Price { get; set; }
         public decimal OffPercentage { get; set; }
-        public DateTime FromDate { get; set; }
+        //public DateTime FromDate { get; set; }
         public float Quantity { get; set; }
 
         public (bool Success, string[] Errors) Validate()
@@ -29,8 +29,8 @@ namespace KiloMart.Commands.Services
             if (Quantity <= 0)
                 errors.Add("Quantity must be a positive number.");
 
-            if (FromDate.AddMinutes(1) < DateTime.UtcNow)
-                errors.Add("From date must be in the future");
+            //if (FromDate.AddMinutes(1) < DateTime.UtcNow)
+            //    errors.Add("From date must be in the future");
 
             return (errors.Count == 0, errors.ToArray());
         }
@@ -74,7 +74,8 @@ namespace KiloMart.Commands.Services
                     model.Product,
                     model.Price,
                     model.OffPercentage,
-                    model.FromDate,
+                    //model.FromDate,
+                    DateTime.Now,
                     null,
                     model.Quantity,
                     userPayLoad.Party);
@@ -84,7 +85,7 @@ namespace KiloMart.Commands.Services
                     Product = model.Product,
                     Price = model.Price,
                     OffPercentage = model.OffPercentage,
-                    FromDate = model.FromDate,
+                    FromDate = DateTime.Now,
                     ToDate = null,
                     Quantity = model.Quantity,
                     Provider = userPayLoad.Party,
@@ -146,12 +147,83 @@ namespace KiloMart.Commands.Services
                 return Result<ProductOffer>.Fail([e.Message]);
             }
         }
+
+        public static async Task<Result<ProductOffer>> ChangePrice(
+            IDbFactory dbFactory,
+            UserPayLoad userPayLoad,
+            int id,
+            decimal price)
+        {
+            using var readConnection = dbFactory.CreateDbConnection();
+            using var writeConnection = dbFactory.CreateDbConnection();
+            readConnection.Open();
+            writeConnection.Open();
+            var transaction = writeConnection.BeginTransaction();
+            try
+            {
+                var existingModel = await Db.GetProductOfferByIdAsync(id, readConnection);
+
+                if (existingModel is null)
+                {
+                    return Result<ProductOffer>.Fail(["Not Found"]);
+                }
+                if (existingModel.Provider != userPayLoad.Party)
+                {
+                    return Result<ProductOffer>.Fail(["Un Authorized"]);
+                }
+
+                existingModel.IsActive = false;
+                existingModel.ToDate = DateTime.Now;
+
+                await Db.UpdateProductOfferAsync(writeConnection,
+                    existingModel.Id,
+                    existingModel.Product,
+                    existingModel.Price,
+                    existingModel.OffPercentage,
+                    existingModel.FromDate,
+                    existingModel.ToDate,
+                    existingModel.Quantity,
+                    existingModel.Provider,
+                    existingModel.IsActive,
+                    transaction);
+                
+                var newOffer = new ProductOffer()
+                {
+                    FromDate = DateTime.Now,
+                    ToDate = null,
+                    OffPercentage = existingModel.OffPercentage,
+                    Product = existingModel.Product,
+                    Price = price,
+                    Quantity = existingModel.Quantity,
+                    Provider = existingModel.Provider,
+                    IsActive = true
+                };
+                
+                newOffer.Id = await Db.InsertProductOfferAsync(writeConnection,
+                    newOffer.Product,
+                    newOffer.Price,
+                    newOffer.OffPercentage,
+                    newOffer.FromDate,
+                    newOffer.ToDate,
+                    newOffer.Quantity,
+                    newOffer.Provider,
+                    transaction);
+
+                transaction.Commit();
+                return Result<ProductOffer>.Ok(newOffer);
+            }
+            catch (Exception e)
+            {
+                transaction.Rollback();
+                return Result<ProductOffer>.Fail([e.Message]);
+            }
+        }
         public static async Task<Result<ProductOffer>> DeActivate(
             IDbFactory dbFactory,
             UserPayLoad userPayLoad,
             int id)
         {
-            
+
 
             try
             {

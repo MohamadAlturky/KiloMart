@@ -320,15 +320,19 @@ public partial class Query
             pl.Product AS ProductLocalizedProduct,
             pl.MeasurementUnit AS ProductLocalizedMeasurementUnit,
             pl.Description AS ProductLocalizedDescription,
-            pl.Name AS ProductLocalizedName
+            pl.Name AS ProductLocalizedName,
+            pc.Name AS ProductCategoryName
 
         FROM 
-            [KiloMartMasterDb].[dbo].[ProductOffer] po
-        JOIN 
-            [KiloMartMasterDb].[dbo].[Product] p 
+            [dbo].[ProductOffer] po
+        INNER JOIN 
+            [dbo].[Product] p 
             ON p.Id = po.Product
+        INNER JOIN 
+	        dbo.ProductCategory pc 
+	        ON pc.Id = p.ProductCategory
         LEFT JOIN 
-            [KiloMartMasterDb].[dbo].[ProductLocalized] pl
+            [dbo].[ProductLocalized] pl
             ON pl.Product = p.Id AND pl.[Language] = @languageId
         WHERE 
             po.IsActive = 1 AND po.[Provider] = @providerId
@@ -380,4 +384,8 @@ public class ProductOfferWithDetails
     public string? ProductLocalizedMeasurementUnit { get; set; }
     public string? ProductLocalizedDescription { get; set; }
     public string? ProductLocalizedName { get; set; }
+
+
+    // ProductCategoryName
+    public string ProductCategoryName { get; set; } = null!;
 }

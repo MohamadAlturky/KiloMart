@@ -113,7 +113,24 @@ public class ProductOfferController : ControllerBase
         }
         return Ok(new
         {
-            Data = result.ProductOffers,
+            Data = result.ProductOffers.Select(e=>new
+            {
+                ProductId = e.ProductId,
+                ProductImageUrl =e.ProductImageUrl,
+                ProductIsActive =  e.ProductIsActive,
+                ProductDescription = (e.ProductLocalizedDescription??e.ProductDescription),
+                ProductMeasurementUnit = (e.ProductLocalizedMeasurementUnit??e.ProductMeasurementUnit),
+                ProductName = (e.ProductLocalizedName??e.ProductName),
+                e.ProductOfferId,
+                e.ProductOfferFromDate,
+                e.ProductOfferIsActive,
+                e.ProductOfferOffPercentage,
+                e.ProductOfferPrice,
+                e.ProductOfferQuantity,
+                e.ProductProductCategory,
+                e.ProductCategoryName
+            }).ToList(),
+
             TotalCount = result.TotalCount
         });
     }

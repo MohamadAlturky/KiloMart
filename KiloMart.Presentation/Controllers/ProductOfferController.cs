@@ -54,4 +54,26 @@ public class ProductOfferController : ControllerBase
             }
         }
     }
+    [HttpDelete("{id}")]
+    [Guard([Roles.Provider])]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var result = await ProductOfferService.DeActivate(_dbFactory, _userContext.Get(), id);
+
+        if (result.Success)
+        {
+            return Ok(result.Data);
+        }
+        else
+        {
+            if (result.Errors.Contains("Not Found"))
+            {
+                return NotFound();
+            }
+            else
+            {
+                return BadRequest(result.Errors);
+            }
+        }
+    }
 }

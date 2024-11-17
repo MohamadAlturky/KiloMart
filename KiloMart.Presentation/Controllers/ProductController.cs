@@ -21,7 +21,7 @@ public class ProductController : ControllerBase
         _dbFactory = dbFactory;
         _environment = environment;
     }
-
+    #region Insert
     [HttpPost]
     public async Task<IActionResult> Insert([FromForm] CreateProductRequest product)
     {
@@ -63,6 +63,8 @@ public class ProductController : ControllerBase
         var result = ProductService.Insert(_dbFactory, productDto);
         return result.Success ? Ok(result.Data) : StatusCode(500, result.Errors);
     }
+    #endregion
+
 
     [HttpGet("admin/paginated")]
     public async Task<IActionResult> GetAllLocalizedPaginatedForAdmin(
@@ -103,7 +105,7 @@ public class ProductController : ControllerBase
         OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
 
         // Query execution with pagination parameters
-        var products = await connection.QueryAsync<ProductApiResponse>(
+        var products = await connection.QueryAsync<ProductSqlQueryResponse>(
             sql,
             new { language, offset, pageSize, isActive }
         );
@@ -116,6 +118,8 @@ public class ProductController : ControllerBase
             {
                 Id = product.Id,
                 Name = product.LocalizedName ?? product.Name,
+                Description = product.LocalizedDescription ?? product.Description,
+                MeasurementUnit = product.LocalizedMeasurementUnit ?? product.MeasurementUnit,
                 IsActive = product.IsActive,
                 ImageUrl = product.ImageUrl
             });
@@ -168,7 +172,7 @@ public class ProductController : ControllerBase
         OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
 
         // Query execution with pagination parameters
-        var products = await connection.QueryAsync<ProductApiResponse>(
+        var products = await connection.QueryAsync<ProductSqlQueryResponse>(
             sql,
             new { language, offset, pageSize, isActive, category }
         );
@@ -181,6 +185,8 @@ public class ProductController : ControllerBase
             {
                 Id = product.Id,
                 Name = product.LocalizedName ?? product.Name,
+                Description = product.LocalizedDescription ?? product.Description,
+                MeasurementUnit = product.LocalizedMeasurementUnit ?? product.MeasurementUnit,
                 IsActive = product.IsActive,
                 ImageUrl = product.ImageUrl
             });
@@ -197,16 +203,20 @@ public class ProductController : ControllerBase
     {
         public int Id { get; set; }
         public string Name { get; set; } = null!;
+        public string Description { get; set; } = null!;
+        public string MeasurementUnit { get; set; } = null!;
         public bool IsActive { get; set; }
-        public string? ImageUrl { get; set; }
+        public string ImageUrl { get; set; } = null!;
     }
 
-    public class ProductApiResponse
+    public class ProductSqlQueryResponse
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
+        public string MeasurementUnit { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
         public bool IsActive { get; set; }
-        public string? ImageUrl { get; set; }
+        public string ImageUrl { get; set; }
         // Localized properties
         public byte? Language { get; set; }
         public int? Product { get; set; }
@@ -229,7 +239,16 @@ public class ProductController : ControllerBase
         // Calculate OFFSET for pagination
         int offset = (page - 1) * pageSize;
 
-        var countSql = "SELECT COUNT(*) FROM Product WITH (NOLOCK) WHERE IsActive = @isActive";
+        var countSql = @"SELECT COUNT(*) 
+                FROM Product p WITH (NOLOCK)
+                INNER JOIN (
+                    SELECT Product, MAX(Price) AS MaxPrice, MIN(Price) AS MinPrice
+                    FROM ProductOffer
+                        Where IsActive = 1
+                    GROUP BY Product
+                ) po
+                ON p.Id = po.Product
+                WHERE p.IsActive = @isActive";
         int totalCount = await connection.ExecuteScalarAsync<int>(countSql, new { isActive });
 
         // SQL query with pagination, using OFFSET and FETCH
@@ -255,6 +274,7 @@ public class ProductController : ControllerBase
                 INNER JOIN (
                     SELECT Product, MAX(Price) AS MaxPrice, MIN(Price) AS MinPrice
                     FROM ProductOffer
+                        Where IsActive = 1
                     GROUP BY Product
                 ) po
                 ON p.Id = po.Product
@@ -303,7 +323,16 @@ public class ProductController : ControllerBase
         // Calculate OFFSET for pagination
         int offset = (page - 1) * pageSize;
 
-        var countSql = "SELECT COUNT(*) FROM Product WITH (NOLOCK) WHERE IsActive = @isActive AND ProductCategory = @category";
+        var countSql = @"SELECT COUNT(*) 
+                FROM Product p WITH (NOLOCK)
+                INNER JOIN (
+                    SELECT Product, MAX(Price) AS MaxPrice, MIN(Price) AS MinPrice
+                    FROM ProductOffer
+                        Where IsActive = 1
+                    GROUP BY Product
+                ) po
+                ON p.Id = po.Product
+                WHERE p.IsActive = @isActive AND ProductCategory = @category";
         int totalCount = await connection.ExecuteScalarAsync<int>(countSql, new { isActive, category });
 
         // SQL query with pagination, using OFFSET and FETCH
@@ -329,6 +358,7 @@ public class ProductController : ControllerBase
                 INNER JOIN (
                     SELECT Product, MAX(Price) AS MaxPrice, MIN(Price) AS MinPrice
                     FROM ProductOffer
+                        Where IsActive = 1
                     GROUP BY Product
                 ) po
                 ON p.Id = po.Product
@@ -354,6 +384,9 @@ public class ProductController : ControllerBase
                 ImageUrl = product.ImageUrl,
                 MinPrice = product.MinPrice,
                 MaxPrice = product.MaxPrice,
+                MeasurementUnit = product.LocalizedMeasurementUnit ?? product.MeasurementUnit,
+                Description = product.LocalizedDescription ?? product.Description,
+
             });
         }
 
@@ -368,6 +401,8 @@ public class ProductController : ControllerBase
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
+        public string MeasurementUnit { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
         public bool IsActive { get; set; }
         public string? ImageUrl { get; set; }
         // Localized properties
@@ -385,6 +420,8 @@ public class ProductController : ControllerBase
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
+        public string MeasurementUnit { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
         public bool IsActive { get; set; }
         public string? ImageUrl { get; set; }
         public decimal? MinPrice { get; set; }

@@ -29,7 +29,7 @@ public class ProductCategoryController : AppController
 
     [HttpGet("paginated")]
     public async Task<IActionResult> GetAllLocalizedPaginatedForAdmin(
-        [FromQuery] byte language,
+        [FromQuery] byte language = 1,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
         [FromQuery] bool isActive = true)

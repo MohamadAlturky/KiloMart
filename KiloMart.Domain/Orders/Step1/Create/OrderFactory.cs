@@ -70,11 +70,11 @@ public static class OrderFactory
                 orderedFromMultipleProviders = true;
             }
         }
-        if (orderedFromMultipleProviders && AppManager.CancelWhenOrderFromMultiProviders)
+        if (orderedFromMultipleProviders && ConstantSettings.CancelWhenOrderFromMultiProviders)
         {
             return Result<DomainOrder>.Fail([$"can't order form multiple providers"]);
         }
-        if (orderedFromMultipleProviders && !AppManager.CancelWhenOrderFromMultiProviders)
+        if (orderedFromMultipleProviders && !ConstantSettings.CancelWhenOrderFromMultiProviders)
         {
 
         }

@@ -7,13 +7,17 @@ using KiloMart.Presentation.Authorization;
 using KiloMart.Presentation.RealTime;
 using KiloMart.Core.Authentication;
 using KiloMart.DataAccess.EFCore.Configuration;
+using KiloMart.Core.Repositories;
+using KiloMart.Core.Settings;
+using KiloMart.DataAccess.EFCore.Repositories;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserContext, UserContext>();
-
+builder.Services.AddSingleton<IAppSettingsRepository, AppSettingsRepository>();
+builder.Services.AddSingleton<IAppSettingsProvider, AppSettingsProvider>();
 #region Authentication
 // Add JWT Authentication configuration
 builder.Services.AddAuthentication(options =>

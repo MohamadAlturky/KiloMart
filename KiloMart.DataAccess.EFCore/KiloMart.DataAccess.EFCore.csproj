@@ -14,4 +14,7 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 	</ItemGroup>
+<ItemGroup>
+  <ProjectReference Include="..\KiloMart.Core\KiloMart.Core.csproj" />
+</ItemGroup>
 </Project>

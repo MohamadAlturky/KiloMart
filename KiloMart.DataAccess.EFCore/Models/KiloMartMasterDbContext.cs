@@ -15,6 +15,8 @@ public partial class KiloMartMasterDbContext : DbContext
     {
     }
 
+    public virtual DbSet<AppSetting> AppSettings { get; set; }
+
     public virtual DbSet<Card> Cards { get; set; }
 
     public virtual DbSet<Customer> Customers { get; set; }
@@ -87,13 +89,20 @@ public partial class KiloMartMasterDbContext : DbContext
 
     public virtual DbSet<VerificationToken> VerificationTokens { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=DESKTOP-OO326C9\\SQLEXPRESS01;Database=KiloMartMasterDb;User id=sa;Password=A@123456789;MultipleActiveResultSets=true;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False;Trusted_Connection=false");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.UseCollation("Arabic_CI_AS");
+
+        modelBuilder.Entity<AppSetting>(entity =>
+        {
+            entity.HasKey(e => e.Key);
+
+            entity.Property(e => e.Key).ValueGeneratedNever();
+            entity.Property(e => e.Value)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+        });
 
         modelBuilder.Entity<Card>(entity =>
         {
@@ -661,6 +670,8 @@ public partial class KiloMartMasterDbContext : DbContext
 
             entity.HasIndex(e => e.Product, "IX_ProductOffer_1");
 
+            entity.HasIndex(e => e.Provider, "IX_ProductOffer_2");
+
             entity.Property(e => e.FromDate).HasColumnType("datetime");
             entity.Property(e => e.OffPercentage).HasColumnType("decimal(10, 5)");
             entity.Property(e => e.Price).HasColumnType("money");
@@ -670,6 +681,11 @@ public partial class KiloMartMasterDbContext : DbContext
                 .HasForeignKey(d => d.Product)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_ProductOffer_Product");
+
+            entity.HasOne(d => d.ProviderNavigation).WithMany(p => p.ProductOffers)
+                .HasForeignKey(d => d.Provider)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ProductOffer_Provider");
         });
 
         modelBuilder.Entity<ProductOfferDiscount>(entity =>

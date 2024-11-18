@@ -28,4 +28,6 @@ public partial class ProductOffer
     public virtual Product ProductNavigation { get; set; } = null!;
 
     public virtual ICollection<ProductOfferDiscount> ProductOfferDiscounts { get; set; } = new List<ProductOfferDiscount>();
+
+    public virtual Provider ProviderNavigation { get; set; } = null!;
 }

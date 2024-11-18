@@ -11,6 +11,8 @@ public partial class Provider
 
     public virtual Party PartyNavigation { get; set; } = null!;
 
+    public virtual ICollection<ProductOffer> ProductOffers { get; set; } = new List<ProductOffer>();
+
     public virtual ICollection<ProductRequest> ProductRequests { get; set; } = new List<ProductRequest>();
 
     public virtual ICollection<ProviderDocument> ProviderDocuments { get; set; } = new List<ProviderDocument>();

@@ -152,4 +152,18 @@ public class OrderController : AppController
         return Ok(result);
     }
 
+    [HttpPost("get-valid-offers-for-order")]
+    public async Task<IActionResult> ValidOffers(float longitude, float latitude, [FromBody] List<RequestedProduct> products)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        var result = await Query.GetProductOfferCounts(connection, products,latitude,longitude);
+        
+        return Ok(new
+        {
+            Data = result,
+        });
+    }
+
 }

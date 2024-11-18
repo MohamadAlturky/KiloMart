@@ -7,5 +7,6 @@
   <ItemGroup>
     <ProjectReference Include="..\KiloMart.Core\KiloMart.Core.csproj" />
     <ProjectReference Include="..\KiloMart.DataAccess\KiloMart.DataAccess.csproj" />
+    <ProjectReference Include="..\KiloMart.Requests\KiloMart.Requests.csproj" />
   </ItemGroup>
 </Project>

@@ -3,6 +3,7 @@ using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.Core.Models;
 using KiloMart.DataAccess.Database;
+using KiloMart.Domain.Register.Utils;
 
 namespace KiloMart.Commands.Services;
 
@@ -65,6 +66,18 @@ public static class LocationService
         {
             var connection = dbFactory.CreateDbConnection();
             connection.Open();
+            
+            if(userPayLoad.Role == ((int)Roles.Provider))
+            {
+                var existingLocation = Db.GetLocationByPartyAsync(userPayLoad.Party,
+                connection);
+
+                if(existingLocation is not null)
+                {
+                    return Result<Location>.Fail(["can't add multiple locations for the provider"]);
+                }
+            }
+
             var id = await Db.InsertLocationAsync(connection,
               model.Longitude,
               model.Latitude,

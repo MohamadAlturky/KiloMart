@@ -70,14 +70,14 @@ public static class OrderFactory
                 orderedFromMultipleProviders = true;
             }
         }
-        if (orderedFromMultipleProviders && ConstantSettings.CancelWhenOrderFromMultiProviders)
-        {
-            return Result<DomainOrder>.Fail([$"can't order form multiple providers"]);
-        }
-        if (orderedFromMultipleProviders && !ConstantSettings.CancelWhenOrderFromMultiProviders)
-        {
+        //if (orderedFromMultipleProviders && ConstantSettings.CancelWhenOrderFromMultiProviders)
+        //{
+        //    return Result<DomainOrder>.Fail([$"can't order form multiple providers"]);
+        //}
+        //if (orderedFromMultipleProviders && !ConstantSettings.CancelWhenOrderFromMultiProviders)
+        //{
 
-        }
+        //}
         int mostOccuredProvider = GetMostCommonProvider(offers);
         Location? providerLocation = await Db.GetLocationByPartyAsync(mostOccuredProvider, connection);
         if (providerLocation is null)

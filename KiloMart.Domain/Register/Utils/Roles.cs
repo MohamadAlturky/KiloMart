@@ -3,7 +3,7 @@ namespace KiloMart.Domain.Register.Utils;
 public enum Roles
 {
     Customer = 1,
-    Provider = 2,
-    Delivery = 3,
+    Provider = 3,
+    Delivery = 2,
     Admin = 4
 }

@@ -51,7 +51,7 @@ namespace KiloMart.Requests.Queries
                 FROM ProductOffer WITH (NOLOCK)
                 INNER JOIN Product WITH (NOLOCK) ON Product.Id = ProductOffer.Product
                 INNER JOIN #RequestedProducts pr WITH (NOLOCK) ON pr.ProductId = Product.Id
-                INNER JOIN Location WITH (NOLOCK) ON Provider = Location.Party
+                INNER JOIN Location WITH (NOLOCK) ON Provider = Location.Party AND Location.IsActive = 1
                 WHERE ProductOffer.IsActive = 1 
                   AND ProductOffer.Quantity >= pr.RequestedQuantity
                 GROUP BY ProductOffer.Provider, Location.Latitude, Location.Longitude;";

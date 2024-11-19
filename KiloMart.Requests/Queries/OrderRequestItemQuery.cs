@@ -7,7 +7,7 @@ public partial class Query
 {
     public static async Task<OrderRequestItemDto[]> GetOrderRequestItemsByOrderRequest(
         IDbConnection connection,
-        int orderRequestId,
+        long orderRequestId,
         byte language)
     {
         // SQL query to fetch order request items with product details
@@ -40,8 +40,8 @@ public partial class Query
 // DTO class to hold the result of the query
 public class OrderRequestItemDto
 {
-    public int OrderRequestItemId { get; set; }
-    public int OrderRequestItemQuantity { get; set; }
+    public long OrderRequestItemId { get; set; }
+    public float OrderRequestItemQuantity { get; set; }
     public int ProductId { get; set; }
     public string ProductDescription { get; set; } = null!;
     public string ProductName { get; set; } = null!;

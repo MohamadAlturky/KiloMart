@@ -18,6 +18,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserContext, UserContext>();
 builder.Services.AddSingleton<IAppSettingsRepository, AppSettingsRepository>();
 builder.Services.AddSingleton<IAppSettingsProvider, AppSettingsProvider>();
+builder.Services.AddHostedService<FFF.NotificationService>();
 #region Authentication
 // Add JWT Authentication configuration
 builder.Services.AddAuthentication(options =>
@@ -83,16 +84,41 @@ GuardAttribute.SECRET_KEY = builder.Configuration["Jwt:Key"]!;
 GuardAttribute.ISSUER = builder.Configuration["Jwt:Issuer"]!;
 GuardAttribute.AUDIENCE = builder.Configuration["Jwt:Audience"]!;
 
+// builder.Services.AddCors(options =>
+// {
+//     options.AddDefaultPolicy(policy =>
+//     {
+//         policy
+//             .AllowAnyOrigin() 
+//             .AllowAnyHeader()
+//             .AllowAnyMethod();
+//     });
+// });
+// builder.Services.AddCors(options =>
+// {
+//     options.AddDefaultPolicy(policy =>
+//     {
+//         policy
+//             .WithOrigins("http://localhost:3001") // Allow requests from localhost:3001
+//             .AllowAnyHeader()
+//             .AllowAnyMethod();
+//     });
+// });
+
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+// Configure CORS policy
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(policy =>
+    options.AddPolicy(name: MyAllowSpecificOrigins,
+    policy =>
     {
-        policy
-            .AllowAnyOrigin() 
-            .AllowAnyHeader()
-            .AllowAnyMethod();
+        policy.WithOrigins("http://localhost:3001") // Allow requests from this origin
+              .AllowAnyHeader()                    // Allow any headers
+              .AllowAnyMethod() 
+              .AllowCredentials();
     });
 });
+
 var app = builder.Build();
 
 app.UseSwagger();
@@ -100,11 +126,14 @@ app.UseSwaggerUI();
 
 app.UseStaticFiles();
 app.UseHttpsRedirection();
+app.UseCors(MyAllowSpecificOrigins); // Use the defined CORS policy
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapHub<NotificationHub>("/notificationHub");
+// app.MapHub<NotificationHub>("/notificationHub");
+app.MapHub<FFF.NotificationHub>("/notificationHub");
+
 app.Run();
 

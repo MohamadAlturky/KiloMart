@@ -8,10 +8,10 @@ using KiloMart.Requests.Queries;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
-[Route("api/card")]
-public class CardController : AppController
+[Route("api/customer/card")]
+public class CardCustomerController : AppController
 {
-      public CardController(IDbFactory dbFactory, IUserContext userContext)
+      public CardCustomerController(IDbFactory dbFactory, IUserContext userContext)
             : base(dbFactory, userContext)
       {
       }
@@ -44,15 +44,6 @@ public class CardController : AppController
             using var connection = _dbFactory.CreateDbConnection();
             connection.Open();
             var cards = await Query.GetCustomerCards(connection, partyId);
-            return Ok(cards);
-      }
-
-      [HttpGet("list")]
-      public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
-      {
-            using var connection = _dbFactory.CreateDbConnection();
-            connection.Open();
-            var cards = await Query.GetAllCardsPaginated(connection, page, pageSize);
             return Ok(cards);
       }
 }

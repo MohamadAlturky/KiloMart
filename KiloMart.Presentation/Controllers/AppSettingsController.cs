@@ -4,7 +4,7 @@ using KiloMart.Core.Settings;
 namespace KiloMart.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/admin/settings")]
     public class AppSettingsController : ControllerBase
     {
         private readonly IAppSettingsProvider _settingsProvider;

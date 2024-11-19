@@ -8,10 +8,10 @@ using Microsoft.AspNetCore.Mvc;
 namespace KiloMart.Presentation.Controllers
 {
     [ApiController]
-    [Route("api/discountcode")]
-    public class DiscountCodeController : AppController
+    [Route("api/admin/discountcode")]
+    public class DiscountCodeAdminController : AppController
     {
-        public DiscountCodeController(IDbFactory dbFactory, IUserContext userContext)
+        public DiscountCodeAdminController(IDbFactory dbFactory, IUserContext userContext)
             : base(dbFactory, userContext)
         {
         }

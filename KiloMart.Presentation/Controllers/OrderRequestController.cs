@@ -6,36 +6,31 @@ using KiloMart.Presentation.Authorization;
 using KiloMart.Presentation.Controllers;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KiloMart.Api.Controllers
+namespace KiloMart.Api.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class OrderRequestController(IDbFactory dbFactory, IUserContext userContext) 
+: AppController(dbFactory, userContext)
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class OrderRequestController : AppController
+    [HttpPost]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> CreateOrderRequest(
+        [FromBody] CreateOrderRequestApiRequestModel model)
     {
-        public OrderRequestController(IDbFactory dbFactory, IUserContext userContext) : base(dbFactory, userContext)
+        if (model is null)
         {
+            return BadRequest("Invalid request model.");
         }
 
-        [HttpPost]
-        [Guard([Roles.Customer])]
-        public async Task<IActionResult> CreateOrderRequest([FromBody] CreateOrderRequestApiRequestModel model)
+        var userPayload = _userContext.Get();
+        
+        var result = await OrderRequestService.Insert(model, userPayload, _dbFactory);
+
+        if (result.Success)
         {
-            if (model == null)
-            {
-                return BadRequest("Invalid request model.");
-            }
-
-            var userPayload = _userContext.Get();
-            
-
-            var result = await OrderRequestService.Insert(model, userPayload, _dbFactory);
-
-            if (result.Success)
-            {
-                return CreatedAtAction(nameof(CreateOrderRequest), result.Data);
-            }
-
-            return BadRequest(result.Errors);
+            return CreatedAtAction(nameof(CreateOrderRequest), result.Data);
         }
+        return BadRequest(result.Errors);
     }
 }

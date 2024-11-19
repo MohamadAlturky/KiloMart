@@ -10,14 +10,10 @@ namespace KiloMart.Presentation.Controllers;
 
 [ApiController]
 [Route("api/product-offer")]
-public class ProductOfferController : ControllerBase
+public class ProductOfferController : AppController
 {
-    private readonly IDbFactory _dbFactory;
-    private readonly IUserContext _userContext;
-    public ProductOfferController(IDbFactory dbFactory, IUserContext userContext)
+    public ProductOfferController(IDbFactory dbFactory, IUserContext userContext) : base(dbFactory, userContext)
     {
-        _dbFactory = dbFactory;
-        _userContext = userContext;
     }
 
     [HttpPost("add")]

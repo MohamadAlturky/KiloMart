@@ -85,7 +85,7 @@ public class ProviderCommandController(IDbFactory dbFactory,
         connection.Open();
         var query = "SELECT * FROM [dbo].[ProviderProfile] WHERE [Provider] = @Provider";
         var result = await connection.QueryFirstOrDefaultAsync<ProviderProfile>(query, new { Provider = provider });
-        if(result is null)
+        if (result is null)
         {
             return NotFound();
         }
@@ -97,12 +97,12 @@ public class ProviderCommandController(IDbFactory dbFactory,
     {
         public int Id { get; set; }
         public int Provider { get; set; }
-        public string FirstName { get; set; }
-        public string SecondName { get; set; }
-        public string OwnerNationalId { get; set; }
-        public string NationalApprovalId { get; set; }
-        public string CompanyName { get; set; }
-        public string OwnerName { get; set; }
+        public string FirstName { get; set; } = null!;
+        public string SecondName { get; set; } = null!;
+        public string OwnerNationalId { get; set; } = null!;
+        public string NationalApprovalId { get; set; } = null!;
+        public string CompanyName { get; set; } = null!;
+        public string OwnerName { get; set; } = null!;
     }
 
     [HttpGet("admin/list")]

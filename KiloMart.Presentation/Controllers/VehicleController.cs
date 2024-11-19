@@ -105,8 +105,8 @@ public class VehicleController(IDbFactory dbFactory, IUserContext userContext) :
 public class VehicleApiResponse
 {
     public int Id { get; set; }
-    public string Number { get; set; }
-    public string Model { get; set; }
-    public string Type { get; set; }
-    public string Year { get; set; }
+    public string Number { get; set; } = null!;
+    public string Model { get; set; } = null!;
+    public string Type { get; set; } = null!;
+    public string Year { get; set; } = null!;
 }

@@ -116,10 +116,10 @@ public class CustomerCommandController : ControllerBase
     {
         public int Id { get; set; }
         public int Customer { get; set; }
-        public string FirstName { get; set; }
-        public string SecondName { get; set; }
-        public string NationalName { get; set; }
-        public string NationalId { get; set; }
+        public string FirstName { get; set; } = null!;
+        public string SecondName { get; set; } = null!;
+        public string NationalName { get; set; } = null!;
+        public string NationalId { get; set; } = null!;
     }
     [HttpGet("admin/list")]
     public async Task<IActionResult> List([FromQuery]int page = 1, [FromQuery] int pageSize = 10)

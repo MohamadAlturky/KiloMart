@@ -123,14 +123,14 @@ public class DeliveryCommandController : ControllerBase
     public class DelivaryProfile
     {
         public int Id { get; set; }
-        public string Delivary { get; set; }
-        public string FirstName { get; set; }
-        public string SecondName { get; set; }
-        public string NationalName { get; set; }
-        public string NationalId { get; set; }
-        public string LicenseNumber { get; set; }
+        public string Delivary { get; set; } = null!;
+        public string FirstName { get; set; } = null!;
+        public string SecondName { get; set; } = null!;
+        public string NationalName { get; set; } = null!;
+        public string NationalId { get; set; } = null!;
+        public string LicenseNumber { get; set; } = null!;
         public DateTime LicenseExpiredDate { get; set; }
-        public string DrivingLicenseNumber { get; set; }
+        public string DrivingLicenseNumber { get; set; } = null!;
         public DateTime DrivingLicenseExpiredDate { get; set; }
     }
 

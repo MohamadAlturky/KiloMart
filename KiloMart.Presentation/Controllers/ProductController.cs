@@ -1,4 +1,5 @@
 using Dapper;
+using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.Domain.Languages.Models;
 using KiloMart.Domain.Products.Add.Models;
@@ -11,16 +12,14 @@ namespace KiloMart.Presentation.Controllers;
 
 [ApiController]
 [Route("api/product")]
-public class ProductController : ControllerBase
+public class ProductController(
+    IDbFactory dbFactory,
+    IUserContext userContext,
+    IWebHostEnvironment environment) : AppController(dbFactory, userContext)
 {
-    private readonly IDbFactory _dbFactory;
-    private readonly IWebHostEnvironment _environment;
+    private readonly IWebHostEnvironment _environment = environment;
 
-    public ProductController(IDbFactory dbFactory, IWebHostEnvironment environment)
-    {
-        _dbFactory = dbFactory;
-        _environment = environment;
-    }
+
     #region Insert
     [HttpPost]
     public async Task<IActionResult> Insert([FromForm] CreateProductRequest product)

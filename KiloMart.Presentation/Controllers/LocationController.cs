@@ -4,89 +4,87 @@ using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Authorization;
-using KiloMart.Requests.Queries;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KiloMart.Presentation.Controllers
+namespace KiloMart.Presentation.Controllers;
+
+[ApiController]
+[Route("api/customer-and-provider/location")]
+public class LocationController(IDbFactory dbFactory, IUserContext userContext)
+    : AppController(dbFactory, userContext)
 {
-    [ApiController]
-    [Route("api/location")]
-    public class LocationController : AppController
+
+    [HttpPost("provider-and-customer")]
+    [Guard([Roles.Customer, Roles.Provider])]
+    public async Task<IActionResult> Insert(LocationInsertModel model)
     {
-        public LocationController(IDbFactory dbFactory, IUserContext userContext)
-            : base(dbFactory, userContext)
+        var result = await LocationService.Insert(_dbFactory, _userContext.Get(), model);
+
+        if (result.Success)
         {
+            return CreatedAtAction(nameof(Insert), new { id = result.Data.Id }, result.Data);
         }
-
-        [HttpPost("provider-and-customer")]
-        public async Task<IActionResult> Insert(LocationInsertModel model)
+        else
         {
-            var result = await LocationService.Insert(_dbFactory, _userContext.Get(), model);
+            return BadRequest(result.Errors);
+        }
+    }
 
-            if (result.Success)
+    [HttpPut("{id}")]
+    [Guard([Roles.Customer, Roles.Provider])]
+    public async Task<IActionResult> Update(int id, LocationUpdateModel model)
+    {
+        model.Id = id;
+
+        var result = await LocationService.Update(_dbFactory, _userContext.Get(), model);
+
+        if (result.Success)
+        {
+            return Ok(result.Data);
+        }
+        else
+        {
+            if (result.Errors.Contains("Not Found"))
             {
-                return CreatedAtAction(nameof(Insert), new { id = result.Data.Id }, result.Data);
+                return NotFound();
             }
             else
             {
                 return BadRequest(result.Errors);
             }
         }
+    }
+    [HttpDelete("{id}")]
+    [Guard([Roles.Customer, Roles.Provider])]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var result = await LocationService.DeActivate(_dbFactory, _userContext.Get(), id);
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, LocationUpdateModel model)
+        if (result.Success)
         {
-            model.Id = id;
-
-            var result = await LocationService.Update(_dbFactory, _userContext.Get(), model);
-
-            if (result.Success)
+            return Ok(result.Data);
+        }
+        else
+        {
+            if (result.Errors.Contains("Not Found"))
             {
-                return Ok(result.Data);
+                return NotFound();
             }
             else
             {
-                if (result.Errors.Contains("Not Found"))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    return BadRequest(result.Errors);
-                }
+                return BadRequest(result.Errors);
             }
         }
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            var result = await LocationService.DeActivate(_dbFactory, _userContext.Get(), id);
-
-            if (result.Success)
-            {
-                return Ok(result.Data);
-            }
-            else
-            {
-                if (result.Errors.Contains("Not Found"))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    return BadRequest(result.Errors);
-                }
-            }
-        }
-        [HttpGet("mine")]
-        [Guard([Roles.Customer])]
-        public async Task<IActionResult> GetMine()
-        {
-            var party = _userContext.Get().Party;
-            using var connection = _dbFactory.CreateDbConnection();
-            connection.Open();
-            var query = "SELECT * FROM [dbo].[Location] WHERE [Party] = @Party AND IsActive = 1;";
-            var result = await connection.QueryAsync<Location>(query, new { Party = party });
-            return Ok(result.ToList());
-        }
+    }
+    [HttpGet("mine")]
+    [Guard([Roles.Customer, Roles.Provider])]
+    public async Task<IActionResult> GetMine()
+    {
+        var party = _userContext.Get().Party;
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+        var query = "SELECT * FROM [dbo].[Location] WHERE [Party] = @Party AND IsActive = 1;";
+        var result = await connection.QueryAsync<Location>(query, new { Party = party });
+        return Ok(result.ToList());
     }
 }

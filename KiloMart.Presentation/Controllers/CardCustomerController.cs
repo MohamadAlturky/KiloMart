@@ -9,14 +9,11 @@ using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/customer/card")]
-public class CardCustomerController : AppController
+public class CardCustomerController(IDbFactory dbFactory, IUserContext userContext)
+      : AppController(dbFactory, userContext)
 {
-      public CardCustomerController(IDbFactory dbFactory, IUserContext userContext)
-            : base(dbFactory, userContext)
-      {
-      }
-
       [HttpPost]
+      [Guard([Roles.Customer])]
       public async Task<IActionResult> Insert(CardInsertModel model)
       {
             var result = await CardService.Insert(_dbFactory, _userContext.Get(), model);
@@ -26,6 +23,7 @@ public class CardCustomerController : AppController
       }
 
       [HttpPut("{id}")]
+      [Guard([Roles.Customer])]
       public async Task<IActionResult> Update(int id, CardUpdateModel model)
       {
             model.Id = id;

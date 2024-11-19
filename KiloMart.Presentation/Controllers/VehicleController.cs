@@ -5,19 +5,15 @@ using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Database;
 using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Authorization;
-using KiloMart.Presentation.Controllers;
 using KiloMart.Requests.Queries;
 using Microsoft.AspNetCore.Mvc;
 
-[ApiController]
-[Route("api/vehicle")]
-public class VehicleController : AppController
-{
-    public VehicleController(IDbFactory dbFactory, IUserContext userContext) 
-        : base(dbFactory, userContext)
-    {
-    }
+namespace KiloMart.Presentation.Controllers;
 
+[ApiController]
+[Route("api/delivery/vehicle")]
+public class VehicleController(IDbFactory dbFactory, IUserContext userContext) : AppController(dbFactory, userContext)
+{
     [HttpPost]
     public async Task<IActionResult> Create(VehicleInsertModel vehicle)
     {
@@ -40,7 +36,7 @@ public class VehicleController : AppController
     [HttpPut]
     public async Task<IActionResult> Update(VehicleUpdateModel vehicle)
     {
-        var result = await VehicleService.Update(_dbFactory,_userContext.Get(),vehicle);
+        var result = await VehicleService.Update(_dbFactory, _userContext.Get(), vehicle);
 
         if (result.Success)
         {
@@ -103,17 +99,6 @@ public class VehicleController : AppController
             ",
             new { Delivary = partyId });
         return Ok(cards.ToArray());
-
-    }
-
-    [HttpGet("list")]
-    public async Task<IActionResult> List([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
-    {
-        var partyId = _userContext.Get().Party;
-        using var connection = _dbFactory.CreateDbConnection();
-        connection.Open();
-        var result = await Query.GetVehiclesPaginated(connection, pageNumber, pageSize);
-        return Ok(result);
 
     }
 }

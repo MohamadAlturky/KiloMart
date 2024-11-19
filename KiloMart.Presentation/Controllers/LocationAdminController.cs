@@ -1,65 +1,55 @@
-using Dapper;
-using KiloMart.Commands.Services;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
-using KiloMart.Domain.Register.Utils;
-using KiloMart.Presentation.Authorization;
 using KiloMart.Requests.Queries;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KiloMart.Presentation.Controllers
+namespace KiloMart.Presentation.Controllers;
+
+[ApiController]
+[Route("api/admin/location")]
+public class LocationAdminController(IDbFactory dbFactory, IUserContext userContext) : AppController(dbFactory, userContext)
 {
-    [ApiController]
-    [Route("api/location")]
-    public class LocationAdminController : AppController
+    [HttpGet("list")]
+    public async Task<IActionResult> List([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
-        public LocationAdminController(IDbFactory dbFactory, IUserContext userContext)
-            : base(dbFactory, userContext)
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        var (Locations, TotalCount) = await Query.GetLocationsWithPartyInfoPaginated(connection, page, pageSize);
+        if (Locations is null || Locations.Length == 0)
         {
+            return NotFound();
         }
-
-
-        [HttpGet("list")]
-        public async Task<IActionResult> List([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        return Ok(new
         {
-            using var connection = _dbFactory.CreateDbConnection();
-            connection.Open();
+            Data = Locations,
+            TotalCount = TotalCount
+        });
+    }
+    [HttpGet("list/filter-by-is-deleted")]
+    public async Task<IActionResult> ListFiltered([FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] bool isActive = true)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
 
-            var result = await Query.GetLocationsWithPartyInfoPaginated(connection, page, pageSize);
-            if (result.Locations is null || result.Locations.Length == 0)
-            {
-                return NotFound();
-            }
-            return Ok(new
-            {
-                Data = result.Locations,
-                TotalCount = result.TotalCount
-            });
-        }
-        [HttpGet("list/filter-by-is-deleted")]
-        public async Task<IActionResult> ListFiltered([FromQuery] int page = 1,
-            [FromQuery] int pageSize = 10, 
-            [FromQuery] bool isActive = true)
+        var result = await Query.GetLocationsWithPartyInfoPaginatedFilteredWithIsActive(connection,
+            page,
+            pageSize,
+            isActive);
+        if (result.Locations is null || result.Locations.Length == 0)
         {
-            using var connection = _dbFactory.CreateDbConnection();
-            connection.Open();
-
-            var result = await Query.GetLocationsWithPartyInfoPaginatedFilteredWithIsActive(connection, 
-                page, 
-                pageSize,
-                isActive);
-            if (result.Locations is null || result.Locations.Length == 0)
-            {
-                return NotFound();
-            }
-            return Ok(new
-            {
-                Data = result.Locations,
-                TotalCount = result.TotalCount
-            });
+            return NotFound();
         }
+        return Ok(new
+        {
+            Data = result.Locations,
+            TotalCount = result.TotalCount
+        });
     }
 }
+
 public class Location
 {
     public int Id { get; set; }

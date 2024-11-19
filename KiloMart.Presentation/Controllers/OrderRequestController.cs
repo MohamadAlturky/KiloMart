@@ -1,21 +1,20 @@
 ﻿using KiloMart.Commands.Services;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
-using KiloMart.DataAccess.Database;
 using KiloMart.Domain.OrderRequests;
 using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Authorization;
-using KiloMart.Presentation.Controllers;
 using KiloMart.Requests.Queries;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KiloMart.Api.Controllers;
+namespace KiloMart.Presentation.Controllers;
 
 [ApiController]
 [Route("api/customer/order-request")]
 public class OrderRequestController(IDbFactory dbFactory, IUserContext userContext)
-: AppController(dbFactory, userContext)
+    : AppController(dbFactory, userContext)
 {
+
     [HttpPost]
     [Guard([Roles.Customer])]
     public async Task<IActionResult> CreateOrderRequest(
@@ -36,6 +35,7 @@ public class OrderRequestController(IDbFactory dbFactory, IUserContext userConte
         }
         return BadRequest(result.Errors);
     }
+
     [HttpPost("cancel")]
     [Guard([Roles.Customer])]
     public async Task<IActionResult> Cancel([FromBody] long id)
@@ -45,7 +45,7 @@ public class OrderRequestController(IDbFactory dbFactory, IUserContext userConte
             id);
         if (result.Success)
         {
-            return Ok(new 
+            return Ok(new
             {
                 Message = "order canceled successfully",
                 Order = result.Data
@@ -81,6 +81,6 @@ public class OrderRequestController(IDbFactory dbFactory, IUserContext userConte
 }
 public class PendingOrder
 {
-    public OrderRequestDto OrderInformation { get; set; }
-    public OrderRequestItemDto[] Items { get; set; }
+    public OrderRequestDto OrderInformation { get; set; } = null!;
+    public OrderRequestItemDto[] Items { get; set; } = null!;
 }

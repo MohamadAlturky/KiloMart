@@ -9,15 +9,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace KiloMart.Presentation.Controllers;
 
 [ApiController]
-[Route("api/phone-number")]
-public class PhoneNumberController : AppController
+[Route("api/customer-provider-delivery/phone-number")]
+public class PhoneNumberController(IDbFactory dbFactory, IUserContext userContext)
+    : AppController(dbFactory, userContext)
 {
-    public PhoneNumberController(IDbFactory dbFactory, IUserContext userContext)
-        : base(dbFactory, userContext)
-    {
-    }
-
     [HttpPost]
+    [Guard([Roles.Customer, Roles.Provider, Roles.Delivery])]
     public async Task<IActionResult> Insert(PhoneNumberInsertModel model)
     {
         var result = await PhoneNumberService.Insert(_dbFactory, _userContext.Get(), model);
@@ -33,6 +30,7 @@ public class PhoneNumberController : AppController
     }
 
     [HttpPut("{id}")]
+    [Guard([Roles.Customer, Roles.Provider, Roles.Delivery])]
     public async Task<IActionResult> Update(int id, PhoneNumberUpdateModel model)
     {
         model.Id = id;
@@ -55,7 +53,9 @@ public class PhoneNumberController : AppController
             }
         }
     }
+    
     [HttpDelete("{id}")]
+    [Guard([Roles.Customer, Roles.Provider, Roles.Delivery])]
     public async Task<IActionResult> Delete(int id)
     {
 

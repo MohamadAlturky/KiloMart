@@ -6,11 +6,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace KiloMart.Presentation.Controllers;
 
 [ApiController]
-[Route("api/product-categories")]
+[Route("api/all-users/product-categories")]
 public class ProductCategoryController(IDbFactory dbFactory,
  IUserContext userContext)
      : AppController(dbFactory, userContext)
 {
+
     [HttpGet("paginated")]
     public async Task<IActionResult> GetAllLocalizedPaginatedForAdmin(
         [FromQuery] byte language = 1,

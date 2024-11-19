@@ -10,13 +10,12 @@ namespace KiloMart.Presentation.Controllers;
 
 [ApiController]
 [Route("api/product-offer")]
-public class ProductOfferController : AppController
+public class ProductOfferController(
+    IDbFactory dbFactory,
+    IUserContext userContext) 
+    : AppController(dbFactory, userContext)
 {
-    public ProductOfferController(IDbFactory dbFactory, IUserContext userContext) : base(dbFactory, userContext)
-    {
-    }
-
-    [HttpPost("add")]
+    [HttpPost("provider/add")]
     [Guard([Roles.Provider])]
     public async Task<IActionResult> Insert([FromBody] ProductOfferInsertModel request)
     {
@@ -27,7 +26,7 @@ public class ProductOfferController : AppController
                 : StatusCode(500, result.Errors);
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("provider/{id}")]
     [Guard([Roles.Provider])]
     public async Task<IActionResult> Update(int id, ProductOfferUpdateModel model)
     {
@@ -51,7 +50,7 @@ public class ProductOfferController : AppController
             }
         }
     }
-    [HttpPut("change-price/{id}/{price}")]
+    [HttpPut("provider/change-price/{id}/{price}")]
     [Guard([Roles.Provider])]
     public async Task<IActionResult> ChangePrice(int id, decimal price)
     {
@@ -73,7 +72,7 @@ public class ProductOfferController : AppController
             }
         }
     }
-    [HttpDelete("{id}")]
+    [HttpDelete("provider/{id}")]
     [Guard([Roles.Provider])]
     public async Task<IActionResult> Delete(int id)
     {
@@ -97,26 +96,29 @@ public class ProductOfferController : AppController
     }
 
     [HttpGet("list")]
-    public async Task<IActionResult> List([FromQuery] int provider, [FromQuery] byte language, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> List([FromQuery] int provider, 
+    [FromQuery] byte language, 
+    [FromQuery] int page = 1, 
+    [FromQuery] int pageSize = 10)
     {
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
 
-        var result = await Query.GetProductOffersPaginated(connection, provider, language, page, pageSize);
-        if (result.ProductOffers is null || result.ProductOffers.Length == 0)
+        var (ProductOffers, TotalCount) = await Query.GetProductOffersPaginated(connection, provider, language, page, pageSize);
+        if (ProductOffers is null || ProductOffers.Length == 0)
         {
             return NotFound();
         }
         return Ok(new
         {
-            Data = result.ProductOffers.Select(e=>new
+            Data = ProductOffers.Select(e=>new
             {
-                ProductId = e.ProductId,
-                ProductImageUrl =e.ProductImageUrl,
-                ProductIsActive =  e.ProductIsActive,
-                ProductDescription = (e.ProductLocalizedDescription??e.ProductDescription),
-                ProductMeasurementUnit = (e.ProductLocalizedMeasurementUnit??e.ProductMeasurementUnit),
-                ProductName = (e.ProductLocalizedName??e.ProductName),
+                e.ProductId,
+                e.ProductImageUrl,
+                e.ProductIsActive,
+                ProductDescription = e.ProductLocalizedDescription??e.ProductDescription,
+                ProductMeasurementUnit = e.ProductLocalizedMeasurementUnit??e.ProductMeasurementUnit,
+                ProductName = e.ProductLocalizedName??e.ProductName,
                 e.ProductOfferId,
                 e.ProductOfferFromDate,
                 e.ProductOfferIsActive,
@@ -127,7 +129,48 @@ public class ProductOfferController : AppController
                 e.ProductCategoryName
             }).ToList(),
 
-            TotalCount = result.TotalCount
+            TotalCount
+        });
+    }
+
+    [HttpGet("provider/my-offers")]
+    [Guard([Roles.Provider])]
+    public async Task<IActionResult> Mine(
+    [FromQuery] byte language, 
+    [FromQuery] int page = 1, 
+    [FromQuery] int pageSize = 10)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+        
+        int provider = _userContext.Get().Party;
+
+        var (ProductOffers, TotalCount) = await Query.GetProductOffersPaginated(connection, provider, language, page, pageSize);
+        if (ProductOffers is null || ProductOffers.Length == 0)
+        {
+            return NotFound();
+        }
+        return Ok(new
+        {
+            Data = ProductOffers.Select(e=>new
+            {
+                e.ProductId,
+                e.ProductImageUrl,
+                e.ProductIsActive,
+                ProductDescription = e.ProductLocalizedDescription??e.ProductDescription,
+                ProductMeasurementUnit = e.ProductLocalizedMeasurementUnit??e.ProductMeasurementUnit,
+                ProductName = e.ProductLocalizedName??e.ProductName,
+                e.ProductOfferId,
+                e.ProductOfferFromDate,
+                e.ProductOfferIsActive,
+                e.ProductOfferOffPercentage,
+                e.ProductOfferPrice,
+                e.ProductOfferQuantity,
+                e.ProductProductCategory,
+                e.ProductCategoryName
+            }).ToList(),
+
+            TotalCount
         });
     }
 }

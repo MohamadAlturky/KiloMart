@@ -11,21 +11,14 @@ using Microsoft.AspNetCore.Mvc;
 namespace KiloMart.Presentation.Controllers;
 
 [ApiController]
-[Route("api/product-request")]
-public class ProductRequestController : ControllerBase
+[Route("api")]
+public class ProductRequestController(IDbFactory dbFactory, IUserContext userContext, IWebHostEnvironment environment) : ControllerBase
 {
-    private readonly IDbFactory _dbFactory;
-    private readonly IUserContext _userContext;
-    private readonly IWebHostEnvironment _environment;
+    private readonly IDbFactory _dbFactory = dbFactory;
+    private readonly IUserContext _userContext = userContext;
+    private readonly IWebHostEnvironment _environment = environment;
 
-    public ProductRequestController(IDbFactory dbFactory, IUserContext userContext, IWebHostEnvironment environment)
-    {
-        _dbFactory=dbFactory;
-        _userContext=userContext;
-        _environment=environment;
-    }
-
-    [HttpPost]
+    [HttpPost("provider/product-request/add")]
     [Guard([Roles.Provider])]
     public async Task<IActionResult> Insert([FromForm] ProductRequestInsertWithFileModel request)
     {
@@ -58,7 +51,7 @@ public class ProductRequestController : ControllerBase
         return result.Success ? Ok(result.Data) : StatusCode(500, result.Errors);
     }
 
-    [HttpPost("accept")]
+    [HttpPost("provider/product-request/accept")]
     public async Task<IActionResult> Accept([FromQuery] int id)
     {
         var result = await AcceptProductRequestService.Accept(_dbFactory, id);

@@ -1,15 +1,12 @@
 using Dapper;
-using KiloMart.Commands.Services;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
-using KiloMart.Domain.Register.Utils;
-using KiloMart.Presentation.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KiloMart.Presentation.Controllers;
 
 [ApiController]
-[Route("api/phone-number")]
+[Route("api/admin/phone-number")]
 public class PhoneNumberAdminController : AppController
 {
     public PhoneNumberAdminController(IDbFactory dbFactory, IUserContext userContext)
@@ -18,8 +15,9 @@ public class PhoneNumberAdminController : AppController
     }
 
     [HttpGet("list")]
-    // [Guard([Roles.Admin])]
-    public async Task<IActionResult> GetPhoneNumbers(int page = 1, int pageSize = 10)
+    public async Task<IActionResult> GetPhoneNumbers(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
     {
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();

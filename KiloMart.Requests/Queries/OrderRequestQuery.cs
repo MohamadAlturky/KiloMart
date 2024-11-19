@@ -30,7 +30,7 @@ public partial class Query
     }
     public static async Task<OrderRequestDto?> GetOrderRequestsByIdAndStatus(
         IDbConnection connection,
-        int Id,
+        long Id,
         int orderRequestStatus)
     {
         // SQL query to fetch order requests based on customer ID and status

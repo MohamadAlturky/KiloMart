@@ -21,7 +21,7 @@ public static class OrderRequestsService
             connection.Open();
             var orderRequest = await Query.GetOrderRequestsByIdAndStatus(
                connection,
-               userPayLoad.Party,
+               id,
                (byte)OrderRequestStatus.Init);
             
             if (orderRequest is null)

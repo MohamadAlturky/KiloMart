@@ -18,7 +18,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserContext, UserContext>();
 builder.Services.AddSingleton<IAppSettingsRepository, AppSettingsRepository>();
 builder.Services.AddSingleton<IAppSettingsProvider, AppSettingsProvider>();
-builder.Services.AddHostedService<FFF.NotificationService>();
+// builder.Services.AddHostedService<FFF.NotificationService>();
 #region Authentication
 // Add JWT Authentication configuration
 builder.Services.AddAuthentication(options =>
@@ -77,7 +77,7 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddDataAccess(builder.Configuration);
 builder.Services.AddEFDataAccess(builder.Configuration.GetConnectionString("DefaultConnection")!);
-builder.Services.AddSignalR();
+// builder.Services.AddSignalR();
 
 // configuration
 GuardAttribute.SECRET_KEY = builder.Configuration["Jwt:Key"]!;
@@ -133,7 +133,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 // app.MapHub<NotificationHub>("/notificationHub");
-app.MapHub<FFF.NotificationHub>("/notificationHub");
+// app.MapHub<FFF.NotificationHub>("/notificationHub");
 
 app.Run();
 

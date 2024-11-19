@@ -21,7 +21,7 @@ public class UserCommandController : ControllerBase
         _configuration = configuration;
     }
     #region decode token
-    [HttpGet("decode-token")]
+    [HttpGet("admin/decode-token")]
     public IActionResult Decode(string token)
     {
         JwtTokenValidator.ValidateToken(token,
@@ -34,7 +34,7 @@ public class UserCommandController : ControllerBase
     #endregion
 
     #region user payload
-    [HttpGet("user-payload")]
+    [HttpGet("admin/user-payload")]
     public IActionResult Payload()
     {
         return Ok(_userContext.Get());
@@ -70,28 +70,28 @@ public class UserCommandController : ControllerBase
     #endregion
 
     #region emails management
-    [HttpPost("activate/email")]
+    [HttpPost("admin/activate/email")]
     public async Task<IActionResult> ActivateUserByEmail([FromBody] string email)
     {
         var result = await UserAccountService.ActivateUser(email, _dbFactory);
         return result ? Ok(new { Success = true }) : StatusCode(500, new { Success = false });
     }
 
-    [HttpPost("deactivate/email")]
+    [HttpPost("admin/deactivate/email")]
     public async Task<IActionResult> DeactivateUserByEmail([FromBody] string email)
     {
         var result = await UserAccountService.DeActivateUser(email, _dbFactory);
         return result ? Ok(new { Success = true }) : StatusCode(500, new { Success = false });
     }
 
-    [HttpPost("activate/{id}")]
+    [HttpPost("admin/activate/{id}")]
     public async Task<IActionResult> ActivateUserById(int id)
     {
         var result = await UserAccountService.ActivateUser(id, _dbFactory);
         return result ? Ok(new { Success = true }) : StatusCode(500, new { Success = false });
     }
 
-    [HttpPost("deactivate/{id}")]
+    [HttpPost("admin/deactivate/{id}")]
     public async Task<IActionResult> DeactivateUserById(int id)
     {
         var result = await UserAccountService.DeActivateUser(id, _dbFactory);

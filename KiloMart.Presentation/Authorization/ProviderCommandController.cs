@@ -12,20 +12,13 @@ using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/provider")]
-public class ProviderCommandController : ControllerBase
+public class ProviderCommandController(IDbFactory dbFactory,
+    IConfiguration configuration,
+    IUserContext userContext) : ControllerBase
 {
-    private readonly IDbFactory _dbFactory;
-    private readonly IConfiguration _configuration;
-    private readonly IUserContext _userContext;
-    public ProviderCommandController(IDbFactory dbFactory,
-        IConfiguration configuration,
-        IUserContext userContext)
-    {
-        _userContext = userContext;
-        _dbFactory = dbFactory;
-        _configuration = configuration;
-    }
-
+    private readonly IDbFactory _dbFactory = dbFactory;
+    private readonly IConfiguration _configuration = configuration;
+    private readonly IUserContext _userContext = userContext;
 
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterProviderDto dto)
@@ -112,10 +105,7 @@ public class ProviderCommandController : ControllerBase
         public string OwnerName { get; set; }
     }
 
-
-
-
-    [HttpGet("list")]
+    [HttpGet("admin/list")]
     public async Task<IActionResult> List([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
         using var connection = _dbFactory.CreateDbConnection();

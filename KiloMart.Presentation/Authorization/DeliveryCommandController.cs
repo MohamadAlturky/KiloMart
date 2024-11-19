@@ -103,7 +103,7 @@ public class DeliveryCommandController : ControllerBase
     }
 
 
-    [HttpGet("list")]
+    [HttpGet("admin/list")]
     public async Task<IActionResult> List([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
         using var connection = _dbFactory.CreateDbConnection();

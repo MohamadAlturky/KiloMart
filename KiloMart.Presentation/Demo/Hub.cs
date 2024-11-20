@@ -1,53 +1,30 @@
-using Microsoft.AspNetCore.SignalR;
-using KiloMart.Domain.Login.Models;
-using KiloMart.Core.Authentication;
-using Microsoft.AspNetCore.Authorization;
-using System.IdentityModel.Tokens.Jwt;
-using KiloMart.Presentation.Authorization;
+// using Microsoft.AspNetCore.SignalR;
+// using KiloMart.Presentation.RealTime;
 
-namespace FFF;
+// namespace FFF;
 
 
-// [Authorize]
-public class NotificationHub : Hub
-{
-    private readonly ILogger<NotificationHub> _logger;
+// // [Authorize]
+// public class NotificationHub : Hub
+// {
+//     private readonly ILogger<NotificationHub> _logger;
 
-    public NotificationHub(ILogger<NotificationHub> logger)
+//     public NotificationHub(ILogger<NotificationHub> logger)
 
-    {
-        _logger = logger;
-    }
+//     {
+//         _logger = logger;
+//     }
 
-    public async Task SendNotification(string message)
-    {
-       await Clients.All.SendAsync("ReceiveNotification", message);
-    }
-    public override async Task OnConnectedAsync()
-    {
-        Microsoft.Extensions.Primitives.StringValues? token = 
-        (Context.GetHttpContext()?.Request.Query["access_token"]) ?? 
-            throw new UnauthorizedAccessException();
-        bool decodingResult = JwtTokenValidator.ValidateToken(token!,
-            GuardAttribute.SECRET_KEY,
-            GuardAttribute.ISSUER,
-            GuardAttribute.AUDIENCE,
-            out JwtSecurityToken? decodedToken);
+//     public async Task SendNotification(string message)
+//     {
+//        await Clients.All.SendAsync("ReceiveNotification", message);
+//     }
+//     public override async Task OnConnectedAsync()
+//     {
+//         int userId = HubUserProvider.GetUserId(Context);
 
-        if (!decodingResult || decodedToken is null)
-        {
-            throw new UnauthorizedAccessException();
-        }
+//         await Clients.All.SendAsync("ReceiveNotification", new { userId = userId });
 
-        var userIdClaim = decodedToken?.Claims.FirstOrDefault(c => c.Type == CustomClaimTypes.UserId);
-
-        if (userIdClaim is null || !int.TryParse(userIdClaim.Value, out int userId))
-        {
-            throw new UnauthorizedAccessException();
-        }
-
-        await Clients.All.SendAsync("ReceiveNotification", new { userId = userId });
-
-        await base.OnConnectedAsync();
-    }
-}
+//         await base.OnConnectedAsync();
+//     }
+// }

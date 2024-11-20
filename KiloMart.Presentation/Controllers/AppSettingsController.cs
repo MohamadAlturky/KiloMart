@@ -1,18 +1,17 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using KiloMart.Core.Settings;
+using Microsoft.AspNetCore.SignalR;
+using KiloMart.Presentation.RealTime;
 
 namespace KiloMart.Presentation.Controllers;
 
 [ApiController]
 [Route("api/admin/settings")]
-public class AppSettingsController : ControllerBase
+public class AppSettingsController(IAppSettingsProvider settingsProvider,
+IHubContext<NotificationHub> hubContext) : ControllerBase
 {
-    private readonly IAppSettingsProvider _settingsProvider;
-
-    public AppSettingsController(IAppSettingsProvider settingsProvider)
-    {
-        _settingsProvider = settingsProvider ?? throw new ArgumentNullException(nameof(settingsProvider));
-    }
+    private readonly IAppSettingsProvider _settingsProvider = settingsProvider ?? throw new ArgumentNullException(nameof(settingsProvider));
+    private readonly IHubContext<NotificationHub> _hubContext = hubContext;
 
     [HttpGet("{key}")]
     public async Task<ActionResult<string>> GetSetting(ConstantSettings key)
@@ -55,5 +54,17 @@ public class AppSettingsController : ControllerBase
     {
         await _settingsProvider.UpdateSettingAsync((int)ConstantSettings.CancelWhenOrderFromMultiProviders, value.ToString());
         return NoContent();
+    }
+
+    [HttpPost("notify")]
+    public async Task<IActionResult> Notify([FromBody] string message, [FromQuery] int userId)
+    {
+        //await _hubContext.SendChatMessage(userId,message);
+         foreach (var connectionId in NotificationHub._connections.GetConnections(userId))
+        {
+            await _hubContext.Clients.Client(connectionId).SendAsync("ReceiveNotification",
+             new { Message = $"{userId} send this {message}" });
+        }
+        return Ok();
     }
 }

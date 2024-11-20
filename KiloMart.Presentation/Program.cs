@@ -158,7 +158,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserContext, UserContext>();
 builder.Services.AddSingleton<IAppSettingsRepository, AppSettingsRepository>();
 builder.Services.AddSingleton<IAppSettingsProvider, AppSettingsProvider>();
-builder.Services.AddHostedService<FFF.NotificationService>();
+// builder.Services.AddHostedService<FFF.NotificationService>();
 
 // JWT Configuration
 var jwtKey = builder.Configuration["Jwt:Key"];
@@ -253,6 +253,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapHub<FFF.NotificationHub>("/notificationHub");
+app.MapHub<NotificationHub>("/notificationHub");
 
 app.Run();

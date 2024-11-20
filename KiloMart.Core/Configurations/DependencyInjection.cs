@@ -7,6 +7,7 @@ namespace KiloMart.Core.Configurations;
 
 public static class DependencyInjection
 {
+
     public static void AddDataAccess(this IServiceCollection services, IConfiguration configuration)
     {
 

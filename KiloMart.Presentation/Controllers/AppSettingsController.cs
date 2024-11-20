@@ -63,7 +63,7 @@ IHubContext<NotificationHub> hubContext) : ControllerBase
          foreach (var connectionId in NotificationHub._connections.GetConnections(userId))
         {
             await _hubContext.Clients.Client(connectionId).SendAsync("ReceiveNotification",
-             new { Message = $"{userId} send this {message}" });
+             new { Message = $"this message is just for you user Id = {userId} the message :\n {message}" });
         }
         return Ok();
     }

@@ -15,7 +15,8 @@ public class NotificationService : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            await _hubContext.Clients.All.SendAsync("ReceiveNotification", $"Notification at {DateTime.Now}");
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification", 
+            new {Message = $"Notification at {DateTime.Now}"});
             await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
         }
     }

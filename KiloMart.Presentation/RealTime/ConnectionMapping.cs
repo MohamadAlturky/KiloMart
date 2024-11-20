@@ -6,7 +6,9 @@ public class ConnectionMapping<T>
 {
     private readonly ConcurrentDictionary<T, HashSet<string>> _connections =
         new ConcurrentDictionary<T, HashSet<string>>();
+    
 
+    public ConcurrentDictionary<T, HashSet<string>> ConnectionsDictionary => _connections;
     public int Count => _connections.Count;
 
     public void Add(T key, string connectionId)

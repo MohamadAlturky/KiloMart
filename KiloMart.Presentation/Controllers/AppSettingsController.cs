@@ -67,4 +67,9 @@ IHubContext<NotificationHub> hubContext) : ControllerBase
         }
         return Ok();
     }
+    [HttpPost("connected-users")]
+    public IActionResult ConnectedUser()
+    {
+        return Ok(NotificationHub._connections.ConnectionsDictionary);
+    }
 }

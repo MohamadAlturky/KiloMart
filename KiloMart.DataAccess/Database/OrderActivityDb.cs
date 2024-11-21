@@ -1,96 +1,96 @@
-using Dapper;
-using System.Data;
+//using Dapper;
+//using System.Data;
 
-namespace KiloMart.DataAccess.Database;
+//namespace KiloMart.DataAccess.Database;
 
-public static partial class Db
-{
-    public static async Task<long> InsertOrderActivityAsync(IDbConnection connection,
-        long orderId,
-        DateTime date,
-        byte orderActivityType,
-        int operatedBy,
-        IDbTransaction? transaction = null)
-    {
-        const string query = @"INSERT INTO [dbo].[OrderActivity]
-                            ([Order], [Date], [OrderActivityType], [OperatedBy])
-                            VALUES (@Order, @Date, @OrderActivityType, @OperatedBy)
-                            SELECT CAST(SCOPE_IDENTITY() AS BIGINT)";
+//public static partial class Db
+//{
+//    public static async Task<long> InsertOrderActivityAsync(IDbConnection connection,
+//        long orderId,
+//        DateTime date,
+//        byte orderActivityType,
+//        int operatedBy,
+//        IDbTransaction? transaction = null)
+//    {
+//        const string query = @"INSERT INTO [dbo].[OrderActivity]
+//                            ([Order], [Date], [OrderActivityType], [OperatedBy])
+//                            VALUES (@Order, @Date, @OrderActivityType, @OperatedBy)
+//                            SELECT CAST(SCOPE_IDENTITY() AS BIGINT)";
 
-        return await connection.ExecuteScalarAsync<long>(query, new
-        {
-            Order = orderId,
-            Date = date,
-            OrderActivityType = (byte)orderActivityType,
-            OperatedBy = operatedBy
-        }, transaction);
-    }
+//        return await connection.ExecuteScalarAsync<long>(query, new
+//        {
+//            Order = orderId,
+//            Date = date,
+//            OrderActivityType = (byte)orderActivityType,
+//            OperatedBy = operatedBy
+//        }, transaction);
+//    }
 
-    public static async Task<bool> UpdateOrderActivityAsync(IDbConnection connection,
-        long id,
-        long orderId,
-        DateTime date,
-        byte orderActivityType,
-        int operatedBy,
-        IDbTransaction? transaction = null)
-    {
-        const string query = @"UPDATE [dbo].[OrderActivity]
-                                SET 
-                                [Order] = @Order,
-                                [Date] = @Date,
-                                [OrderActivityType] = @OrderActivityType,
-                                [OperatedBy] = @OperatedBy
-                                WHERE [Id] = @Id";
+//    public static async Task<bool> UpdateOrderActivityAsync(IDbConnection connection,
+//        long id,
+//        long orderId,
+//        DateTime date,
+//        byte orderActivityType,
+//        int operatedBy,
+//        IDbTransaction? transaction = null)
+//    {
+//        const string query = @"UPDATE [dbo].[OrderActivity]
+//                                SET 
+//                                [Order] = @Order,
+//                                [Date] = @Date,
+//                                [OrderActivityType] = @OrderActivityType,
+//                                [OperatedBy] = @OperatedBy
+//                                WHERE [Id] = @Id";
 
-        var updatedRowsCount = await connection.ExecuteAsync(query, new
-        {
-            Id = id,
-            Order = orderId,
-            Date = date,
-            OrderActivityType = (byte)orderActivityType,
-            OperatedBy = operatedBy
-        }, transaction);
+//        var updatedRowsCount = await connection.ExecuteAsync(query, new
+//        {
+//            Id = id,
+//            Order = orderId,
+//            Date = date,
+//            OrderActivityType = (byte)orderActivityType,
+//            OperatedBy = operatedBy
+//        }, transaction);
 
-        return updatedRowsCount > 0;
-    }
+//        return updatedRowsCount > 0;
+//    }
 
-    public static async Task<bool> DeleteOrderActivityAsync(IDbConnection connection, long id, IDbTransaction? transaction = null)
-    {
-        const string query = @"DELETE FROM [dbo].[OrderActivity]
-                                WHERE [Id] = @Id";
+//    public static async Task<bool> DeleteOrderActivityAsync(IDbConnection connection, long id, IDbTransaction? transaction = null)
+//    {
+//        const string query = @"DELETE FROM [dbo].[OrderActivity]
+//                                WHERE [Id] = @Id";
 
-        var deletedRowsCount = await connection.ExecuteAsync(query, new
-        {
-            Id = id
-        }, transaction);
+//        var deletedRowsCount = await connection.ExecuteAsync(query, new
+//        {
+//            Id = id
+//        }, transaction);
 
-        return deletedRowsCount > 0;
-    }
+//        return deletedRowsCount > 0;
+//    }
 
-    public static async Task<OrderActivity?> GetOrderActivityByIdAsync(long id, IDbConnection connection)
-    {
-        const string query = @"SELECT 
-                            [Id], 
-                            [Order], 
-                            [Date], 
-                            [OrderActivityType],
-                            [OperatedBy]
-                            FROM [dbo].[OrderActivity]
-                            WHERE [Id] = @Id";
+//    public static async Task<OrderActivity?> GetOrderActivityByIdAsync(long id, IDbConnection connection)
+//    {
+//        const string query = @"SELECT 
+//                            [Id], 
+//                            [Order], 
+//                            [Date], 
+//                            [OrderActivityType],
+//                            [OperatedBy]
+//                            FROM [dbo].[OrderActivity]
+//                            WHERE [Id] = @Id";
 
-        return await connection.QueryFirstOrDefaultAsync<OrderActivity>(query, new
-        {
-            Id = id
-        });
-    }
-}
+//        return await connection.QueryFirstOrDefaultAsync<OrderActivity>(query, new
+//        {
+//            Id = id
+//        });
+//    }
+//}
 
 
-public class OrderActivity
-{
-    public long Id { get; set; }
-    public long Order { get; set; }
-    public DateTime Date { get; set; }
-    public byte OrderActivityType { get; set; }
-    public int OperatedBy { get; set; }
-}
+//public class OrderActivity
+//{
+//    public long Id { get; set; }
+//    public long Order { get; set; }
+//    public DateTime Date { get; set; }
+//    public byte OrderActivityType { get; set; }
+//    public int OperatedBy { get; set; }
+//}

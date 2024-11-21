@@ -46,7 +46,7 @@ public class OrderRequestService
                 OrderRequestStatus = (byte)OrderRequestStatus.Init,
                 Date = DateTime.Now
             };
-            response.OrderRequest.Id = await Db.InsertOrderRequestAsync(connection,
+            response.OrderRequest.Id = await Db.InsertOrderAsync(connection,
                 response.OrderRequest.Customer,
                 response.OrderRequest.Date,
                 response.OrderRequest.OrderRequestStatus,

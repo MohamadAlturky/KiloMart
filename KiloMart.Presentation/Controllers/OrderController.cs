@@ -1,169 +1,86 @@
-// using KiloMart.Core.Authentication;
-// using KiloMart.Core.Contracts;
-// using KiloMart.Domain.Orders.Step1.Cancel;
-// using KiloMart.Domain.Orders.Step1.Create;
-// using KiloMart.Domain.Orders.Step2.Accept;
-// using KiloMart.Domain.Orders.Step2.Reject;
-// using KiloMart.Domain.Orders.Step3.Accept;
-// using KiloMart.Domain.Orders.Step3.Reject;
-// using KiloMart.Domain.Register.Utils;
-// using KiloMart.Presentation.Authorization;
-// using KiloMart.Requests.Queries;
-// using Microsoft.AspNetCore.Mvc;
+﻿using KiloMart.Commands.Services;
+using KiloMart.Core.Authentication;
+using KiloMart.Core.Contracts;
+using KiloMart.Domain.Orders.Services;
+using KiloMart.Domain.Register.Utils;
+using KiloMart.Presentation.Authorization;
+using KiloMart.Requests.Queries;
+using Microsoft.AspNetCore.Mvc;
 
-// namespace KiloMart.Presentation.Controllers;
+namespace KiloMart.Presentation.Controllers;
 
-// [ApiController]
-// [Route("api/order")]
-// public class OrderController : AppController
-// {
-//     public OrderController(IDbFactory dbFactory, IUserContext userContext)
-//         : base(dbFactory, userContext)
-//     {
-//     }
+[ApiController]
+[Route("api/customer/order-request")]
+public class OrderController(IDbFactory dbFactory, IUserContext userContext)
+    : AppController(dbFactory, userContext)
+{
 
-//     [HttpPost("init")]
-//     [Guard([Roles.Customer])]
-//     public async Task<IActionResult> Init(CreateOrderRequest model)
-//     {
-//         var result = await InitOrderService.Insert(_dbFactory, _userContext.Get(), model);
-//         if (result.Success)
-//         {
-//             return CreatedAtAction(nameof(Init), new { id = result.Data.Order.Id }, result.Data);
-//         }
+    [HttpPost]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> CreateOrderRequest(
+        [FromBody] CreateOrderRequestModel model)
+    {
+        if (model is null)
+        {
+            return BadRequest("Invalid request model.");
+        }
 
-//         return BadRequest(result.Errors);
-//     }
+        var userPayload = _userContext.Get();
 
-//     [HttpPost("cancel")]
-//     [Guard([Roles.Customer])]
-//     public async Task<IActionResult> Cancel(long id)
-//     {
-//         var result = await CancelOrderService.Cancel(_dbFactory, _userContext.Get(), id);
+        var result = await RequestOrderService.Insert(model, userPayload, _dbFactory);
 
-//         if (result.Success)
-//         {
-//             return Ok(new { Status = true });
-//         }
-//         else
-//         {
-//             return BadRequest(result.Errors);
-//         }
-//     }
+        if (result.Success)
+        {
+            return CreatedAtAction(nameof(CreateOrderRequest), result.Data);
+        }
+        return BadRequest(result.Errors);
+    }
 
-//     [HttpPost("accept")]
-//     [Guard([Roles.Provider])]
-//     public async Task<IActionResult> Accept([FromQuery] long id)
-//     {
-//         var result = await AcceptOrderService.Accept(_dbFactory, _userContext.Get(), id);
-//         if (result.Success)
-//         {
-//             return Ok(new { Status = true });
-//         }
+    // [HttpPost("cancel")]
+    // [Guard([Roles.Customer])]
+    // public async Task<IActionResult> Cancel([FromBody] long id)
+    // {
+    //     var result = await OrderRequestService.Cancel(_dbFactory,
+    //         _userContext.Get(),
+    //         id);
+    //     if (result.Success)
+    //     {
+    //         return Ok(new
+    //         {
+    //             Message = "order canceled successfully",
+    //             Order = result.Data
+    //         });
+    //     }
+    //     return StatusCode(500, result.Errors);
+    // }
 
-//         return BadRequest(result.Errors);
-//     }
+    // [HttpGet("pending-order")]
+    // [Guard([Roles.Customer])]
+    // public async Task<IActionResult> Mine([FromQuery] byte language)
+    // {
+    //     using var connection = _dbFactory.CreateDbConnection();
+    //     connection.Open();
+    //     List<PendingOrder> orders = [];
+    //     var result = await Query.GetOrderRequestsByCustomerAndStatus(
+    //         connection,
+    //         _userContext.Get().Party,
+    //         (byte)OrderRequestStatus.Init);
 
-//     [HttpPost("reject")]
-//     [Guard([Roles.Provider])]
-//     public async Task<IActionResult> Reject([FromQuery] long id)
-//     {
-//         var result = await RejectOrderService.Reject(_dbFactory, _userContext.Get(), id);
-//         if (result.Success)
-//         {
-//             return Ok(new { Status = true });
-//         }
-
-//         return BadRequest(result.Errors);
-//     }
-//     [HttpPost("delivery/reject")]
-//     [Guard([Roles.Delivery])]
-//     public async Task<IActionResult> DeliveryReject([FromQuery] long id)
-//     {
-//         var result = await DeliveryRejectOrderService.Reject(_dbFactory, _userContext.Get(), id);
-//         if (result.Success)
-//         {
-//             return Ok(new { Status = true });
-//         }
-
-//         return BadRequest(result.Errors);
-//     }
-//     [HttpPost("delivery/accept")]
-//     [Guard([Roles.Delivery])]
-//     public async Task<IActionResult> AcceptReject([FromQuery] long id)
-//     {
-//         var result = await DeliveryAcceptOrderService.Accept(_dbFactory, _userContext.Get(), id);
-//         if (result.Success)
-//         {
-//             return Ok(new { Status = true });
-//         }
-
-//         return BadRequest(result.Errors);
-//     }
-
-
-
-//     [HttpGet("provider")]
-//     public async Task<ActionResult<List<Query.OrderJoinParty>>> GetOrdersByProvider()
-//     {
-//         var result = await Query.GetOrderByProvider(_dbFactory, _userContext.Get());
-//         return Ok(result);
-//     }
-
-//     [HttpGet("provider/status/{status}")]
-//     public async Task<ActionResult<List<Query.OrderJoinParty>>> GetOrdersByProviderAndStatus(bool status)
-//     {
-//         var result = await Query.GetOrderByProviderAndStatus(_dbFactory, _userContext.Get(), status);
-//         return Ok(result);
-//     }
-
-//     [HttpGet("customer")]
-//     public async Task<ActionResult<List<Query.OrderJoinParty>>> GetOrdersByCustomer()
-//     {
-//         var result = await Query.GetOrderByCustomer(_dbFactory, _userContext.Get());
-//         return Ok(result);
-//     }
-
-//     [HttpGet("customer/status/{status}")]
-//     public async Task<ActionResult<List<Query.OrderJoinParty>>> GetOrdersByCustomerAndStatus(bool status)
-//     {
-//         var result = await Query.GetOrderByCustomerAndStatus(_dbFactory, _userContext.Get(), status);
-//         return Ok(result);
-//     }
-
-//     [HttpGet("customer/discounts")]
-//     public async Task<ActionResult<List<Query.OrderJoinOrderDiscount>>> GetOrdersByCustomerWithDiscount()
-//     {
-//         var result = await Query.GetOrderByCustomerWithDiscount(_dbFactory, _userContext.Get());
-//         return Ok(result);
-//     }
-
-//     [HttpGet("customer/discounts/status/{status}")]
-//     public async Task<ActionResult<List<Query.OrderJoinOrderDiscount>>>
-//         GetOrdersByCustomerAndStatusWithDiscount(bool status)
-//     {
-//         var result = await Query.GetOrderByCustomerAndStatusWithDiscount(_dbFactory, _userContext.Get(), status);
-//         return Ok(result);
-//     }
-//     [HttpGet("details/{orderId}")]
-//     public async Task<ActionResult<List<Query.OrderDetails>>> GetOrderDetails(long orderId)
-//     {
-//         var result = await Query.GetOrderDetails(_dbFactory, orderId);
-//         return Ok(result);
-//     }
-
-//     [HttpPost("get-valid-offers-for-order")]
-//     public async Task<IActionResult> ValidOffers(float longitude, float latitude, [FromBody] List<RequestedProduct> products)
-//     {
-//         using var connection = _dbFactory.CreateDbConnection();
-//         connection.Open();
-
-//         var result = await Query.GetProductOfferCounts(connection, products,latitude,longitude);
-        
-//         return Ok(new
-//         {
-//             Data = result,
-//         });
-//     }
-
-// }
+    //     foreach (var item in result)
+    //     {
+    //         PendingOrder order = new()
+    //         {
+    //             OrderInformation = item
+    //         };
+    //         var items = await Query.GetOrderRequestItemsByOrderRequest(connection, item.Id, language);
+    //         order.Items = items;
+    //         orders.Add(order);
+    //     }
+    //     return Ok(orders);
+    // }
+}
+public class PendingOrder
+{
+    public OrderRequestDto OrderInformation { get; set; } = null!;
+    public OrderRequestItemDto[] Items { get; set; } = null!;
+}

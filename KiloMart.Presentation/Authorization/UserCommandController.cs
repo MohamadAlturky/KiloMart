@@ -64,7 +64,14 @@ public class UserCommandController : ControllerBase
 
         var result = await LoginService.Login(request.Email, request.Password, _dbFactory, _configuration);
         return result.Success ?
-            Ok(new { Success = true, result.Token })
+            Ok(new
+            {
+                Success = true,
+                result.Token,
+                result.Email,
+                result.UserName,
+                result.Role
+            })
         : Unauthorized(new { Success = false });
     }
     #endregion

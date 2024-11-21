@@ -20,7 +20,7 @@ public class LoginService
                 new { Email = email }
             );
 
-        
+
         if (user == null || !VerifyPassword(password, user.PasswordHash))
         {
             return new LoginResult { Success = false, Errors = ["Invalid email or password."] };
@@ -36,7 +36,35 @@ public class LoginService
 
         // var token = JwtTokenHandler.GenerateAccessToken(user, configuration);
         var token = JwtTokenHandler.GenerateJwtToken(user, configuration);
-        return new LoginResult { Success = true, Token = token };
+        return new LoginResult
+        {
+            Success = true,
+            Token = token,
+            UserName = user.Email,
+            Email = user.Email,
+            Role = CheckRole(user.Role)
+        };
+    }
+
+    private static string CheckRole(short role)
+    {
+        if (role == (byte)Roles.Customer)
+        {
+            return "Customer";
+        }
+        if (role == (byte)Roles.Admin)
+        {
+            return "Admin";
+        }
+        if (role == (byte)Roles.Provider)
+        {
+            return "Provider";
+        }
+        if (role == (byte)Roles.Delivery)
+        {
+            return "Delivery";
+        }
+        throw new Exception("Not Supported Role");
     }
 
     private static bool VerifyPassword(string inputPassword, string storedPasswordHash)

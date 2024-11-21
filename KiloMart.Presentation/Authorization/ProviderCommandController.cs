@@ -6,19 +6,18 @@ using KiloMart.Domain.Register.Provider.Models;
 using KiloMart.Domain.Register.Provider.Services;
 using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Authorization;
+using KiloMart.Presentation.Controllers;
 using KiloMart.Requests.Queries;
 using Microsoft.AspNetCore.Mvc;
 
 
 [ApiController]
 [Route("api/provider")]
-public class ProviderCommandController(IDbFactory dbFactory,
-    IConfiguration configuration,
-    IUserContext userContext) : ControllerBase
+public class ProviderCommandController(IConfiguration configuration,
+ IDbFactory dbFactory,
+  IUserContext userContext) : AppController(dbFactory, userContext)
 {
-    private readonly IDbFactory _dbFactory = dbFactory;
     private readonly IConfiguration _configuration = configuration;
-    private readonly IUserContext _userContext = userContext;
 
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterProviderDto dto)

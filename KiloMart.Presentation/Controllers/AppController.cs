@@ -29,6 +29,24 @@ IUserContext userContext) : ControllerBase
             Message = message??"Task Failed" 
         });
     }
+    protected IActionResult ValidationError(List<string> errors, string? message = null)
+    {
+        return StatusCode(400, new 
+        { 
+            Status = false,
+            Errors = errors,
+            Message = message??"Validation Error" 
+        });
+    }
+    protected IActionResult Fail(List<string> errors, string? message = null)
+    {
+        return StatusCode(500, new 
+        { 
+            Status = false,
+            Errors = errors,
+            Message = message??"Task Failed" 
+        });
+    }
     protected IActionResult ValidationError(string[] errors, string? message = null)
     {
         return StatusCode(400, new 

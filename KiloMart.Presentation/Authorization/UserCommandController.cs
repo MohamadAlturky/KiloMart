@@ -3,23 +3,23 @@ using KiloMart.Core.Contracts;
 using KiloMart.Domain.Login.Models;
 using KiloMart.Domain.Login.Services;
 using KiloMart.Domain.Register.Activate;
+using KiloMart.Presentation.Controllers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KiloMart.Presentation.Authorization;
 
 [ApiController]
 [Route("api/user")]
-public class UserCommandController : 
+public class UserCommandController : AppController
 {
-    private readonly IDbFactory _dbFactory;
     private readonly IConfiguration _configuration;
-    private readonly IUserContext _userContext;
-    public UserCommandController(IDbFactory dbFactory, IConfiguration configuration, IUserContext userContext)
+
+    public UserCommandController(IConfiguration configuration, IDbFactory dbFactory, IUserContext userContext) : base(dbFactory, userContext)
     {
-        _userContext = userContext;
-        _dbFactory = dbFactory;
         _configuration = configuration;
     }
+
+
     #region decode token
     [HttpGet("admin/decode-token")]
     public IActionResult Decode(string token)

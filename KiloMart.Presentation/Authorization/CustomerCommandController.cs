@@ -6,6 +6,7 @@ using KiloMart.Domain.Register.Customer.Models;
 using KiloMart.Domain.Register.Customer.Services;
 using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Authorization;
+using KiloMart.Presentation.Controllers;
 using KiloMart.Presentation.Models.Commands.Customers;
 using KiloMart.Requests.Queries;
 using Microsoft.AspNetCore.Mvc;
@@ -13,17 +14,13 @@ using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/customer")]
-public class CustomerCommandController : ControllerBase
+public class CustomerCommandController : AppController
 {
-    private readonly IDbFactory _dbFactory;
     private readonly IConfiguration _configuration;
-    private readonly IUserContext _userContext;
     public CustomerCommandController(IDbFactory dbFactory,
     IConfiguration configuration,
-    IUserContext userContext)
+    IUserContext userContext) : base(dbFactory, userContext)
     {
-        _userContext = userContext;
-        _dbFactory = dbFactory;
         _configuration = configuration;
     }
     #region register
@@ -33,14 +30,22 @@ public class CustomerCommandController : ControllerBase
         var (success, errors) = dto.Validate();
         if (!success)
         {
-            return BadRequest(errors);
+            return ValidationError(errors);
+            // return BadRequest(errors);
         }
         var result = await new RegisterCustomerService().Register(_dbFactory,
                             _configuration,
                             dto.Email,
                             dto.Password,
                             dto.DisplayName);
-        return Ok(result);
+        // return Ok(result);
+        return result.IsSuccess
+            ? Success(new
+            {
+                CustomerId = result.PartyId,
+                result.UserId,
+                result.VerificationToken
+            }) : Fail(new string[] { result.ErrorMessage });
     }
     #endregion
 
@@ -53,7 +58,7 @@ public class CustomerCommandController : ControllerBase
         var (success, errors) = request.Validate();
         if (!success)
         {
-            return BadRequest(errors);
+            return ValidationError(errors);
         }
         var customer = _userContext.Get().Party;
 
@@ -69,7 +74,7 @@ public class CustomerCommandController : ControllerBase
 
         });
 
-        return result.Success ? Ok(result) : StatusCode(500, result.Errors);
+        return result.Success ? Success(result) : Fail(result.Errors);
     }
     #endregion
 
@@ -78,11 +83,11 @@ public class CustomerCommandController : ControllerBase
     [Guard([Roles.Customer])]
     public async Task<IActionResult> EditProfile(UpdateCustomerProfileRequest request)
     {
-     
+
         var result = await CustomerProfileService.UpdateAsync(_dbFactory,
             _userContext.Get(), request);
 
-        return result.Success ? Ok(result) : StatusCode(500, result.Errors);
+        return result.Success ? Success(result) : Fail(result.Errors);
     }
     #endregion
 
@@ -122,12 +127,12 @@ public class CustomerCommandController : ControllerBase
         public string NationalId { get; set; } = null!;
     }
     [HttpGet("admin/list")]
-    public async Task<IActionResult> List([FromQuery]int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> List([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
-        
-        var result = await Query.GetCustomerProfilesWithUserInfoPaginated(connection,page,pageSize);
+
+        var result = await Query.GetCustomerProfilesWithUserInfoPaginated(connection, page, pageSize);
         if (result.Profiles is null || result.Profiles.Length == 0)
         {
             return NotFound();

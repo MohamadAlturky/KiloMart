@@ -9,7 +9,7 @@ namespace KiloMart.Presentation.Authorization;
 
 [ApiController]
 [Route("api/user")]
-public class UserCommandController : ControllerBase
+public class UserCommandController : 
 {
     private readonly IDbFactory _dbFactory;
     private readonly IConfiguration _configuration;

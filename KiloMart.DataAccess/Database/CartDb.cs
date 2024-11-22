@@ -82,7 +82,7 @@ public static partial class Db
             Id = id
         });
     }
-     public static async Task<IEnumerable<Cart>> GetCartsByCustomerAsync(int customerId, IDbConnection connection)
+    public static async Task<IEnumerable<Cart>> GetCartsByCustomerAsync(int customerId, IDbConnection connection)
     {
         const string query = @"SELECT 
                             [Id], 
@@ -95,6 +95,31 @@ public static partial class Db
         return await connection.QueryAsync<Cart>(query, new
         {
             CustomerId = customerId
+        });
+    }
+    public static async Task<IEnumerable<CartItemWithProduct>> GetCartsByCustomerWithProductsInfoAsync(int customerId, byte language, IDbConnection connection)
+    {
+        const string query = @"SELECT 
+                    c.Id as CartItemId,
+                    c.Product as CartItemProduct,
+                    c.Quantity as CartItemQuantity,
+                    c.Customer as CartItemCustomer,
+                    p.ProductImageUrl as ProductImageUrl,
+                    p.ProductProductCategory as ProductCategoryId,
+                    p.ProductMeasurementUnit as ProductMeasurementUnit,
+                    p.ProductDescription as ProductDescription,
+                    p.ProductName as ProductName,
+                    p.ProductIsActive as ProductIsActive
+                    FROM [dbo].[Cart] c
+                    INNER JOIN
+                    dbo.GetProductDetailsByLanguageFN(@Language) p
+                    ON p.ProductId = c.Product
+                    WHERE [Customer] = @CustomerId";
+
+        return await connection.QueryAsync<CartItemWithProduct>(query, new
+        {
+            CustomerId = customerId,
+            Language = language
         });
     }
 
@@ -118,4 +143,17 @@ public class Cart
     public int Product { get; set; }
     public float Quantity { get; set; }
     public int Customer { get; set; }
+}
+public class CartItemWithProduct
+{
+    public long CartItemId { get; set; }
+    public int CartItemProduct { get; set; }
+    public float CartItemQuantity { get; set; }    
+    public int CartItemCustomer { get; set; }  
+    public string ProductImageUrl { get; set; }        
+    public int ProductCategoryId { get; set; }         
+    public string ProductMeasurementUnit { get; set; } 
+    public string ProductDescription { get; set; }      
+    public string ProductName { get; set; }             
+    public bool ProductIsActive { get; set; }           
 }

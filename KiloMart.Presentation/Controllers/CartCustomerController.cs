@@ -5,7 +5,7 @@ using KiloMart.Presentation.Controllers;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
-[Route("api/admin/cart")]
+[Route("api/customer/cart")]
 public class CartCustomerController(IDbFactory dbFactory, IUserContext userContext)
     : AppController(dbFactory, userContext)
 {
@@ -80,12 +80,23 @@ public class CartCustomerController(IDbFactory dbFactory, IUserContext userConte
         return Ok(cartItem);
     }
 
-    [HttpGet("customer/{customerId}")]
-    public async Task<IActionResult> GetCartsByCustomer(int customerId)
+    [HttpGet("mine")]
+    public async Task<IActionResult> GetCartsByCustomer()
     {
+        int customerId = _userContext.Get().Party;
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
         var carts = await Db.GetCartsByCustomerAsync(customerId, connection);
+
+        return Ok(carts);
+    }
+    [HttpGet("mine-with-products-info")]
+    public async Task<IActionResult> GetCartsByCustomerWithProductsInfo([FromQuery] byte language)
+    {
+        int customerId = _userContext.Get().Party;
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+        var carts = await Db.GetCartsByCustomerWithProductsInfoAsync(customerId,language, connection);
 
         return Ok(carts);
     }

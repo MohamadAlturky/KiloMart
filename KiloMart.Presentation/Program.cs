@@ -150,6 +150,7 @@ using KiloMart.DataAccess.EFCore.Configuration;
 using KiloMart.Core.Repositories;
 using KiloMart.Core.Settings;
 using KiloMart.DataAccess.EFCore.Repositories;
+using KiloMart.Presentation.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -242,7 +243,10 @@ GuardAttribute.SECRET_KEY = jwtKey;
 GuardAttribute.ISSUER = jwtIssuer;
 GuardAttribute.AUDIENCE = jwtAudience;
 
+builder.Services.AddTransient<ExceptionHandlingMiddleware>();
+
 var app = builder.Build();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseSwagger();
 app.UseSwaggerUI();

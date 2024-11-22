@@ -22,8 +22,8 @@ public class ProductOfferController(
 
         var result = await ProductOfferService.Insert(_dbFactory, _userContext.Get(), request);
         return result.Success ? 
-        CreatedAtAction(nameof(Insert), new { id = result.Data.Id }, result.Data)
-                : StatusCode(500, result.Errors);
+        Success( result.Data)
+                : Fail(result.Errors);
     }
 
     [HttpPut("provider/{id}")]
@@ -36,17 +36,17 @@ public class ProductOfferController(
 
         if (result.Success)
         {
-            return Ok(result.Data);
+            return Success(result.Data);
         }
         else
         {
             if (result.Errors.Contains("Not Found"))
             {
-                return NotFound();
+                return DataNotFound();
             }
             else
             {
-                return BadRequest(result.Errors);
+                return Fail(result.Errors);
             }
         }
     }
@@ -58,17 +58,17 @@ public class ProductOfferController(
 
         if (result.Success)
         {
-            return Ok(result.Data);
+            return Success(result.Data);
         }
         else
         {
             if (result.Errors.Contains("Not Found"))
             {
-                return NotFound();
+                return DataNotFound();
             }
             else
             {
-                return BadRequest(result.Errors);
+                return Fail(result.Errors);
             }
         }
     }
@@ -80,17 +80,17 @@ public class ProductOfferController(
 
         if (result.Success)
         {
-            return Ok(result.Data);
+            return Success(result.Data);
         }
         else
         {
             if (result.Errors.Contains("Not Found"))
             {
-                return NotFound();
+                return DataNotFound();
             }
             else
             {
-                return BadRequest(result.Errors);
+                return Fail(result.Errors);
             }
         }
     }
@@ -107,9 +107,9 @@ public class ProductOfferController(
         var (ProductOffers, TotalCount) = await Query.GetProductOffersPaginated(connection, provider, language, page, pageSize);
         if (ProductOffers is null || ProductOffers.Length == 0)
         {
-            return NotFound();
+            return DataNotFound();
         }
-        return Ok(new
+        return Success(new
         {
             Data = ProductOffers.Select(e=>new
             {
@@ -148,9 +148,10 @@ public class ProductOfferController(
         var (ProductOffers, TotalCount) = await Query.GetProductOffersPaginated(connection, provider, language, page, pageSize);
         if (ProductOffers is null || ProductOffers.Length == 0)
         {
-            return NotFound();
+            return DataNotFound();
         }
-        return Ok(new
+        return Success(
+            new
         {
             Data = ProductOffers.Select(e=>new
             {

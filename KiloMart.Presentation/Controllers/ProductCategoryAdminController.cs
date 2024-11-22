@@ -21,16 +21,11 @@ public class ProductCategoryAdminController(IDbFactory dbFactory,
             model);
         if (result.Success)
         {
-            return CreatedAtAction(nameof(Insert),
-            new
-            {
-                id = result.Data.ProductCategory.Id,
-                result.Data
-            }, result.Data);
+            return Success(result.Data);
         }
         else
         {
-            return BadRequest(result.Errors);
+            return Fail(result.Errors);
         }
     }
 }

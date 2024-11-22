@@ -18,8 +18,8 @@ public class CardCustomerController(IDbFactory dbFactory, IUserContext userConte
       {
             var result = await CardService.Insert(_dbFactory, _userContext.Get(), model);
             return result.Success ?
-                  CreatedAtAction(nameof(Insert), new { id = result.Data.Id }, result.Data) :
-                  BadRequest(result.Errors);
+                  Success(result.Data) :
+                  Fail(result.Errors);
       }
 
       [HttpPut("{id}")]
@@ -29,9 +29,9 @@ public class CardCustomerController(IDbFactory dbFactory, IUserContext userConte
             model.Id = id;
             var result = await CardService.Update(_dbFactory, _userContext.Get(), model);
             if (result.Success)
-                  return Ok(result.Data);
+                  return Success(result.Data);
 
-            return result.Errors.Contains("Not Found") ? NotFound() : BadRequest(result.Errors);
+            return result.Errors.Contains("Not Found") ? DataNotFound() : Fail(result.Errors);
       }
 
       [HttpGet("mine")]
@@ -42,6 +42,6 @@ public class CardCustomerController(IDbFactory dbFactory, IUserContext userConte
             using var connection = _dbFactory.CreateDbConnection();
             connection.Open();
             var cards = await Query.GetCustomerCards(connection, partyId);
-            return Ok(cards);
+            return Success(cards);
       }
 }

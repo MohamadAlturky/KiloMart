@@ -18,11 +18,11 @@ public class DiscountCodeAdminController(IDbFactory dbFactory, IUserContext user
 
         if (result.Success)
         {
-            return CreatedAtAction(nameof(Insert), new { id = result.Data.Id }, result.Data);
+            return Success(result.Data);
         }
         else
         {
-            return BadRequest(result.Errors);
+            return Fail(result.Errors);
         }
     }
 
@@ -35,17 +35,17 @@ public class DiscountCodeAdminController(IDbFactory dbFactory, IUserContext user
 
         if (result.Success)
         {
-            return Ok(result.Data);
+            return Success(result.Data);
         }
         else
         {
             if (result.Errors.Contains("Not Found"))
             {
-                return NotFound();
+                return DataNotFound();
             }
             else
             {
-                return BadRequest(result.Errors);
+                return Fail(result.Errors);
             }
         }
     }
@@ -58,17 +58,17 @@ public class DiscountCodeAdminController(IDbFactory dbFactory, IUserContext user
 
         if (result.Success)
         {
-            return Ok(result.Data);
+            return Success(result.Data);
         }
         else
         {
             if (result.Errors.Contains("Not Found"))
             {
-                return NotFound();
+                return DataNotFound();
             }
             else
             {
-                return BadRequest(result.Errors);
+                return Fail(result.Errors);
             }
         }
     }
@@ -81,17 +81,17 @@ public class DiscountCodeAdminController(IDbFactory dbFactory, IUserContext user
 
         if (result.Success)
         {
-            return Ok(result.Data);
+            return Success(result.Data);
         }
         else
         {
             if (result.Errors.Contains("Not Found"))
             {
-                return NotFound();
+                return DataNotFound();
             }
             else
             {
-                return BadRequest(result.Errors);
+                return Fail(result.Errors);
             }
         }
     }
@@ -105,9 +105,9 @@ public class DiscountCodeAdminController(IDbFactory dbFactory, IUserContext user
         var (DiscountCodes, TotalCount) = await Query.GetDiscountCodesPaginated(connection, page, pageSize);
         if (DiscountCodes is null || DiscountCodes.Length == 0)
         {
-            return NotFound();
+            return DataNotFound();
         }
-        return Ok(new
+        return Success(new
         {
             Data = DiscountCodes,
             TotalCount = TotalCount

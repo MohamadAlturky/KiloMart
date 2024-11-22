@@ -15,7 +15,7 @@ public class CartCustomerController(IDbFactory dbFactory, IUserContext userConte
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
         var cartId = await Db.InsertCartAsync(connection, request.Product, request.Quantity, _userContext.Get().Party);
-        return CreatedAtAction(nameof(GetCartById), new { id = cartId }, null);
+        return Success(new { id = cartId });
     }
 
     [HttpPut("{id}")]
@@ -26,12 +26,12 @@ public class CartCustomerController(IDbFactory dbFactory, IUserContext userConte
         var cart = await Db.GetCartByIdAsync(id, connection);
         if (cart is null)
         {
-            return NotFound();
+            return DataNotFound();
 
         }
         if (cart.Customer != _userContext.Get().Party)
         {
-            return Unauthorized();
+            return Fail("UnAuthorized");
         }
         cart.Product = request.Product ?? cart.Product;
         cart.Quantity = request.Quantity ?? cart.Quantity;
@@ -39,9 +39,9 @@ public class CartCustomerController(IDbFactory dbFactory, IUserContext userConte
         var updated = await Db.UpdateCartAsync(connection, id, cart.Product, cart.Quantity, _userContext.Get().Party);
 
         if (!updated)
-            return NotFound();
+            return DataNotFound();
 
-        return NoContent();
+        return Success();
     }
 
     [HttpDelete("{id}")]
@@ -52,19 +52,19 @@ public class CartCustomerController(IDbFactory dbFactory, IUserContext userConte
         var cart = await Db.GetCartByIdAsync(id, connection);
         if (cart is null)
         {
-            return NotFound();
+            return DataNotFound();
 
         }
         if (cart.Customer != _userContext.Get().Party)
         {
-            return Unauthorized();
+            return Fail("Unauthorized");
         }
         var deleted = await Db.DeleteCartAsync(connection, id);
 
         if (!deleted)
-            return NotFound();
+            return DataNotFound();
 
-        return NoContent();
+        return Success();
     }
 
     [HttpGet("{id}")]
@@ -75,9 +75,9 @@ public class CartCustomerController(IDbFactory dbFactory, IUserContext userConte
         var cartItem = await Db.GetCartByIdAsync(id, connection);
 
         if (cartItem is null)
-            return NotFound();
+            return DataNotFound();
 
-        return Ok(cartItem);
+        return Success(cartItem);
     }
 
     [HttpGet("mine")]
@@ -88,7 +88,7 @@ public class CartCustomerController(IDbFactory dbFactory, IUserContext userConte
         connection.Open();
         var carts = await Db.GetCartsByCustomerAsync(customerId, connection);
 
-        return Ok(carts);
+        return Success(carts);
     }
     [HttpGet("mine-with-products-info")]
     public async Task<IActionResult> GetCartsByCustomerWithProductsInfo([FromQuery] byte language)
@@ -98,7 +98,7 @@ public class CartCustomerController(IDbFactory dbFactory, IUserContext userConte
         connection.Open();
         var carts = await Db.GetCartsByCustomerWithProductsInfoAsync(customerId,language, connection);
 
-        return Ok(carts);
+        return Success(carts);
     }
 
     [HttpDelete("mine")]
@@ -110,9 +110,9 @@ public class CartCustomerController(IDbFactory dbFactory, IUserContext userConte
         var deleted = await Db.DeleteAllCartsByCustomerAsync(connection, customerId);
 
         if (!deleted)
-            return NotFound();
+            return DataNotFound();
 
-        return NoContent();
+        return Success();
     }
 }
 

@@ -22,7 +22,7 @@ public class OrderController(IDbFactory dbFactory, IUserContext userContext)
     {
         if (model is null)
         {
-            return BadRequest("Invalid request model.");
+            return ValidationError(new List<string>{"Invalid request model."});
         }
 
         var userPayload = _userContext.Get();
@@ -31,9 +31,9 @@ public class OrderController(IDbFactory dbFactory, IUserContext userContext)
 
         if (result.Success)
         {
-            return CreatedAtAction(nameof(CreateOrderRequest), result.Data);
+            return Success(result.Data);
         }
-        return BadRequest(result.Errors);
+        return Fail(result.Errors);
     }
 
     // [HttpPost("cancel")]

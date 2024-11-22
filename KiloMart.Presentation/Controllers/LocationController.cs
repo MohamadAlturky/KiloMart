@@ -22,11 +22,11 @@ public class LocationController(IDbFactory dbFactory, IUserContext userContext)
 
         if (result.Success)
         {
-            return CreatedAtAction(nameof(Insert), new { id = result.Data.Id }, result.Data);
+            return Success(result.Data);
         }
         else
         {
-            return BadRequest(result.Errors);
+            return Fail(result.Errors);
         }
     }
 
@@ -40,17 +40,17 @@ public class LocationController(IDbFactory dbFactory, IUserContext userContext)
 
         if (result.Success)
         {
-            return Ok(result.Data);
+            return Success(result.Data);
         }
         else
         {
             if (result.Errors.Contains("Not Found"))
             {
-                return NotFound();
+                return DataNotFound();
             }
             else
             {
-                return BadRequest(result.Errors);
+                return Fail(result.Errors);
             }
         }
     }
@@ -62,17 +62,17 @@ public class LocationController(IDbFactory dbFactory, IUserContext userContext)
 
         if (result.Success)
         {
-            return Ok(result.Data);
+            return Success(result.Data);
         }
         else
         {
             if (result.Errors.Contains("Not Found"))
             {
-                return NotFound();
+                return DataNotFound();
             }
             else
             {
-                return BadRequest(result.Errors);
+                return Fail(result.Errors);
             }
         }
     }
@@ -85,6 +85,6 @@ public class LocationController(IDbFactory dbFactory, IUserContext userContext)
         connection.Open();
         var query = "SELECT * FROM [dbo].[Location] WHERE [Party] = @Party AND IsActive = 1;";
         var result = await connection.QueryAsync<Location>(query, new { Party = party });
-        return Ok(result.ToList());
+        return Success(result.ToList());
     }
 }

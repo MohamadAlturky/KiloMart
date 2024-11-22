@@ -49,7 +49,7 @@ public class PhoneNumberAdminController : AppController
         var phoneNumbers = await connection.QueryAsync<PhoneNumberApiResponse>(sql,
             new { skip, pageSize });
 
-        return Ok(new
+        return Success(new
         {
             data = phoneNumbers.ToArray(),
             totalCount = count

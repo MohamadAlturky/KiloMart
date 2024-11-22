@@ -111,9 +111,9 @@ public class CustomerCommandController : AppController
         var result = await connection.QueryFirstOrDefaultAsync<CustomerProfile>(query, new { Customer = customer });
         if (result is null)
         {
-            return NotFound();
+            return DataNotFound();
         }
-        return Ok(result);
+        return Success(result);
     }
 
     // Assuming CustomerProfile class is defined as
@@ -135,9 +135,9 @@ public class CustomerCommandController : AppController
         var result = await Query.GetCustomerProfilesWithUserInfoPaginated(connection, page, pageSize);
         if (result.Profiles is null || result.Profiles.Length == 0)
         {
-            return NotFound();
+            return DataNotFound();
         }
-        return Ok(new
+        return Success(new
         {
             Data = result.Profiles,
             TotalCount = result.TotalCount

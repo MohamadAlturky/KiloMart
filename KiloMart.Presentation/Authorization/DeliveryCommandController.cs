@@ -31,7 +31,7 @@ public class DeliveryCommandController : AppController
 
         if (!success)
         {
-            return BadRequest(errors);
+            return ValidationError(errors);
         }
 
         var result = await new RegisterDeliveryService().Register(
@@ -40,7 +40,7 @@ public class DeliveryCommandController : AppController
             dto.Email,
             dto.Password,
             dto.DisplayName);
-        return Ok(result);
+        return Success(result);
     }
 
     [HttpPost("profile/add")]
@@ -49,7 +49,7 @@ public class DeliveryCommandController : AppController
         var (success, errors) = request.Validate();
         if (!success)
         {
-            return BadRequest(errors);
+            return ValidationError(errors);
         }
         var delivery = _userContext.Get().Party;
 
@@ -67,7 +67,7 @@ public class DeliveryCommandController : AppController
             LicenseExpiredDate = request.LicenseExpiredDate,
         });
 
-        return result.Success ? Ok(result) : StatusCode(500, result.Errors);
+        return result.Success ? Success(result) : Fail(result.Errors);
     }
 
     #region profile
@@ -79,7 +79,7 @@ public class DeliveryCommandController : AppController
         var result = await DeliveryProfileService.UpdateAsync(_dbFactory,
             _userContext.Get(), request);
 
-        return result.Success ? Ok(result) : StatusCode(500, result.Errors);
+        return result.Success ? Success(result) : Fail(result.Errors);
     }
     #endregion
 
@@ -94,9 +94,9 @@ public class DeliveryCommandController : AppController
         var result = await connection.QueryFirstOrDefaultAsync<DelivaryProfile>(query, new { Party = party });
         if (result is null)
         {
-            return NotFound();
+            return DataNotFound();
         }
-        return Ok(result);
+        return Success(result);
     }
 
 
@@ -109,9 +109,9 @@ public class DeliveryCommandController : AppController
         var result = await Query.GetDeliveryProfilesWithUserInfoPaginated(connection, page, pageSize);
         if (result.Profiles is null || result.Profiles.Length == 0)
         {
-            return NotFound();
+            return DataNotFound();
         }
-        return Ok(new
+        return Success(new
         {
             Data = result.Profiles,
             TotalCount = result.TotalCount

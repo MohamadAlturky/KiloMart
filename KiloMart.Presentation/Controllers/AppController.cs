@@ -20,6 +20,14 @@ IUserContext userContext) : ControllerBase
             Message = message??"Task Completed Successfully" 
         });
     }
+    protected IActionResult Success(string? message = null)
+    {
+        return Ok(new 
+        { 
+            Status = true,
+            Message = message??"Task Completed Successfully" 
+        });
+    }
     protected IActionResult Fail(string[] errors, string? message = null)
     {
         return StatusCode(500, new 
@@ -27,6 +35,22 @@ IUserContext userContext) : ControllerBase
             Status = false,
             Errors = errors,
             Message = message??"Task Failed" 
+        });
+    }
+    protected IActionResult Fail(string? message = null)
+    {
+        return StatusCode(500, new 
+        { 
+            Status = false,
+            Message = message??"Task Failed" 
+        });
+    }
+    protected IActionResult DataNotFound(string? message = null)
+    {
+        return StatusCode(500, new 
+        { 
+            Status = false,
+            Message = message??"Not Found" 
         });
     }
     protected IActionResult ValidationError(List<string> errors, string? message = null)

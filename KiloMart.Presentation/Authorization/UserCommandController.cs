@@ -29,7 +29,7 @@ public class UserCommandController : AppController
             _configuration["Jwt:Issuer"]!,
             _configuration["Jwt:Audience"]!,
             out var decodedToken);
-        return Ok(decodedToken);
+        return Success(decodedToken);
     }
     #endregion
 
@@ -37,7 +37,7 @@ public class UserCommandController : AppController
     [HttpGet("admin/user-payload")]
     public IActionResult Payload()
     {
-        return Ok(_userContext.Get());
+        return Success(_userContext.Get());
     }
     #endregion
 
@@ -50,7 +50,7 @@ public class UserCommandController : AppController
             return BadRequest(errors);
 
         var result = await VerifyUserEmailService.VerifyEmail(request.Email, request.VerificationToken, _dbFactory);
-        return result ? Ok(new { Success = true }) : StatusCode(500, new { Success = false });
+        return result ? Success() : Fail();
     }
     #endregion
 
@@ -60,19 +60,18 @@ public class UserCommandController : AppController
     {
         var (success, errors) = request.Validate();
         if (!success)
-            return BadRequest(errors);
+            return ValidationError(errors);
 
         var result = await LoginService.Login(request.Email, request.Password, _dbFactory, _configuration);
         return result.Success ?
-            Ok(new
+            Success(new
             {
-                Success = true,
                 result.Token,
                 result.Email,
                 result.UserName,
                 result.Role
             })
-        : Unauthorized(new { Success = false });
+        : Fail("User Name Or Password Is Not Valid");
     }
     #endregion
 
@@ -81,28 +80,28 @@ public class UserCommandController : AppController
     public async Task<IActionResult> ActivateUserByEmail([FromBody] string email)
     {
         var result = await UserAccountService.ActivateUser(email, _dbFactory);
-        return result ? Ok(new { Success = true }) : StatusCode(500, new { Success = false });
+        return result ? Success() : Fail();
     }
 
     [HttpPost("admin/deactivate/email")]
     public async Task<IActionResult> DeactivateUserByEmail([FromBody] string email)
     {
         var result = await UserAccountService.DeActivateUser(email, _dbFactory);
-        return result ? Ok(new { Success = true }) : StatusCode(500, new { Success = false });
+        return result ? Success() : Fail();
     }
 
     [HttpPost("admin/activate/{id}")]
     public async Task<IActionResult> ActivateUserById(int id)
     {
         var result = await UserAccountService.ActivateUser(id, _dbFactory);
-        return result ? Ok(new { Success = true }) : StatusCode(500, new { Success = false });
+        return result ? Success() : Fail();
     }
 
     [HttpPost("admin/deactivate/{id}")]
     public async Task<IActionResult> DeactivateUserById(int id)
     {
         var result = await UserAccountService.DeActivateUser(id, _dbFactory);
-        return result ? Ok(new { Success = true }) : StatusCode(500, new { Success = false });
+        return result ? Success() : Fail();
     }
     #endregion
 }

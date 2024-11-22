@@ -26,7 +26,7 @@ public class ProviderCommandController(IConfiguration configuration,
 
         if (!success)
         {
-            return BadRequest(errors);
+            return ValidationError(errors);
         }
 
         var result = await new RegisterProviderService().Register(
@@ -35,7 +35,7 @@ public class ProviderCommandController(IConfiguration configuration,
             dto.Email,
             dto.Password,
             dto.DisplayName);
-        return Ok(result);
+        return Success(result);
     }
 
     [HttpPost("profile/create")]
@@ -44,7 +44,7 @@ public class ProviderCommandController(IConfiguration configuration,
         var (success, errors) = request.Validate();
         if (!success)
         {
-            return BadRequest(errors);
+            return ValidationError(errors);
         }
         var provider = _userContext.Get().Party;
 
@@ -59,7 +59,7 @@ public class ProviderCommandController(IConfiguration configuration,
             OwnerName = request.OwnerName,
             OwnerNationalId = request.OwnerNationalId,
         });
-        return result.Success ? Ok(result) : StatusCode(500, result.Errors);
+        return result.Success ? Success(result) : Fail(result.Errors);
     }
 
     #region profile
@@ -71,7 +71,7 @@ public class ProviderCommandController(IConfiguration configuration,
         var result = await ProviderProfileService.UpdateAsync(_dbFactory,
             _userContext.Get(), request);
 
-        return result.Success ? Ok(result) : StatusCode(500, result.Errors);
+        return result.Success ? Success(result) : Fail(result.Errors);
     }
     #endregion
 
@@ -86,9 +86,9 @@ public class ProviderCommandController(IConfiguration configuration,
         var result = await connection.QueryFirstOrDefaultAsync<ProviderProfile>(query, new { Provider = provider });
         if (result is null)
         {
-            return NotFound();
+            return DataNotFound();
         }
-        return Ok(result);
+        return Success(result);
     }
 
     // Define a class for ProviderProfile
@@ -113,9 +113,10 @@ public class ProviderCommandController(IConfiguration configuration,
         var result = await Query.GetProviderProfilesWithUserInfoPaginated(connection, page, pageSize);
         if (result.Profiles is null || result.Profiles.Length == 0)
         {
-            return NotFound();
+            return DataNotFound();
         }
-        return Ok(new
+        return Success(
+            new
         {
             Data = result.Profiles,
             TotalCount = result.TotalCount

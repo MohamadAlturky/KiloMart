@@ -18,9 +18,9 @@ public class LocationAdminController(IDbFactory dbFactory, IUserContext userCont
         var (Locations, TotalCount) = await Query.GetLocationsWithPartyInfoPaginated(connection, page, pageSize);
         if (Locations is null || Locations.Length == 0)
         {
-            return NotFound();
+            return DataNotFound();
         }
-        return Ok(new
+        return Success(new
         {
             Data = Locations,
             TotalCount = TotalCount
@@ -40,9 +40,10 @@ public class LocationAdminController(IDbFactory dbFactory, IUserContext userCont
             isActive);
         if (result.Locations is null || result.Locations.Length == 0)
         {
-            return NotFound();
+            return DataNotFound();
         }
-        return Ok(new
+        return Success(
+            new
         {
             Data = result.Locations,
             TotalCount = result.TotalCount

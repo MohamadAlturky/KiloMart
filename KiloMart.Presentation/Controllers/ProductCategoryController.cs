@@ -60,7 +60,7 @@ public class ProductCategoryController(IDbFactory dbFactory,
             });
         }
 
-        return Ok(new
+        return Success(new
         {
             data = result,
             totalCount

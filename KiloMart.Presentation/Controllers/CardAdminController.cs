@@ -14,6 +14,6 @@ public class CardAdminController(IDbFactory dbFactory, IUserContext userContext)
             using var connection = _dbFactory.CreateDbConnection();
             connection.Open();
             var cards = await Query.GetAllCardsPaginated(connection, page, pageSize);
-            return Ok(cards);
+            return Success(cards);
       }
 }

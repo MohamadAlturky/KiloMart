@@ -21,11 +21,11 @@ public class PhoneNumberController(IDbFactory dbFactory, IUserContext userContex
 
         if (result.Success)
         {
-            return CreatedAtAction(nameof(Insert), new { id = result.Data.Id }, result.Data);
+            return Success(result.Data);
         }
         else
         {
-            return BadRequest(result.Errors);
+            return Fail(result.Errors);
         }
     }
 
@@ -39,17 +39,17 @@ public class PhoneNumberController(IDbFactory dbFactory, IUserContext userContex
 
         if (result.Success)
         {
-            return Ok(result.Data);
+            return Success(result.Data);
         }
         else
         {
             if (result.Errors.Contains("Not Found"))
             {
-                return NotFound();
+                return DataNotFound();
             }
             else
             {
-                return BadRequest(result.Errors);
+                return Fail(result.Errors);
             }
         }
     }
@@ -63,17 +63,17 @@ public class PhoneNumberController(IDbFactory dbFactory, IUserContext userContex
 
         if (result.Success)
         {
-            return Ok(result.Data);
+            return Success(result.Data);
         }
         else
         {
             if (result.Errors.Contains("Not Found"))
             {
-                return NotFound();
+                return DataNotFound();
             }
             else
             {
-                return BadRequest(result.Errors);
+                return Fail(result.Errors);
             }
         }
     }
@@ -88,8 +88,7 @@ public class PhoneNumberController(IDbFactory dbFactory, IUserContext userContex
         var phoneNumbers = await connection.QueryAsync<PhoneNumberApiResponseForMine>(
             "SELECT [Id], [Value] FROM PhoneNumber WHERE Party = @partyId AND IsActive = 1",
             new { partyId });
-        return Ok(phoneNumbers.ToArray());
+        return Success(phoneNumbers.ToArray());
     }
-
 }
 

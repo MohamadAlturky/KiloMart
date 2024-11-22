@@ -12,11 +12,15 @@ namespace KiloMart.Presentation.Controllers;
 
 [ApiController]
 [Route("api")]
-public class ProductRequestController(IDbFactory dbFactory, IUserContext userContext, IWebHostEnvironment environment) : ControllerBase
+public class ProductRequestController 
+: AppController
 {
-    private readonly IDbFactory _dbFactory = dbFactory;
-    private readonly IUserContext _userContext = userContext;
-    private readonly IWebHostEnvironment _environment = environment;
+    private readonly IWebHostEnvironment _environment;
+
+    public ProductRequestController(IWebHostEnvironment environment,IDbFactory dbFactory, IUserContext userContext) : base(dbFactory, userContext)
+    {
+        _environment = environment;
+    }
 
     [HttpPost("provider/product-request/add")]
     [Guard([Roles.Provider])]
@@ -24,10 +28,10 @@ public class ProductRequestController(IDbFactory dbFactory, IUserContext userCon
     {
         var (success, errors) = request.Validate();
         if (!success)
-            return BadRequest(errors);
+            return ValidationError(errors);
         if (request.ImageFile is null)
         {
-            return BadRequest("File is required");
+            return ValidationError(new List<string> { "File is required" });
         }
         Guid fileName = Guid.NewGuid();
         var filePath = await FileService.SaveFileAsync(request.ImageFile,
@@ -48,15 +52,14 @@ public class ProductRequestController(IDbFactory dbFactory, IUserContext userCon
             ProductCategory = request.ProductCategory,
             Quantity = request.Quantity
         });
-        return result.Success ? Ok(result.Data) : StatusCode(500, result.Errors);
+        return result.Success ? Success(result.Data) : Fail(result.Errors);
     }
 
     [HttpPost("provider/product-request/accept")]
     public async Task<IActionResult> Accept([FromQuery] int id)
     {
         var result = await AcceptProductRequestService.Accept(_dbFactory, id);
-        return result.Success ? Ok(result.Data) : StatusCode(500, result.Errors);
-
+        return result.Success ? Success(result.Data) : Fail(result.Errors);
     }
 }
 

@@ -6,6 +6,7 @@ using KiloMart.Domain.Register.Delivery.Models;
 using KiloMart.Domain.Register.Delivery.Services;
 using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Authorization;
+using KiloMart.Presentation.Controllers;
 using KiloMart.Presentation.Models.Commands.Deliveries;
 using KiloMart.Requests.Queries;
 using Microsoft.AspNetCore.Mvc;
@@ -13,17 +14,13 @@ using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/delivery")]
-public class DeliveryCommandController : ControllerBase
+public class DeliveryCommandController : AppController
 {
-    private readonly IDbFactory _dbFactory;
     private readonly IConfiguration _configuration;
-    private readonly IUserContext _userContext;
     public DeliveryCommandController(IDbFactory dbFactory,
         IConfiguration configuration,
-        IUserContext userContext)
+        IUserContext userContext) : base(dbFactory, userContext)
     {
-        _userContext = userContext;
-        _dbFactory = dbFactory;
         _configuration = configuration;
     }
 
@@ -34,7 +31,7 @@ public class DeliveryCommandController : ControllerBase
 
         if (!success)
         {
-            return BadRequest(errors);
+            return ValidationError(errors);
         }
 
         var result = await new RegisterDeliveryService().Register(
@@ -43,7 +40,7 @@ public class DeliveryCommandController : ControllerBase
             dto.Email,
             dto.Password,
             dto.DisplayName);
-        return Ok(result);
+        return Success(result);
     }
 
     [HttpPost("profile/add")]
@@ -52,7 +49,7 @@ public class DeliveryCommandController : ControllerBase
         var (success, errors) = request.Validate();
         if (!success)
         {
-            return BadRequest(errors);
+            return ValidationError(errors);
         }
         var delivery = _userContext.Get().Party;
 
@@ -70,7 +67,7 @@ public class DeliveryCommandController : ControllerBase
             LicenseExpiredDate = request.LicenseExpiredDate,
         });
 
-        return result.Success ? Ok(result) : StatusCode(500, result.Errors);
+        return result.Success ? Success(result) : Fail(result.Errors);
     }
 
     #region profile
@@ -82,7 +79,7 @@ public class DeliveryCommandController : ControllerBase
         var result = await DeliveryProfileService.UpdateAsync(_dbFactory,
             _userContext.Get(), request);
 
-        return result.Success ? Ok(result) : StatusCode(500, result.Errors);
+        return result.Success ? Success(result) : Fail(result.Errors);
     }
     #endregion
 
@@ -97,9 +94,9 @@ public class DeliveryCommandController : ControllerBase
         var result = await connection.QueryFirstOrDefaultAsync<DelivaryProfile>(query, new { Party = party });
         if (result is null)
         {
-            return NotFound();
+            return DataNotFound();
         }
-        return Ok(result);
+        return Success(result);
     }
 
 
@@ -112,9 +109,9 @@ public class DeliveryCommandController : ControllerBase
         var result = await Query.GetDeliveryProfilesWithUserInfoPaginated(connection, page, pageSize);
         if (result.Profiles is null || result.Profiles.Length == 0)
         {
-            return NotFound();
+            return DataNotFound();
         }
-        return Ok(new
+        return Success(new
         {
             Data = result.Profiles,
             TotalCount = result.TotalCount

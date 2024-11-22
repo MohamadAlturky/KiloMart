@@ -3,23 +3,23 @@ using KiloMart.Core.Contracts;
 using KiloMart.Domain.Login.Models;
 using KiloMart.Domain.Login.Services;
 using KiloMart.Domain.Register.Activate;
+using KiloMart.Presentation.Controllers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KiloMart.Presentation.Authorization;
 
 [ApiController]
 [Route("api/user")]
-public class UserCommandController : ControllerBase
+public class UserCommandController : AppController
 {
-    private readonly IDbFactory _dbFactory;
     private readonly IConfiguration _configuration;
-    private readonly IUserContext _userContext;
-    public UserCommandController(IDbFactory dbFactory, IConfiguration configuration, IUserContext userContext)
+
+    public UserCommandController(IConfiguration configuration, IDbFactory dbFactory, IUserContext userContext) : base(dbFactory, userContext)
     {
-        _userContext = userContext;
-        _dbFactory = dbFactory;
         _configuration = configuration;
     }
+
+
     #region decode token
     [HttpGet("admin/decode-token")]
     public IActionResult Decode(string token)
@@ -29,7 +29,7 @@ public class UserCommandController : ControllerBase
             _configuration["Jwt:Issuer"]!,
             _configuration["Jwt:Audience"]!,
             out var decodedToken);
-        return Ok(decodedToken);
+        return Success(decodedToken);
     }
     #endregion
 
@@ -37,7 +37,7 @@ public class UserCommandController : ControllerBase
     [HttpGet("admin/user-payload")]
     public IActionResult Payload()
     {
-        return Ok(_userContext.Get());
+        return Success(_userContext.Get());
     }
     #endregion
 
@@ -50,7 +50,7 @@ public class UserCommandController : ControllerBase
             return BadRequest(errors);
 
         var result = await VerifyUserEmailService.VerifyEmail(request.Email, request.VerificationToken, _dbFactory);
-        return result ? Ok(new { Success = true }) : StatusCode(500, new { Success = false });
+        return result ? Success() : Fail();
     }
     #endregion
 
@@ -60,19 +60,18 @@ public class UserCommandController : ControllerBase
     {
         var (success, errors) = request.Validate();
         if (!success)
-            return BadRequest(errors);
+            return ValidationError(errors);
 
         var result = await LoginService.Login(request.Email, request.Password, _dbFactory, _configuration);
         return result.Success ?
-            Ok(new
+            Success(new
             {
-                Success = true,
                 result.Token,
                 result.Email,
                 result.UserName,
                 result.Role
             })
-        : Unauthorized(new { Success = false });
+        : Fail("User Name Or Password Is Not Valid");
     }
     #endregion
 
@@ -81,28 +80,28 @@ public class UserCommandController : ControllerBase
     public async Task<IActionResult> ActivateUserByEmail([FromBody] string email)
     {
         var result = await UserAccountService.ActivateUser(email, _dbFactory);
-        return result ? Ok(new { Success = true }) : StatusCode(500, new { Success = false });
+        return result ? Success() : Fail();
     }
 
     [HttpPost("admin/deactivate/email")]
     public async Task<IActionResult> DeactivateUserByEmail([FromBody] string email)
     {
         var result = await UserAccountService.DeActivateUser(email, _dbFactory);
-        return result ? Ok(new { Success = true }) : StatusCode(500, new { Success = false });
+        return result ? Success() : Fail();
     }
 
     [HttpPost("admin/activate/{id}")]
     public async Task<IActionResult> ActivateUserById(int id)
     {
         var result = await UserAccountService.ActivateUser(id, _dbFactory);
-        return result ? Ok(new { Success = true }) : StatusCode(500, new { Success = false });
+        return result ? Success() : Fail();
     }
 
     [HttpPost("admin/deactivate/{id}")]
     public async Task<IActionResult> DeactivateUserById(int id)
     {
         var result = await UserAccountService.DeActivateUser(id, _dbFactory);
-        return result ? Ok(new { Success = true }) : StatusCode(500, new { Success = false });
+        return result ? Success() : Fail();
     }
     #endregion
 }

@@ -17,11 +17,10 @@ public class VehicleAdminController(IDbFactory dbFactory, IUserContext userConte
     [HttpGet("list")]
     public async Task<IActionResult> List([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
-        var partyId = _userContext.Get().Party;
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
         var result = await Query.GetVehiclesPaginated(connection, pageNumber, pageSize);
-        return Ok(result);
+        return Success(result);
 
     }
 }

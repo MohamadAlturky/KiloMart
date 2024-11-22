@@ -25,11 +25,11 @@ public class VehicleController(IDbFactory dbFactory, IUserContext userContext) :
 
         if (result.Success)
         {
-            return CreatedAtAction(nameof(Create), new { id = result.Data.Id }, result.Data);
+            return Success(result.Data);
         }
         else
         {
-            return BadRequest(result.Errors);
+            return Fail(result.Errors);
         }
     }
 
@@ -40,17 +40,17 @@ public class VehicleController(IDbFactory dbFactory, IUserContext userContext) :
 
         if (result.Success)
         {
-            return Ok(result.Data);
+            return Success(result.Data);
         }
         else
         {
             if (result.Errors.Contains("Not Found"))
             {
-                return NotFound();
+                return DataNotFound();
             }
             else
             {
-                return BadRequest(result.Errors);
+                return Fail(result.Errors);
             }
         }
     }
@@ -64,17 +64,17 @@ public class VehicleController(IDbFactory dbFactory, IUserContext userContext) :
 
         if (result.Success)
         {
-            return Ok(result.Data);
+            return Success(result.Data);
         }
         else
         {
             if (result.Errors.Contains("Not Found"))
             {
-                return NotFound();
+                return DataNotFound();
             }
             else
             {
-                return BadRequest(result.Errors);
+                return Fail(result.Errors);
             }
         }
     }
@@ -98,7 +98,7 @@ public class VehicleController(IDbFactory dbFactory, IUserContext userContext) :
             WHERE [Delivary] = @Delivary
             ",
             new { Delivary = partyId });
-        return Ok(cards.ToArray());
+        return Success(cards.ToArray());
 
     }
 }

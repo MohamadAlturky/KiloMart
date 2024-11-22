@@ -60,7 +60,7 @@ public class ProductController(
             }]
         };
         var result = ProductService.Insert(_dbFactory, productDto);
-        return result.Success ? Ok(result.Data) : StatusCode(500, result.Errors);
+        return result.Success ? Success(result.Data) : Fail(result.Errors);
     }
     #endregion
 
@@ -124,7 +124,8 @@ public class ProductController(
             });
         }
 
-        return Ok(new
+        return Success(
+            new
         {
             data = result,
             totalCount
@@ -191,7 +192,7 @@ public class ProductController(
             });
         }
 
-        return Ok(new
+        return Success(new
         {
             data = result,
             totalCount
@@ -302,7 +303,7 @@ public class ProductController(
             });
         }
 
-        return Ok(new
+        return Success(new
         {
             data = result,
             totalCount
@@ -389,7 +390,7 @@ public class ProductController(
             });
         }
 
-        return Ok(new
+        return Success(new
         {
             data = result,
             totalCount

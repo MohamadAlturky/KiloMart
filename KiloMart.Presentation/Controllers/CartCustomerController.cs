@@ -67,29 +67,29 @@ public class CartCustomerController(IDbFactory dbFactory, IUserContext userConte
         return Success();
     }
 
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetCartById(long id)
-    {
-        using var connection = _dbFactory.CreateDbConnection();
-        connection.Open();
-        var cartItem = await Db.GetCartByIdAsync(id, connection);
+    // [HttpGet("{id}")]
+    // public async Task<IActionResult> GetCartById(long id)
+    // {
+    //     using var connection = _dbFactory.CreateDbConnection();
+    //     connection.Open();
+    //     var cartItem = await Db.GetCartByIdAsync(id, connection);
 
-        if (cartItem is null)
-            return DataNotFound();
+    //     if (cartItem is null)
+    //         return DataNotFound();
 
-        return Success(cartItem);
-    }
+    //     return Success(cartItem);
+    // }
 
-    [HttpGet("mine")]
-    public async Task<IActionResult> GetCartsByCustomer()
-    {
-        int customerId = _userContext.Get().Party;
-        using var connection = _dbFactory.CreateDbConnection();
-        connection.Open();
-        var carts = await Db.GetCartsByCustomerAsync(customerId, connection);
+    // [HttpGet("mine")]
+    // public async Task<IActionResult> GetCartsByCustomer()
+    // {
+    //     int customerId = _userContext.Get().Party;
+    //     using var connection = _dbFactory.CreateDbConnection();
+    //     connection.Open();
+    //     var carts = await Db.GetCartsByCustomerAsync(customerId, connection);
 
-        return Success(carts);
-    }
+    //     return Success(carts);
+    // }
     [HttpGet("mine-with-products-info")]
     public async Task<IActionResult> GetCartsByCustomerWithProductsInfo([FromQuery] byte language)
     {

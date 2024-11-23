@@ -41,10 +41,10 @@ public class RequestOrderService
 
 
         try
-        {
+        {   
             response.Order = new()
             {
-                OrderStatus = (byte)OrderStatus.Init,
+                OrderStatus = (byte)OrderStatus.ORDER_PLACED,
                 TotalPrice = 0,
                 TransactionId = Guid.NewGuid().ToString()
             };
@@ -119,7 +119,7 @@ public class RequestOrderService
 
 public class CreateOrderRequestModel
 {
-    public List<RequestedProduct> RequestedProducts { get; set; }
+    public List<RequestedProduct> RequestedProducts { get; set; } = null!;
     public int LocationId { get; set; }
     public (bool Success, string[] Errors) Validate()
     {

@@ -85,6 +85,23 @@ public static partial class OrdersDb
             Id = id
         });
     }
+    public static async Task<List<OrderProduct>> GetOrderProductByOrderIdAsync(long orderId, IDbConnection connection)
+    {
+        const string query = @"SELECT 
+                            [Id], 
+                            [Order], 
+                            [Product], 
+                            [Quantity]
+                            FROM [dbo].[OrderProduct]
+                            WHERE [Order] = @OrderId";
+
+        
+        var result = await connection.QueryAsync<OrderProduct>(query, new
+        {
+            OrderId = orderId
+        });
+        return result.ToList();
+    }
 }
 
 public class OrderProduct

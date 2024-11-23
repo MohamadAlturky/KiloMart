@@ -20,11 +20,38 @@ public enum OrderStatus {
 
 public enum OrderActivityType
 {
+    /// <summary>
+    /// Customer 
+    /// </summary>
     InitByCustomer = 1,
-    AcceptedByProvider = 2,
-    Canceled = 2,
-    Accepted = 3,
-    Delivered = 4
+    CanceledByCustomerBeforeProviderAcceptIt = 2,
+    CanceledByCustomerBeforeDeliveryAcceptItAndAfterProviderAcceptIt = 3,
+    CanceledByCustomerAfterDeliveryAcceptIt = 4,
+
+    /// <summary>
+    /// Provider
+    /// </summary>
+    AcceptedByProvider = 5,
+    CanceledByProviderBeforeDeliveryAcceptIt = 6,
+
+    /// <summary>
+    /// Delivery
+    /// </summary>
+    AcceptedByDelivery = 7,
+    CanceledByDelivery = 8,
+    ShippedByDelivery = 9,
+    DeliveredByDelivery = 10
 }
 
-
+// INSERT INTO OrderActivityType([Id], [Name])
+// VALUES 
+//     (1, 'InitByCustomer'),
+//     (2, 'CanceledByCustomerBeforeProviderAcceptIt'),
+//     (3, 'CanceledByCustomerBeforeDeliveryAcceptAfterProviderAccept'),
+//     (4, 'CanceledByCustomerAfterDeliveryAcceptIt'),
+//     (5, 'AcceptedByProvider'),
+//     (6, 'CanceledByProviderBeforeDeliveryAcceptIt'),
+//     (7, 'AcceptedByDelivery'),
+//     (8, 'CanceledByDelivery'),
+//     (9, 'ShippedByDelivery'),
+//     (10, 'DeliveredByDelivery');

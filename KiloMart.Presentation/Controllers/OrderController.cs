@@ -1,6 +1,7 @@
 ﻿using KiloMart.Commands.Services;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
+using KiloMart.Domain.Orders.Queries;
 using KiloMart.Domain.Orders.Services;
 using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Authorization;
@@ -22,7 +23,7 @@ public class OrderController(IDbFactory dbFactory, IUserContext userContext)
     {
         if (model is null)
         {
-            return ValidationError(new List<string>{"Invalid request model."});
+            return ValidationError(new List<string> { "Invalid request model." });
         }
 
         var userPayload = _userContext.Get();
@@ -35,7 +36,14 @@ public class OrderController(IDbFactory dbFactory, IUserContext userContext)
         }
         return Fail(result.Errors);
     }
-
+    [HttpGet]
+    public async Task<IActionResult> GetOrderById(
+        [FromQuery] byte status)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        var result = await OrdersQuery.GetOrdersByStatus(status, connection);
+        return Success(result);
+    }
     // [HttpPost("cancel")]
     // [Guard([Roles.Customer])]
     // public async Task<IActionResult> Cancel([FromBody] long id)

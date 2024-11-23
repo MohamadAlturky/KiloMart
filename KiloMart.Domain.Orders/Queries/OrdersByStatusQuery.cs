@@ -9,7 +9,7 @@ public static partial class OrdersQuery
 {
 
 
-    public async static Task<IEnumerable<Order>> GetOrdersByStatus(byte orderStatus, IDbConnection connection)
+    public async static Task<List<Order>> GetOrdersByStatus(byte orderStatus, IDbConnection connection)
     {
         var sql = @"
             SELECT 
@@ -17,11 +17,11 @@ public static partial class OrdersQuery
                 opi.Id AS ProviderInfoId, opi.Provider, opi.Location AS ProviderLocation,
                 oci.Id AS CustomerInfoId, oci.Customer, oci.Location AS CustomerLocation,
                 oa.Id AS ActivityId, oa.Date, oa.OrderActivityType, oa.OperatedBy,
-                opo.Id AS ProductOfferId, opo.ProductOffer, opo.UnitPrice, opo.Quantity AS ProductOfferQuantity,
-                op.Id AS ProductId, op.Product, op.Quantity AS ProductQuantity
+                opo.Id AS OrderProductOfferId, opo.ProductOffer, opo.UnitPrice, opo.Quantity AS ProductOfferQuantity,
+                op.Id AS OrderProductId, op.Product, op.Quantity AS ProductQuantity
             FROM [Order] o
-            INNER JOIN OrderProviderInformation opi ON o.Id = opi.[Order]
-            INNER JOIN OrderCustomerInformation oci ON o.Id = oci.[Order]
+            LEFT JOIN OrderProviderInformation opi ON o.Id = opi.[Order]
+            LEFT JOIN OrderCustomerInformation oci ON o.Id = oci.[Order]
             LEFT JOIN OrderActivity oa ON o.Id = oa.[Order]
             LEFT JOIN OrderProductOffer opo ON o.Id = opo.[Order]
             LEFT JOIN OrderProduct op ON o.Id = op.[Order]
@@ -30,7 +30,7 @@ public static partial class OrdersQuery
 
         var orderDictionary = new Dictionary<long, Order>();
 
-        var orders = await connection.QueryAsync<Order, OrderProviderInformation, OrderCustomerInformation, OrderActivity, OrderProductOffer, OrderProduct, Order>(
+        var orders = await connection.QueryAsync<Order, OrderProviderInformation?, OrderCustomerInformation?, OrderActivity?, OrderProductOffer?, OrderProduct?, Order>(
             sql,
             (order, providerInfo, customerInfo, activity, productOffer, product) =>
             {
@@ -39,23 +39,23 @@ public static partial class OrdersQuery
                     currentOrder = order;
                     currentOrder.ProviderInformation = providerInfo;
                     currentOrder.CustomerInformation = customerInfo;
-                    currentOrder.Activities = new List<OrderActivity>();
-                    currentOrder.ProductOffers = new List<OrderProductOffer>();
-                    currentOrder.Products = new List<OrderProduct>();
+                    currentOrder.Activities = [];
+                    currentOrder.ProductOffers = [];
+                    currentOrder.Products = [];
                     orderDictionary.Add(currentOrder.Id, currentOrder);
                 }
 
-                if (activity != null && !currentOrder.Activities.Any(a => a.Id == activity.Id))
+                if (activity is not null && !currentOrder.Activities.Any(a => a.ActivityId == activity.ActivityId))
                 {
                     currentOrder.Activities.Add(activity);
                 }
 
-                if (productOffer != null && !currentOrder.ProductOffers.Any(po => po.Id == productOffer.Id))
+                if (productOffer is not null && !currentOrder.ProductOffers.Any(po => po.OrderProductOfferId == productOffer.OrderProductOfferId))
                 {
                     currentOrder.ProductOffers.Add(productOffer);
                 }
 
-                if (product != null && !currentOrder.Products.Any(p => p.Id == product.Id))
+                if (product is not null && !currentOrder.Products.Any(p => p.OrderProductId == product.OrderProductId))
                 {
                     currentOrder.Products.Add(product);
                 }
@@ -63,7 +63,7 @@ public static partial class OrdersQuery
                 return currentOrder;
             },
             new { OrderStatus = orderStatus },
-            splitOn: "ProviderInfoId,CustomerInfoId,ActivityId,ProductOfferId,ProductId"
+            splitOn: "ProviderInfoId,CustomerInfoId,ActivityId,OrderProductOfferId,OrderProductId"
         );
 
         return orders.Distinct().ToList();
@@ -77,33 +77,30 @@ public class Order
     public byte OrderStatus { get; set; }
     public decimal TotalPrice { get; set; }
     public string TransactionId { get; set; }
-    public OrderProviderInformation ProviderInformation { get; set; }
-    public OrderCustomerInformation CustomerInformation { get; set; }
-    public List<OrderActivity> Activities { get; set; } = new();
-    public List<OrderProductOffer> ProductOffers { get; set; } = new();
-    public List<OrderProduct> Products { get; set; } = new();
+    public OrderProviderInformation? ProviderInformation { get; set; }
+    public OrderCustomerInformation? CustomerInformation { get; set; }
+    public List<OrderActivity> Activities { get; set; } = [];
+    public List<OrderProductOffer> ProductOffers { get; set; } = [];
+    public List<OrderProduct> Products { get; set; } = [];
 }
 
 public class OrderProviderInformation
 {
-    public long Id { get; set; }
-    public long Order { get; set; }
+    public long ProviderInfoId { get; set; }
     public int Provider { get; set; }
-    public int Location { get; set; }
+    public int ProviderLocation { get; set; }
 }
 
 public class OrderCustomerInformation
 {
-    public long Id { get; set; }
-    public long Order { get; set; }
+    public long CustomerInfoId { get; set; }
     public int Customer { get; set; }
-    public int Location { get; set; }
+    public int CustomerLocation { get; set; }
 }
 
 public class OrderActivity
 {
-    public long Id { get; set; }
-    public long Order { get; set; }
+    public long ActivityId { get; set; }
     public DateTime Date { get; set; }
     public byte OrderActivityType { get; set; }
     public int OperatedBy { get; set; }
@@ -111,17 +108,15 @@ public class OrderActivity
 
 public class OrderProductOffer
 {
-    public long Id { get; set; }
-    public long Order { get; set; }
-    public int ProductOffer { get; set; }
+    public long OrderProductOfferId { get; set; }
+    public long ProductOffer { get; set; }
     public decimal UnitPrice { get; set; }
-    public float Quantity { get; set; }
+    public float ProductOfferQuantity { get; set; }
 }
 
 public class OrderProduct
 {
-    public int Id { get; set; }
-    public long Order { get; set; }
+    public int OrderProductId { get; set; }
     public int Product { get; set; }
-    public float Quantity { get; set; }
+    public float ProductQuantity { get; set; }
 }

@@ -28,7 +28,7 @@ namespace KiloMart.Requests.Queries
 
     public class ProductPriceInfo
     {
-        public string Product { get; set; } = null!;
+        public int Product { get; set; }
         public decimal MinPrice { get; set; }
         public decimal MaxPrice { get; set; }
     }

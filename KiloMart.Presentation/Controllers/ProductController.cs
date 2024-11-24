@@ -326,13 +326,13 @@ public class ProductController(
         var countSql = @"SELECT COUNT(*) 
                 FROM Product p WITH (NOLOCK)
                 INNER JOIN (
-                    SELECT Product, MAX(Price) AS MaxPrice, MIN(Price) AS MinPrice
+                    SELECT Product, MAX(Price) AS MaxPrice, MIN(Price) AS MinPrice, Sum(Quantity) AS QuantitySum
                     FROM ProductOffer
                         Where IsActive = 1
                     GROUP BY Product
                 ) po
                 ON p.Id = po.Product
-                WHERE p.IsActive = @isActive AND ProductCategory = @category";
+                WHERE p.IsActive = @isActive AND ProductCategory = @category AND QuantitySum != 0";
         int totalCount = await connection.ExecuteScalarAsync<int>(countSql, new { isActive, category });
 
         // SQL query with pagination, using OFFSET and FETCH
@@ -356,13 +356,13 @@ public class ProductController(
                 LEFT JOIN ProductLocalized pl WITH (NOLOCK)
                     ON p.Id = pl.Product AND pl.Language = @language
                 INNER JOIN (
-                    SELECT Product, MAX(Price) AS MaxPrice, MIN(Price) AS MinPrice
+                    SELECT Product, MAX(Price) AS MaxPrice, MIN(Price) AS MinPrice, Sum(Quantity) AS QuantitySum
                     FROM ProductOffer
                         Where IsActive = 1
                     GROUP BY Product
                 ) po
                 ON p.Id = po.Product
-                WHERE p.IsActive = @isActive AND ProductCategory = @category
+                WHERE p.IsActive = @isActive AND ProductCategory = @category AND QuantitySum != 0
                 ORDER BY p.[Id]
                 OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
 

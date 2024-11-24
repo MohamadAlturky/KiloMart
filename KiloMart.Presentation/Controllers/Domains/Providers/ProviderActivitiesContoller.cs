@@ -7,6 +7,8 @@ using KiloMart.Presentation.Controllers;
 using KiloMart.Requests.Queries;
 using Microsoft.AspNetCore.Mvc;
 
+namespace KiloMart.Presentation.Controllers.Domains.Providers;
+
 [ApiController]
 [Route("api/provider")]
 public class ProviderActivitiesContoller : AppController

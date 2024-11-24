@@ -73,14 +73,17 @@ public class CustomerActivitiesContoller(IDbFactory dbFactory, IUserContext user
         var result = await ProductQuery.GetByIsActiveProductDetailsWithCategoryAsync(connection, language, true);
         return Success(result);
     }
-    // [HttpGet("get-total-cart-value")]
-    // [Guard([Roles.Customer])]
-    // public async Task<IActionResult> GetTotalCartValue()
-    // {
-    //     using var connection = _dbFactory.CreateDbConnection();
-    //     var result = await Query.GetProductPriceRangeForCustomer(connection, _userContext.Get().Party);
-    //     return Success(result);
-    // }
+    [HttpGet("get-all-products-by-category")]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> GetAllProductsByCategory([FromQuery] int category,
+    [FromQuery] byte language, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        var result = await Query.GetProductsPaginatedByCategory(connection, 
+        category,language,page,pageSize);
+        return Success(result);
+    }
+    
     [HttpGet("get-price-ranges-for-cart-products")]
     [Guard([Roles.Customer])]
     public async Task<IActionResult> GetTotalCartValue()

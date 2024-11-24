@@ -176,7 +176,8 @@ public partial class ProductQuery
         var result = await connection.QueryAsync<ProductDetail>(sql, parameters);
         return result.ToList();
     }
-    public static async Task<List<ProductDetailWithCategory>> GetByIsActiveProductDetailsWithCategoryAsync(IDbConnection connection, int languageId, bool isActive)
+    public static async Task<List<ProductDetailWithCategory>> GetByIsActiveProductDetailsWithCategoryAsync
+    (IDbConnection connection, int languageId, bool isActive)
     {
         const string sql = @"
             SELECT 
@@ -198,6 +199,7 @@ public partial class ProductQuery
         var result = await connection.QueryAsync<ProductDetailWithCategory>(sql, parameters);
         return result.ToList();
     }
+    
 }
 
 public class ProductDetail

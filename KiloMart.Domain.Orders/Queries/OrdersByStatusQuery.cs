@@ -69,6 +69,64 @@ public static partial class OrdersQuery
         return orders.Distinct().ToList();
     }
 
+    public static async Task<OrderMinPrice?> GetCheapestOrderByCustomerAndStatusAsync(IDbConnection connection, int customerId)
+    {
+        const string sql = @"
+        SELECT Top(1)
+            o.Id,
+            o.TotalPrice
+        FROM [Order] o
+        LEFT JOIN OrderCustomerInformation oci ON o.Id = oci.[Order]
+        WHERE oci.Customer = @customer
+        ORDER BY o.TotalPrice ASC";
+
+        var parameters = new { customer = customerId };
+
+        return await connection.QueryFirstOrDefaultAsync<OrderMinPrice>(sql, parameters);
+    }
+    public static async Task<List<OrderProductDetail>> GetOrderProductDetailsAsync(IDbConnection connection,
+     long orderId, byte language)
+    {
+        const string sql = @"
+        SELECT 
+            op.Id AS ItemId,
+            op.[Order] AS ItemOrder,
+            op.Quantity AS ItemQuantity,
+            pd.ProductId,
+            pd.ProductImageUrl,
+            pd.ProductProductCategory,
+            pd.ProductIsActive,
+            pd.ProductMeasurementUnit,
+            pd.ProductDescription,
+            pd.ProductName
+        FROM GetProductDetailsByLanguageFN(@language) pd
+        INNER JOIN OrderProduct op ON op.Product = pd.ProductId
+        WHERE [Order] = @orderId";
+
+        var parameters = new { orderId, language };
+        var result = await connection.QueryAsync<OrderProductDetail>(sql, parameters);
+
+        return result.ToList();
+    }
+
+}
+public class OrderProductDetail
+{
+    public int ItemId { get; set; }
+    public long ItemOrder { get; set; }
+    public int ItemQuantity { get; set; }
+    public int ProductId { get; set; }
+    public string ProductImageUrl { get; set; }
+    public int ProductProductCategory { get; set; }
+    public bool ProductIsActive { get; set; }
+    public string ProductMeasurementUnit { get; set; }
+    public string ProductDescription { get; set; }
+    public string ProductName { get; set; }
+}
+public class OrderMinPrice
+{
+    public long Id { get; set; }
+    public decimal TotalPrice { get; set; }
 }
 
 public class Order
@@ -76,7 +134,7 @@ public class Order
     public long Id { get; set; }
     public byte OrderStatus { get; set; }
     public decimal TotalPrice { get; set; }
-    public string TransactionId { get; set; }
+    public string TransactionId { get; set; } = null!;
     public OrderProviderInformation? ProviderInformation { get; set; }
     public OrderCustomerInformation? CustomerInformation { get; set; }
     public List<OrderActivity> Activities { get; set; } = [];

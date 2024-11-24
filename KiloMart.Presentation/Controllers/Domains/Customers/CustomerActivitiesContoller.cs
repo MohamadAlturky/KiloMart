@@ -1,5 +1,8 @@
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
+using KiloMart.Domain.Orders.Queries;
+using KiloMart.Domain.Register.Utils;
+using KiloMart.Presentation.Authorization;
 using KiloMart.Requests.Queries;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,22 +20,41 @@ public class CustomerActivitiesContoller(IDbFactory dbFactory, IUserContext user
     [FromQuery] int pageSize = 10)
     {
         using var connection = _dbFactory.CreateDbConnection();
-        var (Products, TotalCount) = await ProductQuery.GetProductsWithOfferPaginated(connection,category,language,page,pageSize);
-        return Success(new { Products , TotalCount });
+        var (Products, TotalCount) = await ProductQuery.GetProductsWithOfferPaginated(connection, category, language, page, pageSize);
+        return Success(new { Products, TotalCount });
     }
 
     [HttpGet("get-best-deals-by-off-percentage")]
     public async Task<IActionResult> GetBestDealsByOffPercentage([FromQuery] byte language)
     {
         using var connection = _dbFactory.CreateDbConnection();
-        var result = await ProductQuery.GetBestDealsByOffPercentage(connection,language);
-        return Success(new {deals = result});
+        var result = await ProductQuery.GetBestDealsByOffPercentage(connection, language);
+        return Success(new { deals = result });
     }
     [HttpGet("get-best-deals-by-final-price")]
     public async Task<IActionResult> GetBestDealsByMultiply([FromQuery] byte language)
     {
         using var connection = _dbFactory.CreateDbConnection();
-        var result = await ProductQuery.GetBestDealsByMultiply(connection,language);
-        return Success(new {deals = result});
+        var result = await ProductQuery.GetBestDealsByMultiply(connection, language);
+        return Success(new { deals = result });
+    }
+    [HttpGet("get-min-order-value")]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> GetMinOrderValue([FromQuery] byte language)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        var result = await OrdersQuery.GetCheapestOrderByCustomerAndStatusAsync(connection, _userContext.Get().Party);
+        if (result is null)
+        {
+            return DataNotFound();
+        }
+        var items = await OrdersQuery.GetOrderProductDetailsAsync(connection, result.Id, language);
+        return Success(
+            new
+        {
+            orderId = result.Id,
+            price = result.TotalPrice,
+            items
+        });
     }
 }

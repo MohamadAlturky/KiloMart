@@ -344,7 +344,7 @@ public partial class Query
         var countQuery = @"
         SELECT COUNT(*)
         FROM 
-            [KiloMartMasterDb].[dbo].[ProductOffer] po
+            [ProductOffer] po
         WHERE 
             po.IsActive = 1 AND po.[Provider] = @providerId;";
 

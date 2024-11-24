@@ -94,7 +94,7 @@ public class VehicleController(IDbFactory dbFactory, IUserContext userContext) :
                 ,[Model]
                 ,[Type]
                 ,[Year]
-            FROM [KiloMartMasterDb].[dbo].[Vehicle]
+            FROM [Vehicle]
             WHERE [Delivary] = @Delivary
             ",
             new { Delivary = partyId });

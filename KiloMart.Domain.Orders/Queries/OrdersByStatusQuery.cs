@@ -1,9 +1,8 @@
 using Dapper;
 using System.Data;
-using System.Data.SqlClient;
+
+
 namespace KiloMart.Domain.Orders.Queries;
-
-
 
 public static partial class OrdersQuery
 {
@@ -68,7 +67,21 @@ public static partial class OrdersQuery
 
         return orders.Distinct().ToList();
     }
+    public static async Task<OrderMinPrice?> GetCheapestOrderByCustomerAndStatusAsync(IDbConnection connection, int customerId, byte status)
+    {
+        const string sql = @"
+        SELECT Top(1)
+            o.Id,
+            o.TotalPrice
+        FROM [Order] o
+        LEFT JOIN OrderCustomerInformation oci ON o.Id = oci.[Order]
+        WHERE oci.Customer = @customer AND o.OrderStatus = @status 
+        ORDER BY o.TotalPrice ASC";
 
+        var parameters = new { customer = customerId, status };
+
+        return await connection.QueryFirstOrDefaultAsync<OrderMinPrice>(sql, parameters);
+    }
     public static async Task<OrderMinPrice?> GetCheapestOrderByCustomerAndStatusAsync(IDbConnection connection, int customerId)
     {
         const string sql = @"

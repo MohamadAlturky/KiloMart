@@ -51,10 +51,42 @@ public class CustomerActivitiesContoller(IDbFactory dbFactory, IUserContext user
         var items = await OrdersQuery.GetOrderProductDetailsAsync(connection, result.Id, language);
         return Success(
             new
-        {
-            orderId = result.Id,
-            price = result.TotalPrice,
-            items
-        });
+            {
+                orderId = result.Id,
+                price = result.TotalPrice,
+                items
+            });
+    }
+    [HttpGet("get-all-products")]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> GetByIsActiveProductDetailsAsync([FromQuery] byte language)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        var result = await ProductQuery.GetByIsActiveProductDetailsAsync(connection, language, true);
+        return Success(result);
+    }
+    [HttpGet("get-all-products-with-categories")]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> GetByIsActiveProductDetailsWithCategoryAsync([FromQuery] byte language)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        var result = await ProductQuery.GetByIsActiveProductDetailsWithCategoryAsync(connection, language, true);
+        return Success(result);
+    }
+    // [HttpGet("get-total-cart-value")]
+    // [Guard([Roles.Customer])]
+    // public async Task<IActionResult> GetTotalCartValue()
+    // {
+    //     using var connection = _dbFactory.CreateDbConnection();
+    //     var result = await Query.GetProductPriceRangeForCustomer(connection, _userContext.Get().Party);
+    //     return Success(result);
+    // }
+    [HttpGet("get-price-ranges-for-cart-products")]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> GetTotalCartValue()
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        var result = await Query.GetProductPriceRangeForCustomer(connection, _userContext.Get().Party);
+        return Success(result);
     }
 }

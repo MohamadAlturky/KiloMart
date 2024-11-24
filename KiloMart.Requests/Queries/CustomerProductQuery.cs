@@ -158,17 +158,78 @@ public partial class ProductQuery
             throw new Exception("Error occurred while fetching best deals", ex);
         }
     }
+    public static async Task<List<ProductDetail>> GetByIsActiveProductDetailsAsync(IDbConnection connection, int languageId, bool isActive)
+    {
+        const string sql = @"
+        SELECT 
+            p.ProductDescription,
+            p.ProductId,
+            p.ProductImageUrl,
+            p.ProductMeasurementUnit,
+            p.ProductName,
+            p.ProductProductCategory,
+            p.ProductIsActive
+        FROM GetProductDetailsByLanguageFN(@languageId) p 
+        WHERE p.ProductIsActive = @isActive";
+
+        var parameters = new { languageId, isActive };
+        var result = await connection.QueryAsync<ProductDetail>(sql, parameters);
+        return result.ToList();
+    }
+    public static async Task<List<ProductDetailWithCategory>> GetByIsActiveProductDetailsWithCategoryAsync(IDbConnection connection, int languageId, bool isActive)
+    {
+        const string sql = @"
+            SELECT 
+                p.ProductDescription,
+                p.ProductId,
+                p.ProductImageUrl,
+                p.ProductMeasurementUnit,
+                p.ProductName,
+                p.ProductProductCategory,
+                p.ProductIsActive,
+                c.ProductCategoryName
+
+            FROM GetProductDetailsByLanguageFN(@languageId) p 
+                INNER JOIN GetProductCategoryDetailsByLanguageFN(@languageId) c
+            ON c.ProductCategoryId = p.ProductProductCategory
+                WHERE p.ProductIsActive = @isActive";
+
+        var parameters = new { languageId, isActive };
+        var result = await connection.QueryAsync<ProductDetailWithCategory>(sql, parameters);
+        return result.ToList();
+    }
 }
 
+public class ProductDetail
+{
+    public string ProductDescription { get; set; } = null!;
+    public int ProductId { get; set; }
+    public string ProductImageUrl { get; set; } = null!;
+    public string ProductMeasurementUnit { get; set; } = null!;
+    public string ProductName { get; set; } = null!;
+    public int ProductProductCategory { get; set; }
+    public bool ProductIsActive { get; set; }
+}
+public class ProductDetailWithCategory
+{
+    public string ProductDescription { get; set; } = null!;
+    public int ProductId { get; set; }
+    public string ProductImageUrl { get; set; } = null!;
+    public string ProductMeasurementUnit { get; set; } = null!;
+    public string ProductName { get; set; } = null!;
+    public bool ProductIsActive { get; set; }
+    public int ProductProductCategory { get; set; }
+    public string ProductCategoryName { get; set; } = null!;
+}
 public class BestDealsByOffDto
 {
     public int ProductId { get; set; }
     public string ProductImageUrl { get; set; } = null!;
-    public string ProductProductCategory { get; set; }= null!;
+    public string ProductProductCategory { get; set; } = null!;
     public bool ProductIsActive { get; set; }
-    public string ProductMeasurementUnit { get; set; }= null!;
-    public string ProductDescription { get; set; }= null!;
-    public string ProductName { get; set; }= null!;
+    public string ProductMeasurementUnit { get; set; } = null!;
+    public string ProductDescription { get; set; } = null!;
+    public string ProductName { get; set; } = null!;
     public decimal OffPercentage { get; set; }
 }
 
@@ -176,11 +237,11 @@ public class BestDealsByMultiplyDto
 {
     public int ProductId { get; set; }
     public string ProductImageUrl { get; set; } = null!;
-    public string ProductProductCategory { get; set; }= null!;
+    public string ProductProductCategory { get; set; } = null!;
     public bool ProductIsActive { get; set; }
-    public string ProductMeasurementUnit { get; set; }= null!;
-    public string ProductDescription { get; set; }= null!;
-    public string ProductName { get; set; }= null!;
+    public string ProductMeasurementUnit { get; set; } = null!;
+    public string ProductDescription { get; set; } = null!;
+    public string ProductName { get; set; } = null!;
     public decimal PriceMultiOffPercentage { get; set; }
 }
 

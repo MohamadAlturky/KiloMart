@@ -1,5 +1,6 @@
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
+using KiloMart.DataAccess.Database;
 using KiloMart.Domain.Orders.Queries;
 using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Authorization;
@@ -105,4 +106,58 @@ public class CustomerActivitiesContoller(IDbFactory dbFactory, IUserContext user
         var result = await Query.GetMonthlyPriceSummary(connection, numberOfMonths, product);
         return Success(result);
     }
+
+
+    #region Favorites
+
+    [HttpPost("add-favorite-product")]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> AddFavoriteProduct([FromBody] AddFavoriteProductRequest request)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        var customerId = _userContext.Get().Party;
+
+        var favoriteProductId = await Db.InsertFavoriteProductAsync(connection, customerId, request.ProductId);
+        return Success(new { id = favoriteProductId });
+    }
+
+    [HttpDelete("remove-favorite-product/{id}")]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> RemoveFavoriteProduct(long id)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        FavoriteProduct? favorite = await Db.GetFavoriteProductsByIdAsync(id,connection);
+        if(favorite is null)
+        {
+            return DataNotFound("Favorite product not found.");
+        }
+        if(favorite.Customer != _userContext.Get().Party)
+        {
+            return Fail("un authorized");
+        }
+        var deleted = await Db.DeleteFavoriteProductAsync(connection, id);
+        if (!deleted)
+        {
+            return DataNotFound("Favorite product not found.");
+        }
+
+        return Success();
+    }
+
+    [HttpGet("get-favorite-products")]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> GetFavoriteProducts()
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        var customerId = _userContext.Get().Party;
+
+        var favoriteProducts = await Db.GetFavoriteProductsByCustomerIdAsync(customerId, connection);
+        return Success(favoriteProducts);
+    }
+
+    public class AddFavoriteProductRequest
+    {
+        public int ProductId { get; set; }
+    }
+    #endregion
 }

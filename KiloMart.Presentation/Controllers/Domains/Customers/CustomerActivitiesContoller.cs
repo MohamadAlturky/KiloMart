@@ -154,6 +154,15 @@ public class CustomerActivitiesContoller(IDbFactory dbFactory, IUserContext user
         var favoriteProducts = await Db.GetFavoriteProductsByCustomerIdAsync(customerId, connection);
         return Success(favoriteProducts);
     }
+    [HttpGet("get-favorite-products-with-details")]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> GetFavoriteProducts([FromQuery] byte language)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        var customerId = _userContext.Get().Party;
+        var favoriteProducts = await Db.GetFavoriteProductDetailsByCustomerIdAsync(customerId, language, connection);
+        return Success(favoriteProducts);
+    }
 
     public class AddFavoriteProductRequest
     {

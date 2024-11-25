@@ -79,17 +79,30 @@ public class CustomerActivitiesContoller(IDbFactory dbFactory, IUserContext user
     [FromQuery] byte language, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
         using var connection = _dbFactory.CreateDbConnection();
-        var result = await Query.GetProductsPaginatedByCategory(connection, 
-        category,language,page,pageSize);
+        var result = await Query.GetProductsPaginatedByCategory(connection,
+        category, language, page, pageSize);
         return Success(result);
     }
-    
+
     [HttpGet("get-price-ranges-for-cart-products")]
     [Guard([Roles.Customer])]
     public async Task<IActionResult> GetTotalCartValue()
     {
         using var connection = _dbFactory.CreateDbConnection();
         var result = await Query.GetProductPriceRangeForCustomer(connection, _userContext.Get().Party);
+        return Success(result);
+    }
+    [HttpGet("get-monthly-price-summary")]
+    //[Guard([Roles.Customer])]
+    public async Task<IActionResult> GetMonthlyPriceSummary([FromQuery] int product,
+    [FromQuery] byte numberOfMonths)
+    {
+        if (numberOfMonths > 24)
+        {
+            return ValidationError(new List<string> { "number of months should not be more than 24" });
+        }
+        using var connection = _dbFactory.CreateDbConnection();
+        var result = await Query.GetMonthlyPriceSummary(connection, numberOfMonths, product);
         return Success(result);
     }
 }

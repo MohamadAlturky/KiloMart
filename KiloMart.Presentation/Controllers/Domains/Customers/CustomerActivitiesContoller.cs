@@ -126,12 +126,12 @@ public class CustomerActivitiesContoller(IDbFactory dbFactory, IUserContext user
     public async Task<IActionResult> RemoveFavoriteProduct(long id)
     {
         using var connection = _dbFactory.CreateDbConnection();
-        FavoriteProduct? favorite = await Db.GetFavoriteProductsByIdAsync(id,connection);
-        if(favorite is null)
+        FavoriteProduct? favorite = await Db.GetFavoriteProductsByIdAsync(id, connection);
+        if (favorite is null)
         {
             return DataNotFound("Favorite product not found.");
         }
-        if(favorite.Customer != _userContext.Get().Party)
+        if (favorite.Customer != _userContext.Get().Party)
         {
             return Fail("un authorized");
         }
@@ -167,6 +167,70 @@ public class CustomerActivitiesContoller(IDbFactory dbFactory, IUserContext user
     public class AddFavoriteProductRequest
     {
         public int ProductId { get; set; }
+    }
+    #endregion
+
+    #region Search History
+    [HttpPost("add-search-term")]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> AddSearchTerm([FromBody] AddSearchTermRequest request)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        var customerId = _userContext.Get().Party;
+
+        // Insert the search term into the database
+        var searchId = await Db.InsertSearchHistoryAsync(connection, customerId, request.Term);
+
+        return Success(new { Id = searchId });
+    }
+
+    [HttpGet("get-last-searches/{count}")]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> GetLastSearches(int count)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        var customerId = _userContext.Get().Party;
+
+        // Retrieve the last 'count' searches for the customer
+        var lastSearches = await Db.GetLastSearchesByCustomerAsync(connection, customerId, count);
+
+        return Success(lastSearches);
+    }
+
+    [HttpDelete("remove-search-term/{id}")]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> RemoveSearchTerm(long id)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+
+        // Retrieve the search history record by ID
+        SearchHistory? searchHistory = await Db.GetSearchHistoryByIdAsync(id, connection);
+
+        if (searchHistory is null)
+        {
+            return DataNotFound("Search term not found.");
+        }
+
+        if (searchHistory.Customer != _userContext.Get().Party)
+        {
+            return Fail("Unauthorized");
+        }
+
+        // Delete the search history record
+        var deleted = await Db.DeleteSearchHistoryAsync(connection, id);
+
+        if (!deleted)
+        {
+            return DataNotFound("Failed to delete search term.");
+        }
+
+        return Success();
+    }
+
+
+    public class AddSearchTermRequest
+    {
+        public string Term { get; set; } = null!;
     }
     #endregion
 }

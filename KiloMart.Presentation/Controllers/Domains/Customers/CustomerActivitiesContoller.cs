@@ -171,17 +171,22 @@ public class CustomerActivitiesContoller(IDbFactory dbFactory, IUserContext user
     #endregion
 
     #region Search History
-    [HttpPost("add-search-term")]
+    [HttpPost("search")]
     [Guard([Roles.Customer])]
-    public async Task<IActionResult> AddSearchTerm([FromBody] AddSearchTermRequest request)
+    public async Task<IActionResult> Search([FromBody] AddSearchTermRequest request)
     {
+        var (IsSuccess,Errors) = request.Validate();
+        if(!IsSuccess)
+        {
+            return ValidationError(Errors);
+        }
         using var connection = _dbFactory.CreateDbConnection();
         var customerId = _userContext.Get().Party;
 
         // Insert the search term into the database
         var searchId = await Db.InsertSearchHistoryAsync(connection, customerId, request.Term);
-
-        return Success(new { Id = searchId });
+        var productsInfos = await Db.SearchProductsAsync(connection, request.Term, 5);
+        return Success(new { Id = searchId, });
     }
 
     [HttpGet("get-last-searches/{count}")]
@@ -231,6 +236,16 @@ public class CustomerActivitiesContoller(IDbFactory dbFactory, IUserContext user
     public class AddSearchTermRequest
     {
         public string Term { get; set; } = null!;
+
+        public (bool Success, string[] Errors) Validate()
+        {
+            var errors = new List<string>();
+
+            if (Term.Length < 2)
+                errors.Add("Search Term shouldn't be less than 2");
+
+            return (errors.Count == 0, errors.ToArray());
+        }
     }
     #endregion
 }

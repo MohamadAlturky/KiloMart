@@ -95,6 +95,24 @@ public static partial class Db
             Count = count
         });
     }
+    public static async Task<IEnumerable<ProductLocalized>> SearchProductsAsync(IDbConnection connection, string searchTerm, int limit)
+    {
+        const string query = @"
+        SELECT TOP (@Limit) 
+            [Language], 
+            [Product], 
+            [MeasurementUnit], 
+            [Description], 
+            [Name]
+        FROM [dbo].[ProductLocalized]
+        WHERE [Name] LIKE '%' + @SearchTerm + '%'";
+
+        return await connection.QueryAsync<ProductLocalized>(query, new
+        {
+            SearchTerm = searchTerm,
+            Limit = limit
+        });
+    }
 }
 
 public class SearchHistory

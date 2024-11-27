@@ -97,7 +97,7 @@ public class ProductOfferController(
 
     [HttpGet("list")]
     public async Task<IActionResult> List([FromQuery] int provider, 
-    [FromQuery] byte language, 
+    [FromQuery] byte language = 1, 
     [FromQuery] int page = 1, 
     [FromQuery] int pageSize = 10)
     {

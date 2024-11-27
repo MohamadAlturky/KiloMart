@@ -321,8 +321,7 @@ public partial class Query
             pl.MeasurementUnit AS ProductLocalizedMeasurementUnit,
             pl.Description AS ProductLocalizedDescription,
             pl.Name AS ProductLocalizedName,
-            pc.Name AS ProductCategoryName
-
+            coalesce(pcl.Name,pc.Name) AS ProductCategoryName
         FROM 
             [dbo].[ProductOffer] po
         INNER JOIN 
@@ -334,6 +333,9 @@ public partial class Query
         LEFT JOIN 
             [dbo].[ProductLocalized] pl
             ON pl.Product = p.Id AND pl.[Language] = @languageId
+        LEFT JOIN
+            dbo.ProductCategoryLocalized pcl
+            ON pcl.ProductCategory = pc.Id AND pcl.Language = @languageId
         WHERE 
             po.IsActive = 1 AND po.[Provider] = @providerId
         ORDER BY 

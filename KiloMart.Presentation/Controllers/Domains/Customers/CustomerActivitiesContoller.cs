@@ -11,20 +11,10 @@ namespace KiloMart.Presentation.Controllers.Domains.Customers;
 
 [ApiController]
 [Route("api/customers")]
-public class CustomerActivitiesContoller(IDbFactory dbFactory, IUserContext userContext) : AppController(dbFactory, userContext)
+public partial class CustomerActivitiesContoller(IDbFactory dbFactory, IUserContext userContext) : AppController(dbFactory, userContext)
 {
-    [HttpGet("paginated-with-offer")]
-    public async Task<IActionResult> GetProductsWithOfferPaginatedForCustomer(
-    [FromQuery] int category,
-    [FromQuery] byte language = 1,
-    [FromQuery] int page = 1,
-    [FromQuery] int pageSize = 10)
-    {
-        using var connection = _dbFactory.CreateDbConnection();
-        var (Products, TotalCount) = await ProductQuery.GetProductsWithOfferPaginated(connection, category, language, page, pageSize);
-        return Success(new { Products, TotalCount });
-    }
-
+    
+    #region Get best deals
     [HttpGet("get-best-deals-by-off-percentage")]
     public async Task<IActionResult> GetBestDealsByOffPercentage([FromQuery] byte language)
     {
@@ -32,6 +22,7 @@ public class CustomerActivitiesContoller(IDbFactory dbFactory, IUserContext user
         var result = await ProductQuery.GetBestDealsByOffPercentage(connection, language);
         return Success(new { deals = result });
     }
+
     [HttpGet("get-best-deals-by-final-price")]
     public async Task<IActionResult> GetBestDealsByMultiply([FromQuery] byte language)
     {
@@ -39,6 +30,9 @@ public class CustomerActivitiesContoller(IDbFactory dbFactory, IUserContext user
         var result = await ProductQuery.GetBestDealsByMultiply(connection, language);
         return Success(new { deals = result });
     }
+    #endregion
+ 
+    #region  min order value
     [HttpGet("get-min-order-value")]
     [Guard([Roles.Customer])]
     public async Task<IActionResult> GetMinOrderValue([FromQuery] byte language)
@@ -58,6 +52,21 @@ public class CustomerActivitiesContoller(IDbFactory dbFactory, IUserContext user
                 items
             });
     }
+    #endregion
+
+    #region products
+    [HttpGet("products-paginated-with-offer")]
+    public async Task<IActionResult> GetProductsWithOfferPaginatedForCustomer(
+    [FromQuery] int category,
+    [FromQuery] byte language = 1,
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 10)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        var (Products, TotalCount) = await ProductQuery.GetProductsWithOfferPaginated(connection, category, language, page, pageSize);
+        return Success(new { Products, TotalCount });
+    }
+
     [HttpGet("get-all-products")]
     [Guard([Roles.Customer])]
     public async Task<IActionResult> GetByIsActiveProductDetailsAsync([FromQuery] byte language)
@@ -93,6 +102,8 @@ public class CustomerActivitiesContoller(IDbFactory dbFactory, IUserContext user
         var result = await Query.GetProductPriceRangeForCustomer(connection, _userContext.Get().Party);
         return Success(result);
     }
+
+    
     [HttpGet("get-monthly-price-summary")]
     //[Guard([Roles.Customer])]
     public async Task<IActionResult> GetMonthlyPriceSummary([FromQuery] int product,
@@ -106,7 +117,7 @@ public class CustomerActivitiesContoller(IDbFactory dbFactory, IUserContext user
         var result = await Query.GetMonthlyPriceSummary(connection, numberOfMonths, product);
         return Success(result);
     }
-
+    #endregion
 
     #region Favorites
 
@@ -175,8 +186,8 @@ public class CustomerActivitiesContoller(IDbFactory dbFactory, IUserContext user
     [Guard([Roles.Customer])]
     public async Task<IActionResult> Search([FromBody] AddSearchTermRequest request)
     {
-        var (IsSuccess,Errors) = request.Validate();
-        if(!IsSuccess)
+        var (IsSuccess, Errors) = request.Validate();
+        if (!IsSuccess)
         {
             return ValidationError(Errors);
         }

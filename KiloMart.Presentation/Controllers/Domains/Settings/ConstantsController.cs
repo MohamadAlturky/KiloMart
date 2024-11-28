@@ -2,7 +2,7 @@ using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KiloMart.Presentation.Controllers.Domains.Drivers;
+namespace KiloMart.Presentation.Controllers.Domains.Settings;
 
 [ApiController]
 [Route("api/constants")]
@@ -45,7 +45,7 @@ public partial class ConstantsController(IDbFactory dbFactory, IUserContext user
         var result = await DatabaseHelper.SelectFromTable("OrderStatus", _dbFactory.CreateDbConnection());
         return Success(result);
     }
-     [HttpGet("ProductRequestStatus")]
+    [HttpGet("ProductRequestStatus")]
     public async Task<IActionResult> GetProductRequestStatuses()
     {
         var result = await DatabaseHelper.SelectFromTable("ProductRequestStatus", _dbFactory.CreateDbConnection());

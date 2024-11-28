@@ -354,4 +354,5 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory, IUserCont
         return Success(cards);
     }
     #endregion
+
 }

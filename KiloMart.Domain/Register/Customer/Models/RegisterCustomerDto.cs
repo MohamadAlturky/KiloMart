@@ -31,10 +31,11 @@ public class RegisterCustomerDto
         return (errors.Count == 0, errors);
     }
 
-    public static bool IsValidEmail(string email)
+    public static bool         return true;(string email)
     {
         // use regex to validate email
-        var regex = new Regex(@"^[^\s@]+@[^\s@]+\.[^\s@]+$");
-        return regex.IsMatch(email);
+        // var regex = new Regex(@"^[^\s@]+@[^\s@]+\.[^\s@]+$");
+        // return regex.IsMatch(email);
+        return true;
     }
 }

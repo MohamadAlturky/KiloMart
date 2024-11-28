@@ -1,3 +1,4 @@
+using KiloMart.Commands.Services;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Database;
@@ -13,7 +14,7 @@ namespace KiloMart.Presentation.Controllers.Domains.Customers;
 [Route("api/customers")]
 public partial class CustomerActivitiesContoller(IDbFactory dbFactory, IUserContext userContext) : AppController(dbFactory, userContext)
 {
-    
+
     #region Get best deals
     [HttpGet("get-best-deals-by-off-percentage")]
     public async Task<IActionResult> GetBestDealsByOffPercentage([FromQuery] byte language)
@@ -31,7 +32,7 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory, IUserCont
         return Success(new { deals = result });
     }
     #endregion
- 
+
     #region  min order value
     [HttpGet("get-min-order-value")]
     [Guard([Roles.Customer])]
@@ -103,7 +104,7 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory, IUserCont
         return Success(result);
     }
 
-    
+
     [HttpGet("get-monthly-price-summary")]
     //[Guard([Roles.Customer])]
     public async Task<IActionResult> GetMonthlyPriceSummary([FromQuery] int product,
@@ -257,6 +258,100 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory, IUserCont
 
             return (errors.Count == 0, errors.ToArray());
         }
+    }
+    #endregion
+
+    #region cart
+    [HttpPost("cart/add")]
+    public async Task<IActionResult> AddCartItem([FromBody] CartItemRequest request)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+        var cartId = await Db.InsertCartAsync(connection, request.Product, request.Quantity, _userContext.Get().Party);
+        return Success(new { id = cartId });
+    }
+
+    [HttpPut("cart/edit/{id}")]
+    public async Task<IActionResult> UpdateCartItem(long id, [FromBody] UpdateCartItemRequest request)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+        var cart = await Db.GetCartByIdAsync(id, connection);
+        if (cart is null)
+        {
+            return DataNotFound();
+
+        }
+        if (cart.Customer != _userContext.Get().Party)
+        {
+            return Fail("UnAuthorized");
+        }
+        cart.Product = request.Product ?? cart.Product;
+        cart.Quantity = request.Quantity ?? cart.Quantity;
+
+        var updated = await Db.UpdateCartAsync(connection, id, cart.Product, cart.Quantity, _userContext.Get().Party);
+
+        if (!updated)
+            return DataNotFound();
+
+        return Success();
+    }
+
+    [HttpDelete("cart/delete/{id}")]
+    public async Task<IActionResult> DeleteCartItem(long id)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+        var cart = await Db.GetCartByIdAsync(id, connection);
+        if (cart is null)
+        {
+            return DataNotFound();
+
+        }
+        if (cart.Customer != _userContext.Get().Party)
+        {
+            return Fail("Unauthorized");
+        }
+        var deleted = await Db.DeleteCartAsync(connection, id);
+
+        if (!deleted)
+            return DataNotFound();
+
+        return Success();
+    }
+    #endregion
+    #region card
+    [HttpPost("card/add")]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> Insert(CardInsertModel model)
+    {
+        var result = await CardService.Insert(_dbFactory, _userContext.Get(), model);
+        return result.Success ?
+              Success(result.Data) :
+              Fail(result.Errors);
+    }
+
+    [HttpPut("card/edit/{id}")]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> Update(int id, CardUpdateModel model)
+    {
+        model.Id = id;
+        var result = await CardService.Update(_dbFactory, _userContext.Get(), model);
+        if (result.Success)
+            return Success(result.Data);
+
+        return result.Errors.Contains("Not Found") ? DataNotFound() : Fail(result.Errors);
+    }
+
+    [HttpGet("card/mine")]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> GetMine()
+    {
+        var partyId = _userContext.Get().Party;
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+        var cards = await Query.GetCustomerCards(connection, partyId);
+        return Success(cards);
     }
     #endregion
 }

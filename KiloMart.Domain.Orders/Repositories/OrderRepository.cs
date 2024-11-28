@@ -41,7 +41,7 @@ public static partial class OrderRepository
 }
 public class OrderDetails
 {
-    public int Id { get; set; }
+    public long Id { get; set; }
     public byte OrderStatus { get; set; }
     public decimal TotalPrice { get; set; }
     public string TransactionId { get; set; } = null!;
@@ -91,12 +91,59 @@ public static partial class OrderRepository
 
 public class OrderActivityDetails
 {
-    public int Id { get; set; }
-    public int Order { get; set; }
+    public long Id { get; set; }
+    public long Order { get; set; }
     public DateTime Date { get; set; }
     public byte OrderActivityType { get; set; }
     public string ActivityTypeName { get; set; } = null!;
     public int OperatedBy { get; set; }
     public string OperatedByDisplayName { get; set; } = null!;
+}
+#endregion
+
+
+#region Orders Products
+public class OrderProductDetails
+{
+    public long Id { get; set; }
+    public long Order { get; set; }
+    public int Product { get; set; }
+    public decimal Quantity { get; set; }
+    public string ProductDescription { get; set; } = null!;
+    public string ProductImageUrl { get; set; } = null!;
+    public int ProductProductCategory { get; set; }
+    public string ProductMeasurementUnit { get; set; } = null!;
+    public string ProductName { get; set; } = null!;
+    public string ProductCategoryName { get; set; } = null!;
+}
+public static partial class OrderRepository
+{
+    public static async Task<IEnumerable<OrderProductDetails>> GetOrderProductsAsync(IDbConnection connection, long orderId)
+    {
+        var sql = @"
+                SELECT 
+                    op.[Id],
+                    op.[Order],
+                    op.[Product], 
+                    op.[Quantity],
+                    pd.ProductDescription,
+                    pd.ProductImageUrl,
+                    pd.ProductProductCategory,
+                    pd.ProductMeasurementUnit,
+                    pd.ProductName,
+                    cd.ProductCategoryName
+                FROM 
+                    OrderProduct op
+                INNER JOIN 
+                    GetProductDetailsByLanguageFN(1) pd ON op.Product = pd.ProductId
+                INNER JOIN 
+                    GetProductCategoryDetailsByLanguageFN(1) cd ON cd.ProductCategoryId = pd.ProductProductCategory
+                WHERE 
+                    op.[Order] = @OrderId;";
+
+        var parameters = new { OrderId = orderId };
+
+        return await connection.QueryAsync<OrderProductDetails>(sql, parameters);
+    }
 }
 #endregion

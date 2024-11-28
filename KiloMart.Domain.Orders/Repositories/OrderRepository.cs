@@ -118,7 +118,7 @@ public class OrderProductDetails
 }
 public static partial class OrderRepository
 {
-    public static async Task<IEnumerable<OrderProductDetails>> GetOrderProductsAsync(IDbConnection connection, 
+    public static async Task<IEnumerable<OrderProductDetails>> GetOrderProductsAsync(IDbConnection connection,
     long orderId,
     byte language)
     {
@@ -147,5 +147,57 @@ public static partial class OrderRepository
 
         return await connection.QueryAsync<OrderProductDetails>(sql, parameters);
     }
+}
+#endregion
+
+#region Order Product Offers
+public static partial class OrderRepository
+{
+    public static async Task<IEnumerable<OrderProductOfferDetails>> GetOrderProductOffersAsync(IDbConnection connection,
+        long orderId,
+        byte language)
+    {
+        var sql = @"
+                SELECT 
+                    op.[Id],
+                    op.[Order],
+                    op.[Product], 
+                    op.[Quantity],
+                    op.UnitPrice,
+                    pd.ProductDescription,
+                    pd.ProductImageUrl,
+                    pd.ProductProductCategory,
+                    pd.ProductMeasurementUnit,
+                    pd.ProductName,
+                    cd.ProductCategoryName
+                FROM 
+                    OrderProductOffer op
+                INNER JOIN 
+                    ProductOffer po ON po.Id = op.ProductOffer 
+                INNER JOIN 
+                    GetProductDetailsByLanguageFN(@language) pd ON po.Product = pd.ProductId
+                INNER JOIN 
+                    GetProductCategoryDetailsByLanguageFN(@language) cd ON cd.ProductCategoryId = pd.ProductProductCategory
+                WHERE 
+                    op.[Order] = @OrderId;";
+
+        var parameters = new { OrderId = orderId, Language = language };
+
+        return await connection.QueryAsync<OrderProductOfferDetails>(sql, parameters);
+    }
+}
+public class OrderProductOfferDetails
+{
+    public long Id { get; set; }
+    public long Order { get; set; }
+    public int Product { get; set; }
+    public decimal Quantity { get; set; }
+    public decimal UnitPrice { get; set; }
+    public string ProductDescription { get; set; } = null!;
+    public string ProductImageUrl { get; set; } = null!;
+    public int ProductProductCategory { get; set; }
+    public string ProductMeasurementUnit { get; set; } = null!;
+    public string ProductName { get; set; } = null!;
+    public string ProductCategoryName { get; set; } = null!;
 }
 #endregion

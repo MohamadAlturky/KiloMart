@@ -118,7 +118,9 @@ public class OrderProductDetails
 }
 public static partial class OrderRepository
 {
-    public static async Task<IEnumerable<OrderProductDetails>> GetOrderProductsAsync(IDbConnection connection, long orderId)
+    public static async Task<IEnumerable<OrderProductDetails>> GetOrderProductsAsync(IDbConnection connection, 
+    long orderId,
+    byte language)
     {
         var sql = @"
                 SELECT 
@@ -135,13 +137,13 @@ public static partial class OrderRepository
                 FROM 
                     OrderProduct op
                 INNER JOIN 
-                    GetProductDetailsByLanguageFN(1) pd ON op.Product = pd.ProductId
+                    GetProductDetailsByLanguageFN(@language) pd ON op.Product = pd.ProductId
                 INNER JOIN 
-                    GetProductCategoryDetailsByLanguageFN(1) cd ON cd.ProductCategoryId = pd.ProductProductCategory
+                    GetProductCategoryDetailsByLanguageFN(@language) cd ON cd.ProductCategoryId = pd.ProductProductCategory
                 WHERE 
                     op.[Order] = @OrderId;";
 
-        var parameters = new { OrderId = orderId };
+        var parameters = new { OrderId = orderId, language };
 
         return await connection.QueryAsync<OrderProductDetails>(sql, parameters);
     }

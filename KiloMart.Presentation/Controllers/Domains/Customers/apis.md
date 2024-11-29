@@ -4,7 +4,7 @@
 
 2- get min order value ✅
 
-3- get total cart value
+3- get total cart value ✅
 
 4- get all products ✅
 

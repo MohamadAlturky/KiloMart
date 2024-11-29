@@ -1,4 +1,5 @@
 namespace KiloMart.Presentation.Controllers.Domains.Customers;
+
 public class CartItemRequest
 {
     public int Product { get; set; }

@@ -6,7 +6,7 @@ namespace KiloMart.Domain.Orders.Repositories;
 #region Orders Filter
 public static partial class OrderRepository
 {
-    public static async Task<IEnumerable<OrderDetails>> GetOrderDetailsAsync(IDbConnection connection,
+    public static async Task<IEnumerable<OrderDetailsDto>> GetOrderDetailsAsync(IDbConnection connection,
      string whereClause,
      object parameters)
     {
@@ -36,10 +36,10 @@ public static partial class OrderRepository
             ORDER BY 
                 o.[Id];";
 
-        return await connection.QueryAsync<OrderDetails>(sql, parameters);
+        return await connection.QueryAsync<OrderDetailsDto>(sql, parameters);
     }
 }
-public class OrderDetails
+public class OrderDetailsDto
 {
     public long Id { get; set; }
     public byte OrderStatus { get; set; }
@@ -62,7 +62,7 @@ public class OrderDetails
 #region Orders Activity
 public static partial class OrderRepository
 {
-    public static async Task<IEnumerable<OrderActivityDetails>> GetOrderActivitiesAsync(IDbConnection connection, int orderId)
+    public static async Task<IEnumerable<OrderActivityDetailsDto>> GetOrderActivitiesAsync(IDbConnection connection, int orderId)
     {
         var sql = @"
                 SELECT 
@@ -84,11 +84,11 @@ public static partial class OrderRepository
 
         var parameters = new { OrderId = orderId };
 
-        return await connection.QueryAsync<OrderActivityDetails>(sql, parameters);
+        return await connection.QueryAsync<OrderActivityDetailsDto>(sql, parameters);
     }
 }
 
-public class OrderActivityDetails
+public class OrderActivityDetailsDto
 {
     public long Id { get; set; }
     public long Order { get; set; }
@@ -101,7 +101,7 @@ public class OrderActivityDetails
 #endregion
 
 #region Orders Products
-public class OrderProductDetails
+public class OrderProductDetailsDto
 {
     public long Id { get; set; }
     public long Order { get; set; }
@@ -116,7 +116,7 @@ public class OrderProductDetails
 }
 public static partial class OrderRepository
 {
-    public static async Task<IEnumerable<OrderProductDetails>> GetOrderProductsAsync(IDbConnection connection,
+    public static async Task<IEnumerable<OrderProductDetailsDto>> GetOrderProductsAsync(IDbConnection connection,
     long orderId,
     byte language)
     {
@@ -143,7 +143,7 @@ public static partial class OrderRepository
 
         var parameters = new { OrderId = orderId, language };
 
-        return await connection.QueryAsync<OrderProductDetails>(sql, parameters);
+        return await connection.QueryAsync<OrderProductDetailsDto>(sql, parameters);
     }
 }
 #endregion
@@ -151,7 +151,7 @@ public static partial class OrderRepository
 #region Orders Products IN Clause
 public static partial class OrderRepository
 {
-    public static async Task<IEnumerable<OrderProductDetails>> GetOrderProductsAsync(IDbConnection connection,
+    public static async Task<IEnumerable<OrderProductDetailsDto>> GetOrderProductsByIdsAsync(IDbConnection connection,
         IEnumerable<long> orderIds,
         byte language)
     {
@@ -180,7 +180,7 @@ public static partial class OrderRepository
         parameters.Add("language", language);
         parameters.Add("OrderIds", orderIds.ToArray()); 
 
-        return await connection.QueryAsync<OrderProductDetails>(sql, parameters);
+        return await connection.QueryAsync<OrderProductDetailsDto>(sql, parameters);
     }
 }
 #endregion
@@ -188,7 +188,7 @@ public static partial class OrderRepository
 #region Order Product Offers
 public static partial class OrderRepository
 {
-    public static async Task<IEnumerable<OrderProductOfferDetails>> GetOrderProductOffersAsync(IDbConnection connection,
+    public static async Task<IEnumerable<OrderProductOfferDetailsDto>> GetOrderProductOffersAsync(IDbConnection connection,
         long orderId,
         byte language)
     {
@@ -196,7 +196,7 @@ public static partial class OrderRepository
                 SELECT 
                     op.[Id],
                     op.[Order],
-                    op.[Product], 
+                    op.[ProductOffer], 
                     op.[Quantity],
                     op.UnitPrice,
                     pd.ProductDescription,
@@ -218,14 +218,14 @@ public static partial class OrderRepository
 
         var parameters = new { OrderId = orderId, Language = language };
 
-        return await connection.QueryAsync<OrderProductOfferDetails>(sql, parameters);
+        return await connection.QueryAsync<OrderProductOfferDetailsDto>(sql, parameters);
     }
 }
-public class OrderProductOfferDetails
+public class OrderProductOfferDetailsDto
 {
     public long Id { get; set; }
     public long Order { get; set; }
-    public int Product { get; set; }
+    public int ProductOffer { get; set; }
     public decimal Quantity { get; set; }
     public decimal UnitPrice { get; set; }
     public string ProductDescription { get; set; } = null!;
@@ -240,15 +240,15 @@ public class OrderProductOfferDetails
 #region Order Product Offer In Clause
 public static partial class OrderRepository
 {
-    public static async Task<IEnumerable<OrderProductOfferDetails>> GetOrderProductOffersByIdsAsync(IDbConnection connection, 
-        IEnumerable<int> orderIds,
+    public static async Task<IEnumerable<OrderProductOfferDetailsDto>> GetOrderProductOffersByIdsAsync(IDbConnection connection, 
+        IEnumerable<long> orderIds,
         int language)
     {
         var sql = @"
                 SELECT 
                     op.[Id],
                     op.[Order],
-                    op.[Product], 
+                    op.[ProductOffer], 
                     op.[Quantity],
                     op.UnitPrice,
                     pd.ProductDescription,
@@ -272,7 +272,7 @@ public static partial class OrderRepository
         parameters.Add("language", language);
         parameters.Add("OrderIds", orderIds.ToArray());
 
-        return await connection.QueryAsync<OrderProductOfferDetails>(sql, parameters);
+        return await connection.QueryAsync<OrderProductOfferDetailsDto>(sql, parameters);
     }
 }
 

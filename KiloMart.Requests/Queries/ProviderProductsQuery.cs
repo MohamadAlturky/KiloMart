@@ -26,9 +26,11 @@ public partial class Query
             po.Quantity AS OfferQuantity,
             po.Provider AS OfferProvider,
             po.IsActive AS OfferIsActive,
-            po.ToDate AS OfferToDate
+            po.ToDate AS OfferToDate,
+		    pc.ProductCategoryName
         FROM dbo.GetProductDetailsByLanguageFN(@language) pd
         INNER JOIN ProductOffer po ON pd.ProductId = po.Product AND po.IsActive = 1
+        INNER JOIN GetProductCategoryDetailsByLanguageFN(@language) pc ON pc.ProductCategoryId = pd.ProductProductCategory 
         WHERE po.Provider = @provider
         ORDER BY po.Id DESC";
 
@@ -92,9 +94,11 @@ public partial class Query
             po.Quantity AS OfferQuantity,
             po.Provider AS OfferProvider,
             po.IsActive AS OfferIsActive,
-            po.ToDate AS OfferToDate
+            po.ToDate AS OfferToDate,
+		    pc.ProductCategoryName
         FROM dbo.GetProductDetailsByLanguageFN(@language) pd
         INNER JOIN ProductOffer po ON pd.ProductId = po.Product AND po.IsActive = 1
+        INNER JOIN GetProductCategoryDetailsByLanguageFN(@language) pc ON pc.ProductCategoryId = pd.ProductProductCategory 
         WHERE po.Provider = @provider
         ORDER BY po.Id DESC
         OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
@@ -118,6 +122,7 @@ public class ProductOfferDetails
     public int ProductId { get; set; }
     public string ProductImageUrl { get; set; } = null!;
     public int ProductCategory { get; set; }
+    public string ProductCategoryName { get; set; } = null!;
     public bool ProductIsActive { get; set; }
     public string ProductMeasurementUnit { get; set; } = null!;
     public string ProductName { get; set; } = null!;

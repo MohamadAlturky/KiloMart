@@ -108,7 +108,7 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
 
 
     [HttpGet("get-monthly-price-summary")]
-    //[Guard([Roles.Customer])]
+    [Guard([Roles.Customer])]
     public async Task<IActionResult> GetMonthlyPriceSummary([FromQuery] int product,
     [FromQuery] byte numberOfMonths)
     {

@@ -10,35 +10,35 @@
 
 5- get products by category ✅
 
-6- get product full details 
+6- get product full details ✅
 
 7- get product price change array depends on months ✅
 
-8- add product to cart
+8- add product to cart ✅
 
-9- get cart products
+9- get cart products ✅
 
-10- get user’s locations
+10- get user’s locations ✅
 
-11- set user’s current location
+11- set user’s current location ✅
 
 12- add to user’s cart
 
-13- add to user’s favorites
+13- add to user’s favorites ✅
 
-14- get user’s active orders
+14- get user’s active orders 
 
-15- get user’s Completed Orders
+15- get user’s Completed Orders 
 
-16- get user’s Canceled Orders
+16- get user’s Canceled Orders 
 
-17- create account
+17- create account 
 
-18- OTP by email
+18- OTP by email 
 
 19- sign in
 
-20- change user’s one location 
+20- change user’s one location  
 
 21- get the order full details
 
@@ -60,4 +60,4 @@
 
 31- get all Categories 
 
-32- get all products in Category 
+32- get all products in Category  

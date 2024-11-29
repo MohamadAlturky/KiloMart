@@ -6,8 +6,6 @@ namespace KiloMart.Domain.Orders.Queries;
 
 public static partial class OrdersQuery
 {
-
-
     public async static Task<List<Order>> GetOrdersByStatus(byte orderStatus, IDbConnection connection)
     {
         var sql = @"
@@ -129,12 +127,12 @@ public class OrderProductDetail
     public long ItemOrder { get; set; }
     public int ItemQuantity { get; set; }
     public int ProductId { get; set; }
-    public string ProductImageUrl { get; set; }
+    public string ProductImageUrl { get; set; } = null!;
     public int ProductProductCategory { get; set; }
     public bool ProductIsActive { get; set; }
-    public string ProductMeasurementUnit { get; set; }
-    public string ProductDescription { get; set; }
-    public string ProductName { get; set; }
+    public string ProductMeasurementUnit { get; set; } = null!;
+    public string ProductDescription { get; set; } = null!;
+    public string ProductName { get; set; } = null!;
 }
 public class OrderMinPrice
 {

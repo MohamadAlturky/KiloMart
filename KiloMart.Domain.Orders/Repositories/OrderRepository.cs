@@ -16,6 +16,7 @@ public static partial class OrderRepository
                 o.OrderStatus,
                 o.TotalPrice,
                 o.TransactionId,
+                o.Date,
                 oci.Customer,
                 oci.Location AS CustomerLocation,
                 oci.Id AS CustomerInformationId,
@@ -58,7 +59,7 @@ public class OrderDetailsDto
     public byte OrderStatus { get; set; }
     public decimal TotalPrice { get; set; }
     public string TransactionId { get; set; } = null!;
-
+    public DateTime Date { get; set; }
     public int? Customer { get; set; }
     public int? CustomerLocation { get; set; }
     public int? CustomerInformationId { get; set; }

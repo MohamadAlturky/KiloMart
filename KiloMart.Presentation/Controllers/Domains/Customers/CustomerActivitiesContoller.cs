@@ -13,7 +13,8 @@ namespace KiloMart.Presentation.Controllers.Domains.Customers;
 
 [ApiController]
 [Route("api/customers")]
-public partial class CustomerActivitiesContoller(IDbFactory dbFactory, IUserContext userContext) : AppController(dbFactory, userContext)
+public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
+ IUserContext userContext) : AppController(dbFactory, userContext)
 {
 
     #region Get best deals
@@ -34,7 +35,7 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory, IUserCont
     }
     #endregion
 
-    #region  min order value
+    #region min order value
     [HttpGet("get-min-order-value")]
     [Guard([Roles.Customer])]
     public async Task<IActionResult> GetMinOrderValue([FromQuery] byte language)
@@ -321,6 +322,7 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory, IUserCont
         return Success();
     }
     #endregion
+   
     #region card
     [HttpPost("card/add")]
     [Guard([Roles.Customer])]

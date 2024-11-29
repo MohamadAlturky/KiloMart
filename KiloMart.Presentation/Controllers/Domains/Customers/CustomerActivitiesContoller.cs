@@ -322,7 +322,7 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
         return Success();
     }
     #endregion
-   
+
     #region card
     [HttpPost("card/add")]
     [Guard([Roles.Customer])]
@@ -370,6 +370,27 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
             _dbFactory);
 
         return result.Success ? Success(result.Data) : Fail(result.Errors);
+    }
+
+    [HttpPost("orders/create")]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> CreateOrderRequest(
+        [FromBody] CreateOrderRequestModel model)
+    {
+        if (model is null)
+        {
+            return ValidationError(new List<string> { "Invalid request model." });
+        }
+
+        var userPayload = _userContext.Get();
+
+        var result = await RequestOrderService.Insert(model, userPayload, _dbFactory);
+
+        if (result.Success)
+        {
+            return Success(result.Data);
+        }
+        return Fail(result.Errors);
     }
     #endregion
 }

@@ -362,8 +362,12 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory, IUserCont
     public async Task<IActionResult> GetMineByStatus([FromQuery] byte language,
     [FromQuery] byte status)
     {
-        var result = await ReadOrderService.GetMineByStatusAsync(language,status,_userContext, _dbFactory);
-        return Success(result);
+        var result = await ReadOrderService.GetMineByStatusAsync(language,
+            status,
+            _userContext,
+            _dbFactory);
+
+        return result.Success ? Success(result.Data) : Fail(result.Errors);
     }
     #endregion
 }

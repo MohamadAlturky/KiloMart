@@ -52,6 +52,52 @@ public static partial class OrderRepository
 
         return await connection.QueryAsync<OrderDetailsDto>(sql, parameters);
     }
+    public static async Task<OrderDetailsDto?> GetOrderDetailsFirstOrDefaultAsync(IDbConnection connection,
+     string whereClause,
+     object parameters)
+    {
+        var sql = $@"
+            SELECT 
+                o.Id,
+                o.OrderStatus,
+                o.TotalPrice,
+                o.TransactionId,
+                o.Date,
+                oci.Customer,
+                oci.Location AS CustomerLocation,
+                oci.Id AS CustomerInformationId,
+                opi.Provider,
+                opi.Location AS ProviderLocation,
+                opi.Id AS ProviderInformationId,
+                odi.Delivery,
+                odi.Id AS DeliveryInformationId,
+
+                cl.[Name] AS CustomerLocationName,
+                cl.[Latitude] AS CustomerLocationLatitude,
+                cl.[Longitude] AS CustomerLocationLongitude,
+                pl.[Name] AS ProviderLocationName,
+                pl.[Latitude] AS ProviderLocationLatitude,
+                pl.[Longitude] AS ProviderLocationLongitude
+            FROM 
+                dbo.[Order] o
+            LEFT JOIN 
+                dbo.[OrderCustomerInformation] oci ON oci.[Order] = o.Id
+            LEFT JOIN 
+                dbo.[OrderDeliveryInformation] odi ON odi.[Order] = o.Id
+            LEFT JOIN 
+                dbo.[OrderProviderInformation] opi ON opi.[Order] = o.Id
+
+            LEFT JOIN 
+                dbo.[Location] cl ON cl.Id = oci.[Location]
+            LEFT JOIN 
+                dbo.[Location] pl ON pl.Id = opi.[Location]
+
+            {whereClause}
+            ORDER BY 
+                o.[Id];";
+
+        return await connection.QueryFirstOrDefaultAsync<OrderDetailsDto>(sql, parameters);
+    }
 }
 public class OrderDetailsDto
 {

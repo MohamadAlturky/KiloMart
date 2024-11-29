@@ -10,8 +10,8 @@ namespace KiloMart.Commands.Services;
 public class LocationInsertModel
 {
     public string Name { get; set; } = null!;
-    public float Longitude { get; set; }
-    public float Latitude { get; set; }
+    public decimal Longitude { get; set; }
+    public decimal Latitude { get; set; }
 
     public (bool Success, string[] Errors) Validate()
     {
@@ -34,8 +34,8 @@ public class LocationUpdateModel
 {
     public int Id  { get; set; }
     public string? Name { get; set; }
-    public float? Longitude { get; set; }
-    public float? Latitude { get; set; }
+    public decimal? Longitude { get; set; }
+    public decimal? Latitude { get; set; }
     public bool? IsActive { get; set; }
 
     public (bool Success, string[] Errors) Validate()

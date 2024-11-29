@@ -14,7 +14,7 @@ public partial class OrdersDb
         // Create a DataTable to hold the product requests
         var productRequestTable = new DataTable();
         productRequestTable.Columns.Add("Product", typeof(int));
-        productRequestTable.Columns.Add("Quantity", typeof(float));
+        productRequestTable.Columns.Add("Quantity", typeof(decimal));
 
         // Fill the DataTable with requested products
         foreach (var product in requestedProducts)
@@ -26,7 +26,7 @@ public partial class OrdersDb
         var createTempTableQuery = @"
         CREATE TABLE #ProductRequest (
             Product INT,
-            Quantity FLOAT
+            Quantity decimal
         );";
 
         await connection.ExecuteAsync(createTempTableQuery);
@@ -68,10 +68,10 @@ public partial class OrdersDb
 public class ProductOffer
 {
     public int OfferId { get; set; }
-    public float OfferQuantity { get; set; }
-    public float RequestedQuantity { get; set; }
+    public decimal OfferQuantity { get; set; }
+    public decimal RequestedQuantity { get; set; }
     public decimal OfferPrice { get; set; }
-    public float OfferOffPercentage { get; set; }
+    public decimal OfferOffPercentage { get; set; }
     public int OfferProductId { get; set; }
 }
 
@@ -79,5 +79,5 @@ public class ProductOffer
 public class RequestedProductForAcceptOrder
 {
     public int ProductId { get; set; }
-    public double RequestedQuantity { get; set; }
+    public decimal RequestedQuantity { get; set; }
 }

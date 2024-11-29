@@ -182,12 +182,12 @@ public class OrderProductOffer
     public long OrderProductOfferId { get; set; }
     public long ProductOffer { get; set; }
     public decimal UnitPrice { get; set; }
-    public float ProductOfferQuantity { get; set; }
+    public decimal ProductOfferQuantity { get; set; }
 }
 
 public class OrderProduct
 {
     public int OrderProductId { get; set; }
     public int Product { get; set; }
-    public float ProductQuantity { get; set; }
+    public decimal ProductQuantity { get; set; }
 }

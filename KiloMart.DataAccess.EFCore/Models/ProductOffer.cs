@@ -17,7 +17,7 @@ public partial class ProductOffer
 
     public DateTime? ToDate { get; set; }
 
-    public double Quantity { get; set; }
+    public decimal Quantity { get; set; }
 
     public int Provider { get; set; }
 

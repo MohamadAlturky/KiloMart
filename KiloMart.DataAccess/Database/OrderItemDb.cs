@@ -10,7 +10,7 @@
 //    //  [Order] [bigint] NOT NULL,
 //    //  [ProductOffer] [int] NOT NULL,
 //    //  [UnitPrice] [money] NOT NULL,
-//    //  [Quantity] [float] NOT NULL)
+//    //  [Quantity] [decimal] NOT NULL)
 //    /// </summary>
 //    public static partial class Db
 //    {
@@ -18,7 +18,7 @@
 //            long orderId,
 //            int productOfferId,
 //            decimal unitPrice,
-//            float quantity,
+//            decimal quantity,
 //            IDbTransaction? transaction = null)
 //        {
 //            const string query = @"INSERT INTO [dbo].[OrderItem]
@@ -40,7 +40,7 @@
 //            long orderId,
 //            int productOfferId,
 //            decimal unitPrice,
-//            float quantity,
+//            decimal quantity,
 //            IDbTransaction? transaction = null)
 //        {
 //            const string query = @"UPDATE [dbo].[OrderItem]
@@ -100,6 +100,6 @@
 //        public long Order { get; set; }
 //        public int ProductOffer { get; set; }
 //        public decimal UnitPrice { get; set; }
-//        public float Quantity { get; set; }
+//        public decimal Quantity { get; set; }
 //    }
 //}

@@ -33,7 +33,7 @@
 // {
 
 //     public int ProductOffer { get; set; }
-//     public float Quantity { get; set; }
+//     public decimal Quantity { get; set; }
 
 //     public (bool Success, string[] Errors) Validate()
 //     {

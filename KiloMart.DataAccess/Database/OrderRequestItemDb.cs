@@ -10,7 +10,7 @@
 //{
 //    public static async Task<long> InsertOrderRequestItemAsync(IDbConnection connection,
 //        int product,
-//        double quantity,
+//        decimal quantity,
 //        long orderRequest,
 //        IDbTransaction? transaction = null)
 //    {
@@ -30,7 +30,7 @@
 //    public static async Task<bool> UpdateOrderRequestItemAsync(IDbConnection connection,
 //        long id,
 //        int product,
-//        double quantity,
+//        decimal quantity,
 //        long orderRequest,
 //        IDbTransaction? transaction = null)
 //    {
@@ -107,6 +107,6 @@
 //{
 //    public long Id { get; set; }
 //    public int Product { get; set; }
-//    public double Quantity { get; set; }
+//    public decimal Quantity { get; set; }
 //    public long OrderRequest { get; set; }
 //}

@@ -24,8 +24,8 @@ Endpoints
 ```json
 {
   "name": string,
-  "longitude": float,
-  "latitude": float,
+  "longitude": decimal,
+  "latitude": decimal,
   "party": int
 }
 ```
@@ -36,8 +36,8 @@ Endpoints
 {
   "id": int,
   "name": string,
-  "longitude": float,
-  "latitude": float,
+  "longitude": decimal,
+  "latitude": decimal,
   "party": int
 }
 ```
@@ -58,8 +58,8 @@ Endpoints
 ```json
 {
   "name": string,
-  "longitude": float,
-  "latitude": float
+  "longitude": decimal,
+  "latitude": decimal
 }
 ```
 
@@ -69,8 +69,8 @@ Endpoints
 {
   "id": int,
   "name": string,
-  "longitude": float,
-  "latitude": float,
+  "longitude": decimal,
+  "latitude": decimal,
   "party": int
 }
 ```
@@ -90,15 +90,15 @@ Endpoints
   {
     "id": int,
     "name": string,
-    "longitude": float,
-    "latitude": float,
+    "longitude": decimal,
+    "latitude": decimal,
     "party": int
   },
   {
     "id": int,
     "name": string,
-    "longitude": float,
-    "latitude": float,
+    "longitude": decimal,
+    "latitude": decimal,
     "party": int
   },
   ...

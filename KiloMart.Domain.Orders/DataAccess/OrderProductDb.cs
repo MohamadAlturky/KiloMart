@@ -8,7 +8,7 @@ namespace KiloMart.Domain.Orders.DataAccess;
 ///     [Id] [int] IDENTITY(1,1) NOT NULL,
 ///     [Order] [bigint] NOT NULL,
 ///     [Product] [int] NOT NULL,
-///     [Quantity] [float] NOT NULL
+///     [Quantity] [decimal] NOT NULL
 /// );
 /// </summary>
 public static partial class OrdersDb
@@ -16,7 +16,7 @@ public static partial class OrdersDb
     public static async Task<int> InsertOrderProductAsync(IDbConnection connection,
         long orderId,
         int productId,
-        double quantity,
+        decimal quantity,
         IDbTransaction? transaction = null)
     {
         const string query = @"INSERT INTO [dbo].[OrderProduct]
@@ -36,7 +36,7 @@ public static partial class OrdersDb
         int id,
         long orderId,
         int productId,
-        double quantity,
+        decimal quantity,
         IDbTransaction? transaction = null)
     {
         const string query = @"UPDATE [dbo].[OrderProduct]
@@ -109,5 +109,5 @@ public class OrderProduct
     public int Id { get; set; }
     public long Order { get; set; }
     public int Product { get; set; }
-    public double Quantity { get; set; }
+    public decimal Quantity { get; set; }
 }

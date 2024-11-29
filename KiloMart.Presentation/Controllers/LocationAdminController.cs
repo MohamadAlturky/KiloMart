@@ -54,8 +54,8 @@ public class LocationAdminController(IDbFactory dbFactory, IUserContext userCont
 public class Location
 {
     public int Id { get; set; }
-    public float Longitude { get; set; }
-    public float Latitude { get; set; }
+    public decimal Longitude { get; set; }
+    public decimal Latitude { get; set; }
     public string Name { get; set; } = null!;
     public int Party { get; set; }
     public bool IsActive { get; set; }

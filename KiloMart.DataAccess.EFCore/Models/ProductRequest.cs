@@ -19,7 +19,7 @@ public partial class ProductRequest
 
     public decimal OffPercentage { get; set; }
 
-    public double Quantity { get; set; }
+    public decimal Quantity { get; set; }
 
     public byte Status { get; set; }
 

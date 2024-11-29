@@ -23,7 +23,14 @@ public static partial class OrderRepository
                 opi.Location AS ProviderLocation,
                 opi.Id AS ProviderInformationId,
                 odi.Delivery,
-                odi.Id AS DeliveryInformationId
+                odi.Id AS DeliveryInformationId,
+
+                cl.[Name] AS CustomerLocationName,
+                cl.[Latitude] AS CustomerLocationLatitude,
+                cl.[Longitude] AS CustomerLocationLongitude,
+                pl.[Name] AS ProviderLocationName,
+                pl.[Latitude] AS ProviderLocationLatitude,
+                pl.[Longitude] AS ProviderLocationLongitude
             FROM 
                 dbo.[Order] o
             LEFT JOIN 
@@ -32,6 +39,12 @@ public static partial class OrderRepository
                 dbo.[OrderDeliveryInformation] odi ON odi.[Order] = o.Id
             LEFT JOIN 
                 dbo.[OrderProviderInformation] opi ON opi.[Order] = o.Id
+
+            LEFT JOIN 
+                dbo.[Location] cl ON cl.Id = oci.[Location]
+            LEFT JOIN 
+                dbo.[Location] pl ON pl.Id = opi.[Location]
+
             {whereClause}
             ORDER BY 
                 o.[Id];";
@@ -56,6 +69,13 @@ public class OrderDetailsDto
 
     public int? Delivery { get; set; }
     public int? DeliveryInformationId { get; set; }
+
+    public string? CustomerLocationName { get; set; }
+    public decimal? CustomerLocationLatitude { get; set; }
+    public decimal? CustomerLocationLongitude { get; set; }
+    public string? ProviderLocationName { get; set; }
+    public decimal? ProviderLocationLatitude { get; set; }
+    public decimal? ProviderLocationLongitude { get; set; }
 }
 #endregion
 

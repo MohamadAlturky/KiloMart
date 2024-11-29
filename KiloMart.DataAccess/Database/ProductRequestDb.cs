@@ -15,7 +15,7 @@ namespace KiloMart.DataAccess.Database;
 // 	[ProductCategory] [int] NOT NULL,
 // 	[Price] [money] NOT NULL,
 // 	[OffPercentage] [decimal](10, 5) NOT NULL,
-// 	[Quantity] [float] NOT NULL,
+// 	[Quantity] [decimal] NOT NULL,
 // 	[Status] [tinyint] NOT NULL)
 /// </summary>
 public static partial class Db
@@ -27,7 +27,7 @@ public static partial class Db
         int productCategory,
         decimal price,
         decimal offPercentage,
-        float quantity,
+        decimal quantity,
         byte status,
         IDbTransaction? transaction = null)
     {
@@ -57,7 +57,7 @@ public static partial class Db
         int productCategory,
         decimal price,
         decimal offPercentage,
-        float quantity,
+        decimal quantity,
         byte status,
         IDbTransaction? transaction = null)
     {
@@ -133,6 +133,6 @@ public class ProductRequest
     public int ProductCategory { get; set; }
     public decimal Price { get; set; }
     public decimal OffPercentage { get; set; }
-    public float Quantity { get; set; }
+    public decimal Quantity { get; set; }
     public byte Status { get; set; }
 }

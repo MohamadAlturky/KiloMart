@@ -1,11 +1,9 @@
-using Dapper;
 using KiloMart.Commands.Services;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Database;
-using KiloMart.Domain.Orders.Helpers;
 using KiloMart.Domain.Orders.Queries;
-using KiloMart.Domain.Orders.Repositories;
+using KiloMart.Domain.Orders.Services;
 using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Authorization;
 using KiloMart.Requests.Queries;
@@ -361,30 +359,11 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory, IUserCont
     #region Orders
     [HttpGet("orders/mine-by-status")]
     [Guard([Roles.Customer])]
-    public async Task<IActionResult> GetMineByStatus([FromQuery] byte language)
+    public async Task<IActionResult> GetMineByStatus([FromQuery] byte language,
+    [FromQuery] byte status)
     {
-        var partyId = _userContext.Get().Party;
-        using var connection = _dbFactory.CreateDbConnection();
-        connection.Open();
-        var whereClause = "WHERE Customer = @customer";
-        var parameters = new { customer = partyId };
-        // get the orders
-        var orders = await OrderRepository.GetOrderDetailsAsync(connection, whereClause, parameters);
-        
-        var ordersIds = orders.Select(e => e.Id).ToList();
-        // get the orders products
-        var ordersProducts = await OrderRepository.GetOrderProductsByIdsAsync(connection, ordersIds, language);
-
-        // get the orders products offers
-        var ordersOffersProducts = await OrderRepository.GetOrderProductOffersByIdsAsync(connection, ordersIds, language);
-
-        var aggregatedOrders = OrderAggregator.Aggregate(orders.AsList(), ordersProducts.AsList(), ordersOffersProducts.AsList());
-        return Success(new {aggregatedOrders, data = new 
-        {
-            orders,
-            ordersProducts,
-            ordersOffersProducts
-        }});
+        var result = await ReadOrderService.GetMineByStatusAsync(language,status,_userContext, _dbFactory);
+        return Success(result);
     }
     #endregion
 }

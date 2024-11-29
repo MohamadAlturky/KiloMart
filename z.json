@@ -1,0 +1,132 @@
+{
+    "status": true,
+    "data": {
+      "aggregatedOrders": [
+        {
+          "orderDetails": {
+            "id": 2,
+            "orderStatus": 1,
+            "totalPrice": 250,
+            "transactionId": "TX123456",
+            "customer": 2,
+            "customerLocation": 1,
+            "customerInformationId": 4,
+            "provider": 4,
+            "providerLocation": 3,
+            "providerInformationId": 4,
+            "delivery": null,
+            "deliveryInformationId": null
+          },
+          "orderProductDetails": [],
+          "orderProductOfferDetails": [
+            {
+              "id": 1,
+              "order": 2,
+              "productOffer": 8,
+              "quantity": 10,
+              "unitPrice": 25,
+              "productDescription": "ما بعرف",
+              "productImageUrl": "images/ef108ea8-0614-4fa7-a15f-de5cc314bb61.jpg",
+              "productProductCategory": 2,
+              "productMeasurementUnit": "رطل",
+              "productName": "شي طيب",
+              "productCategoryName": "خضار"
+            }
+          ]
+        },
+        {
+          "orderDetails": {
+            "id": 5,
+            "orderStatus": 1,
+            "totalPrice": 0,
+            "transactionId": "7d3a8b18-5954-4491-bc14-edfb0566ed62",
+            "customer": 2,
+            "customerLocation": 1,
+            "customerInformationId": 5,
+            "provider": null,
+            "providerLocation": null,
+            "providerInformationId": null,
+            "delivery": null,
+            "deliveryInformationId": null
+          },
+          "orderProductDetails": [
+            {
+              "id": 6,
+              "order": 5,
+              "product": 2,
+              "quantity": 110,
+              "productDescription": "ما بعرف",
+              "productImageUrl": "images/ef108ea8-0614-4fa7-a15f-de5cc314bb61.jpg",
+              "productProductCategory": 2,
+              "productMeasurementUnit": "رطل",
+              "productName": "شي طيب",
+              "productCategoryName": "خضار"
+            }
+          ],
+          "orderProductOfferDetails": []
+        }
+      ],
+      "data": {
+        "orders": [
+          {
+            "id": 2,
+            "orderStatus": 1,
+            "totalPrice": 250,
+            "transactionId": "TX123456",
+            "customer": 2,
+            "customerLocation": 1,
+            "customerInformationId": 4,
+            "provider": 4,
+            "providerLocation": 3,
+            "providerInformationId": 4,
+            "delivery": null,
+            "deliveryInformationId": null
+          },
+          {
+            "id": 5,
+            "orderStatus": 1,
+            "totalPrice": 0,
+            "transactionId": "7d3a8b18-5954-4491-bc14-edfb0566ed62",
+            "customer": 2,
+            "customerLocation": 1,
+            "customerInformationId": 5,
+            "provider": null,
+            "providerLocation": null,
+            "providerInformationId": null,
+            "delivery": null,
+            "deliveryInformationId": null
+          }
+        ],
+        "ordersProducts": [
+          {
+            "id": 6,
+            "order": 5,
+            "product": 2,
+            "quantity": 110,
+            "productDescription": "ما بعرف",
+            "productImageUrl": "images/ef108ea8-0614-4fa7-a15f-de5cc314bb61.jpg",
+            "productProductCategory": 2,
+            "productMeasurementUnit": "رطل",
+            "productName": "شي طيب",
+            "productCategoryName": "خضار"
+          }
+        ],
+        "ordersOffersProducts": [
+          {
+            "id": 1,
+            "order": 2,
+            "productOffer": 8,
+            "quantity": 10,
+            "unitPrice": 25,
+            "productDescription": "ما بعرف",
+            "productImageUrl": "images/ef108ea8-0614-4fa7-a15f-de5cc314bb61.jpg",
+            "productProductCategory": 2,
+            "productMeasurementUnit": "رطل",
+            "productName": "شي طيب",
+            "productCategoryName": "خضار"
+          }
+        ]
+      }
+    },
+    "message": "Task Completed Successfully"
+  }

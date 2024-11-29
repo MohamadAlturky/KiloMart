@@ -344,3 +344,88 @@ public static partial class OrderRepository
 }
 
 #endregion
+
+
+public static partial class OrderRepository
+{
+    public static async Task<IEnumerable<OrderDetailsForDeliveryDto>> GetOrderDetailsForDeliveryAsync(IDbConnection connection,
+    int delivery)
+{
+    var sql = $@"
+        SELECT 
+            o.Id,
+            o.OrderStatus,
+            o.TotalPrice,
+            o.TransactionId,
+            o.Date,
+            oci.Customer,
+            oci.Location AS CustomerLocation,
+            oci.Id AS CustomerInformationId,
+            opi.Provider,
+            opi.Location AS ProviderLocation,
+            opi.Id AS ProviderInformationId,
+            odi.Delivery,
+            odi.Id AS DeliveryInformationId,
+
+            cl.[Name] AS CustomerLocationName,
+            cl.[Latitude] AS CustomerLocationLatitude,
+            cl.[Longitude] AS CustomerLocationLongitude,
+            pl.[Name] AS ProviderLocationName,
+            pl.[Latitude] AS ProviderLocationLatitude,
+            pl.[Longitude] AS ProviderLocationLongitude,
+
+            pfp.DisplayName AS ProviderName,
+            pfc.DisplayName AS CustomerName
+        FROM 
+            dbo.[Order] o
+        LEFT JOIN 
+            dbo.[OrderCustomerInformation] oci ON oci.[Order] = o.Id
+        LEFT JOIN 
+            dbo.[OrderDeliveryInformation] odi ON odi.[Order] = o.Id
+        LEFT JOIN 
+            dbo.[OrderProviderInformation] opi ON opi.[Order] = o.Id
+
+        LEFT JOIN 
+            dbo.[Location] cl ON cl.Id = oci.[Location]
+        LEFT JOIN 
+            dbo.[Location] pl ON pl.Id = opi.[Location]
+        INNER JOIN 
+            dbo.[Party] pfc ON pfc.Id = oci.Customer
+        INNER JOIN 
+            dbo.[Party] pfp ON pfp.Id = opi.Provider
+        WHERE 
+            odi.Delivery = @delivery
+        ORDER BY 
+            o.[Id];";
+
+    return await connection.QueryAsync<OrderDetailsForDeliveryDto>(sql, new {delivery});
+}
+}
+public class OrderDetailsForDeliveryDto
+{public long Id { get; set; }
+    public byte OrderStatus { get; set; }
+    public decimal TotalPrice { get; set; }
+    public string TransactionId { get; set; } = null!;
+    public DateTime Date { get; set; }
+    public int? Customer { get; set; }
+    public int? CustomerLocation { get; set; }
+    public int? CustomerInformationId { get; set; }
+
+    public int? Provider { get; set; }
+    public int? ProviderLocation { get; set; }
+    public int? ProviderInformationId { get; set; }
+
+    public int? Delivery { get; set; }
+    public int? DeliveryInformationId { get; set; }
+
+    public string? CustomerLocationName { get; set; }
+    public decimal? CustomerLocationLatitude { get; set; }
+    public decimal? CustomerLocationLongitude { get; set; }
+    public string? ProviderLocationName { get; set; }
+    public decimal? ProviderLocationLatitude { get; set; }
+    public decimal? ProviderLocationLongitude { get; set; }
+    
+    // New fields for Party information
+    public string ProviderName { get; set; }
+    public string CustomerName { get; set; }
+}

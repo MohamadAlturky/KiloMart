@@ -2,12 +2,14 @@ using Dapper;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.Core.Models;
+using KiloMart.Domain.Orders.Common;
 using KiloMart.Domain.Orders.Helpers;
 using KiloMart.Domain.Orders.Repositories;
 
 namespace KiloMart.Domain.Orders.Services;
 public static class ReadOrderService
 {
+    #region customer
     public static async Task<Result<List<AggregatedOrder>>> GetMineByStatusAsync(
         byte language,
         byte status,
@@ -55,4 +57,39 @@ public static class ReadOrderService
             return Result<List<AggregatedOrder>>.Fail([e.Message]);
         }
     }
+    #endregion
+
+    #region Delivery
+    public static async Task<Result<List<OrderDetailsDto>>> GetReadyForDeliverAsync(
+        IUserContext userContext,
+        IDbFactory dbFactory)
+    {
+        try
+        {
+            using var connection = dbFactory.CreateDbConnection();
+            connection.Open();
+            byte status = (byte)OrderStatus.PREPARING;
+            var whereClause = "WHERE OrderStatus = @status AND Delivery is NULL";
+            var parameters = new { status };
+
+            // Get the orders
+            IEnumerable<OrderDetailsDto>? orders = await OrderRepository.GetOrderDetailsAsync(connection, whereClause, parameters);
+
+            if(orders is null)
+            {
+                return Result<List<OrderDetailsDto>>.Ok([]);
+            }
+            if(!orders.Any())
+            {
+                return Result<List<OrderDetailsDto>>.Ok([]);
+            }
+            
+            return Result<List<OrderDetailsDto>>.Ok(orders.AsList());
+        }
+        catch (Exception e)
+        {
+            return Result<List<OrderDetailsDto>>.Fail([e.Message]);
+        }
+    }
+    #endregion
 }

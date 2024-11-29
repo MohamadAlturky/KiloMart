@@ -1,4 +1,5 @@
 using Dapper;
+using KiloMart.Domain.Orders.Common;
 using System.Data;
 
 
@@ -88,10 +89,10 @@ public static partial class OrdersQuery
             o.TotalPrice
         FROM [Order] o
         LEFT JOIN OrderCustomerInformation oci ON o.Id = oci.[Order]
-        WHERE oci.Customer = @customer
+        WHERE oci.Customer = @customer AND o.OrderStatus = @status
         ORDER BY o.TotalPrice ASC";
 
-        var parameters = new { customer = customerId };
+        var parameters = new { customer = customerId, status = (byte)OrderStatus.COMPLETED };
 
         return await connection.QueryFirstOrDefaultAsync<OrderMinPrice>(sql, parameters);
     }

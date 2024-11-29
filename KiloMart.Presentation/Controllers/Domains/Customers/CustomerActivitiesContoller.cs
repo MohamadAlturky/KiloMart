@@ -265,6 +265,7 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
 
     #region cart
     [HttpPost("cart/add")]
+    [Guard([Roles.Customer])]
     public async Task<IActionResult> AddCartItem([FromBody] CartItemRequest request)
     {
         using var connection = _dbFactory.CreateDbConnection();
@@ -274,6 +275,8 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
     }
 
     [HttpPut("cart/edit/{id}")]
+    [Guard([Roles.Customer])]
+
     public async Task<IActionResult> UpdateCartItem(long id, [FromBody] UpdateCartItemRequest request)
     {
         using var connection = _dbFactory.CreateDbConnection();
@@ -300,6 +303,7 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
     }
 
     [HttpDelete("cart/delete/{id}")]
+    [Guard([Roles.Customer])]
     public async Task<IActionResult> DeleteCartItem(long id)
     {
         using var connection = _dbFactory.CreateDbConnection();
@@ -320,6 +324,48 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
             return DataNotFound();
 
         return Success();
+    }
+    [HttpGet("cart/price-summary")]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> GetCartPriceSummaryForMe()
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open(); // Use await to open the connection asynchronously
+
+        // Retrieve the price summary for the specified customer
+        int customerId = _userContext.Get().Party;
+        var priceSummary = await Query.GetPriceSummaryByCustomerAsync(connection, customerId);
+
+        // Check if price summary is null
+        if (priceSummary is null || priceSummary.MinValue is null || priceSummary.MaxValue is null)
+        {
+            return DataNotFound("No cart items found for this customer.");
+        }
+
+        // Return success with the price summary
+        return Success(priceSummary);
+    }
+
+    [HttpGet("cart/mine")]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> Min()
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open(); // Use await to open the connection asynchronously
+        var result = await Db.GetCartsByCustomerAsync(_userContext.Get().Party, connection);
+        return Success(result);
+
+    }
+
+    [HttpGet("cart/mine-with-info")]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> CartMinWithInfo([FromQuery] byte language)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open(); // Use await to open the connection asynchronously
+        var result = await Db.GetCartsByCustomerWithProductsInfoAsync(_userContext.Get().Party, language, connection);
+        return Success(result);
+
     }
     #endregion
 

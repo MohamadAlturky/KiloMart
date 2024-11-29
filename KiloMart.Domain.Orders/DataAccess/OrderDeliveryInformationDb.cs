@@ -1,9 +1,9 @@
 using Dapper;
 using System.Data;
 
-namespace KiloMart.DataAccess.Database;
+namespace KiloMart.Domain.Orders.DataAccess;
 
-public static partial class Db
+public static partial class OrdersDb
 {
     public static async Task<long> InsertOrderDeliveryInfoAsync(IDbConnection connection,
         long order,

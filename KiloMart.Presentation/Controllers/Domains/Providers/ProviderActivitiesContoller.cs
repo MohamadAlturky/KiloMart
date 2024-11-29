@@ -60,6 +60,7 @@ public class ProviderActivitiesContoller : AppController
     }
     #endregion
 
+    #region my offers
 
     [HttpGet("products/my-offers/paginated")]
     [Guard([Roles.Provider])]
@@ -83,7 +84,6 @@ public class ProviderActivitiesContoller : AppController
         });
     }
 
-    #region my offers
     [HttpGet("products/my-offers")]
     [Guard([Roles.Provider])]
     public async Task<IActionResult> GetOffersByProvider([FromQuery] byte language = 1)

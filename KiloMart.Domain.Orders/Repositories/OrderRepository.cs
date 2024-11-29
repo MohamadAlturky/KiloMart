@@ -59,7 +59,6 @@ public class OrderDetails
 }
 #endregion
 
-
 #region Orders Activity
 public static partial class OrderRepository
 {
@@ -100,7 +99,6 @@ public class OrderActivityDetails
     public string OperatedByDisplayName { get; set; } = null!;
 }
 #endregion
-
 
 #region Orders Products
 public class OrderProductDetails
@@ -144,6 +142,43 @@ public static partial class OrderRepository
                     op.[Order] = @OrderId;";
 
         var parameters = new { OrderId = orderId, language };
+
+        return await connection.QueryAsync<OrderProductDetails>(sql, parameters);
+    }
+}
+#endregion
+
+#region Orders Products IN Clause
+public static partial class OrderRepository
+{
+    public static async Task<IEnumerable<OrderProductDetails>> GetOrderProductsAsync(IDbConnection connection,
+        IEnumerable<long> orderIds,
+        byte language)
+    {
+        var sql = @"
+                SELECT 
+                    op.[Id],
+                    op.[Order],
+                    op.[Product], 
+                    op.[Quantity],
+                    pd.ProductDescription,
+                    pd.ProductImageUrl,
+                    pd.ProductProductCategory,
+                    pd.ProductMeasurementUnit,
+                    pd.ProductName,
+                    cd.ProductCategoryName
+                FROM 
+                    OrderProduct op
+                INNER JOIN 
+                    GetProductDetailsByLanguageFN(@language) pd ON op.Product = pd.ProductId
+                INNER JOIN 
+                    GetProductCategoryDetailsByLanguageFN(@language) cd ON cd.ProductCategoryId = pd.ProductProductCategory
+                WHERE 
+                    op.[Order] IN @OrderIds;"; 
+
+        var parameters = new DynamicParameters();
+        parameters.Add("language", language);
+        parameters.Add("OrderIds", orderIds.ToArray()); 
 
         return await connection.QueryAsync<OrderProductDetails>(sql, parameters);
     }
@@ -200,4 +235,45 @@ public class OrderProductOfferDetails
     public string ProductName { get; set; } = null!;
     public string ProductCategoryName { get; set; } = null!;
 }
+#endregion
+
+#region Order Product Offer In Clause
+public static partial class OrderRepository
+{
+    public static async Task<IEnumerable<OrderProductOfferDetails>> GetOrderProductOffersByIdsAsync(IDbConnection connection, 
+        IEnumerable<int> orderIds,
+        int language)
+    {
+        var sql = @"
+                SELECT 
+                    op.[Id],
+                    op.[Order],
+                    op.[Product], 
+                    op.[Quantity],
+                    op.UnitPrice,
+                    pd.ProductDescription,
+                    pd.ProductImageUrl,
+                    pd.ProductProductCategory,
+                    pd.ProductMeasurementUnit,
+                    pd.ProductName,
+                    cd.ProductCategoryName
+                FROM 
+                    OrderProductOffer op
+                INNER JOIN 
+                    ProductOffer po ON po.Id = op.ProductOffer 
+                INNER JOIN 
+                    GetProductDetailsByLanguageFN(@language) pd ON po.Product = pd.ProductId
+                INNER JOIN 
+                    GetProductCategoryDetailsByLanguageFN(@language) cd ON cd.ProductCategoryId = pd.ProductProductCategory
+                WHERE 
+                    op.[Order] IN @OrderIds;";
+
+        var parameters = new DynamicParameters();
+        parameters.Add("language", language);
+        parameters.Add("OrderIds", orderIds.ToArray());
+
+        return await connection.QueryAsync<OrderProductOfferDetails>(sql, parameters);
+    }
+}
+
 #endregion

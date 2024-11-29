@@ -27,6 +27,14 @@ public static class ReadOrderService
             // Get the orders
             var orders = await OrderRepository.GetOrderDetailsAsync(connection, whereClause, parameters);
 
+            if(orders is null)
+            {
+                return Result<List<AggregatedOrder>>.Ok([]);
+            }
+            if(!orders.Any())
+            {
+                return Result<List<AggregatedOrder>>.Ok([]);
+            }
             var ordersIds = orders.Select(e => e.Id).ToList();
 
             // Get the orders products

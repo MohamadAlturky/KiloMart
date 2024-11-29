@@ -24,6 +24,7 @@ public static class AcceptOrderService
         using var readConnection = dbFactory.CreateDbConnection();
         readConnection.Open();
         var location = await Db.GetLocationByPartyAsync(providerId, readConnection);
+
         if (location is null)
         {
             return Result<AcceptOrderResponseModel>.Fail(["Provider Don't Have a Location Not Found"]);
@@ -89,10 +90,16 @@ public static class AcceptOrderService
                         orderOffer.Quantity,
                         transaction);
 
+                    var newQuantity = item.OfferQuantity - item.RequestedQuantity;
+                    await Db.UpdateProductOfferQuantityAsync(connection,
+                        item.OfferId,
+                        newQuantity,
+                        transaction);
+
                     response.OrderOffers.Add(orderOffer);
                 }
             }
-            decimal totalPrice = response.OrderOffers.Sum(o => (o.UnitPrice) * ((decimal)o.Quantity));
+            decimal totalPrice = response.OrderOffers.Sum(o => o.UnitPrice * o.Quantity);
             await OrdersDb.UpdateOrderAsync(connection,
                 order.Id,
                 (byte)OrderStatus.PREPARING,
@@ -100,11 +107,12 @@ public static class AcceptOrderService
                 order.TransactionId,
                 transaction);
             await OrdersDb.InsertOrderActivityAsync(connection,
-                orderId, DateTime.Now,
+                orderId,
+                DateTime.Now,
                 (byte)OrderActivityType.AcceptedByProvider,
                 providerId,
                 transaction);
-                
+
             transaction.Commit();
             return Result<AcceptOrderResponseModel>.Ok(response);
         }

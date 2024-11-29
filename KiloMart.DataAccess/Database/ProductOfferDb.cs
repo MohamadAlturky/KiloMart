@@ -72,6 +72,24 @@ namespace KiloMart.DataAccess.Database
 
             return updatedRowsCount > 0;
         }
+        public static async Task<bool> UpdateProductOfferQuantityAsync(IDbConnection connection,
+            int id,
+            decimal quantity,
+            IDbTransaction? transaction = null)
+        {
+            const string query = @"UPDATE [dbo].[ProductOffer]
+                                    SET 
+                                    [Quantity] = @Quantity
+                                    WHERE [Id] = @Id";
+
+            var updatedRowsCount = await connection.ExecuteAsync(query, new
+            {
+                Id = id,
+                Quantity = quantity
+            }, transaction);
+
+            return updatedRowsCount > 0;
+        }
 
         public static async Task<bool> DeleteProductOfferAsync(IDbConnection connection, int id, IDbTransaction? transaction = null)
         {

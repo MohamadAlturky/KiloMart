@@ -18,21 +18,31 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
 {
 
     #region Get best deals
-    [HttpGet("get-best-deals-by-off-percentage")]
-    public async Task<IActionResult> GetBestDealsByOffPercentage([FromQuery] byte language)
-    {
-        using var connection = _dbFactory.CreateDbConnection();
-        var result = await ProductQuery.GetBestDealsByOffPercentage(connection, language);
-        return Success(new { deals = result });
-    }
+    // [HttpGet("get-best-deals-by-off-percentage")]
+    // public async Task<IActionResult> GetBestDealsByOffPercentage([FromQuery] byte language)
+    // {
+    //     using var connection = _dbFactory.CreateDbConnection();
+    //     var result = await ProductQuery.GetBestDealsByOffPercentage(connection, language);
+    //     return Success(new { deals = result });
+    // }
 
-    [HttpGet("get-best-deals-by-final-price")]
-    public async Task<IActionResult> GetBestDealsByMultiply([FromQuery] byte language)
+    // [HttpGet("get-best-deals-by-final-price")]
+    // public async Task<IActionResult> GetBestDealsByMultiply([FromQuery] byte language)
+    // {
+    //     using var connection = _dbFactory.CreateDbConnection();
+    //     var result = await ProductQuery.GetBestDealsByMultiply(connection, language);
+    //     return Success(new { deals = result });
+    // }
+
+    
+    [HttpGet("get-best-deals")]
+    public async Task<IActionResult> GetBestDeals([FromQuery] byte language = 1, [FromQuery] int numberOfReturnedRecords = 5)
     {
         using var connection = _dbFactory.CreateDbConnection();
-        var result = await ProductQuery.GetBestDealsByMultiply(connection, language);
+        var result = await ProductQuery.GetProductsBestDeals(connection, language, numberOfReturnedRecords);
         return Success(new { deals = result });
     }
+    
     #endregion
 
     #region min order value

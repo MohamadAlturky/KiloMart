@@ -45,12 +45,13 @@ public partial class ProductQuery
                     pl.[Description] AS LocalizedDescription,
                     pl.[Name] AS LocalizedName,
                     po.MaxPrice,
-                    po.MinPrice
+                    po.MinPrice,
+                    po.OffPercentage
                 FROM Product p WITH (NOLOCK)
                 LEFT JOIN ProductLocalized pl WITH (NOLOCK)
                     ON p.Id = pl.Product AND pl.Language = @language
                 INNER JOIN (
-                    SELECT Product, MAX(Price) AS MaxPrice, MIN(Price) AS MinPrice, Sum(Quantity) AS QuantitySum
+                    SELECT Product, MAX(Price) AS MaxPrice, MIN(Price) AS MinPrice, Sum(Quantity) AS QuantitySum, AVG(OffPercentage) OffPercentage
                     FROM ProductOffer
                     WHERE IsActive = 1
                     GROUP BY Product
@@ -72,11 +73,69 @@ public partial class ProductQuery
             MaxPrice = product.MaxPrice,
             MeasurementUnit = product.LocalizedMeasurementUnit ?? product.MeasurementUnit,
             Description = product.LocalizedDescription ?? product.Description,
+            OffPercentage = product.OffPercentage
         }).ToList();
 
         return (result, totalCount);
     }
 
+    public static async Task<List<CustomerProductApiResponseWithOfferDto>> GetProductsBestDeals(
+        IDbConnection connection,
+        byte language = 1,
+        int totalCount = 5)
+    {
+        bool isActive = true;
+
+     
+        // SQL query with pagination
+        string sql = @"
+                SELECT
+                    TOP (@totalCount)
+                    p.[Id],
+                    p.[ImageUrl],
+                    p.[ProductCategory],
+                    p.[IsActive],
+                    p.[MeasurementUnit],
+                    p.[Description],
+                    p.[Name],
+                    pl.[Language],
+                    pl.[Product],
+                    pl.[MeasurementUnit] AS LocalizedMeasurementUnit,
+                    pl.[Description] AS LocalizedDescription,
+                    pl.[Name] AS LocalizedName,
+                    po.MaxPrice,
+                    po.MinPrice,
+                    po.OffPercentage
+                FROM Product p WITH (NOLOCK)
+                LEFT JOIN ProductLocalized pl WITH (NOLOCK)
+                    ON p.Id = pl.Product AND pl.Language = @language
+                INNER JOIN (
+                    SELECT Product, MAX(Price) AS MaxPrice, MIN(Price) AS MinPrice, Sum(Quantity) AS QuantitySum, AVG(OffPercentage) OffPercentage
+                    FROM ProductOffer
+                    WHERE IsActive = 1
+                    GROUP BY Product
+                ) po ON p.Id = po.Product
+                WHERE p.IsActive = @isActive AND QuantitySum != 0
+                ORDER BY po.[MinPrice]";
+
+        // Execute query and transform results into DTOs
+        var products = await connection.QueryAsync<CustomerProductApiResponseWithOffer>(sql, new { language, isActive, totalCount });
+
+        var result = products.Select(product => new CustomerProductApiResponseWithOfferDto
+        {
+            Id = product.Id,
+            Name = product.LocalizedName ?? product.Name,
+            IsActive = product.IsActive,
+            ImageUrl = product.ImageUrl,
+            MinPrice = product.MinPrice,
+            MaxPrice = product.MaxPrice,
+            MeasurementUnit = product.LocalizedMeasurementUnit ?? product.MeasurementUnit,
+            Description = product.LocalizedDescription ?? product.Description,
+            OffPercentage = product.OffPercentage
+        }).ToList();
+
+        return result;
+    }
 
     public static async Task<List<BestDealsByOffDto>> GetBestDealsByOffPercentage(
         IDbConnection connection,
@@ -265,6 +324,7 @@ public class CustomerProductApiResponseWithOffer
     // ProductOffer properties
     public decimal? MinPrice { get; set; }
     public decimal? MaxPrice { get; set; }
+    public decimal OffPercentage { get; set; }
 }
 
 public class CustomerProductApiResponseWithOfferDto
@@ -277,4 +337,5 @@ public class CustomerProductApiResponseWithOfferDto
     public string? ImageUrl { get; set; }
     public decimal? MinPrice { get; set; }
     public decimal? MaxPrice { get; set; }
+    public decimal? OffPercentage { get; set; }
 }

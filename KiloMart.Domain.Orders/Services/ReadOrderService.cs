@@ -91,5 +91,38 @@ public static class ReadOrderService
             return Result<List<OrderDetailsDto>>.Fail([e.Message]);
         }
     }
+    public static async Task<Result<List<OrderDetailsDto>>> GetCompletedForDeliveryAsync(
+        IUserContext userContext,
+        IDbFactory dbFactory)
+    {
+        try
+        {
+            using var connection = dbFactory.CreateDbConnection();
+            connection.Open();
+            byte status = (byte)OrderStatus.COMPLETED;
+            int deliveryId = userContext.Get().Party;
+
+            var whereClause = "WHERE OrderStatus = @status AND Delivery = @delivery";
+            var parameters = new { status, delivery = deliveryId };
+
+            // Get the orders
+            IEnumerable<OrderDetailsDto>? orders = await OrderRepository.GetOrderDetailsAsync(connection, whereClause, parameters);
+
+            if(orders is null)
+            {
+                return Result<List<OrderDetailsDto>>.Ok([]);
+            }
+            if(!orders.Any())
+            {
+                return Result<List<OrderDetailsDto>>.Ok([]);
+            }
+            
+            return Result<List<OrderDetailsDto>>.Ok(orders.AsList());
+        }
+        catch (Exception e)
+        {
+            return Result<List<OrderDetailsDto>>.Fail([e.Message]);
+        }
+    }
     #endregion
 }

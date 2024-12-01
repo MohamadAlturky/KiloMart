@@ -18,7 +18,7 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory, IUserContex
     #region Orders reading
 
     [HttpGet("orders/ready-to-deliver")]
-    // [Guard([Roles.Delivery])]
+    [Guard([Roles.Delivery])]
     public async Task<IActionResult> GetReadyForDeliver()
     {
         var result = await ReadOrderService.GetReadyForDeliverAsync(
@@ -27,22 +27,29 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory, IUserContex
 
         return result.Success ? Success(result.Data) : Fail(result.Errors);
     }
-    [HttpGet("orders/mine")]
+    [HttpGet("orders/completed")]
     [Guard([Roles.Delivery])]
-    public async Task<IActionResult> GetMine()
+    public async Task<IActionResult> GetCompletedForDeliveryAsync()
+    {
+        var result = await ReadOrderService.GetCompletedForDeliveryAsync(
+            _userContext,
+            _dbFactory);
+
+        return result.Success ? Success(result.Data) : Fail(result.Errors);
+    }
+    [HttpGet("orders/min-all-orders-by-status")]
+    [Guard([Roles.Delivery])]
+    public async Task<IActionResult> GetMine([FromQuery] byte status)
     {
         using var connection = _dbFactory.CreateDbConnection();
 
         var result = await OrderRepository.GetOrderDetailsForDeliveryAsync(
             connection,
-            _userContext.Get().Party);
+            _userContext.Get().Party,
+            status);
 
         return Success(result.AsList());
     }
-    #endregion
-
-    #region Orders Commands
-
     #endregion
 
     #region Activities

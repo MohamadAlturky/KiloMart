@@ -241,11 +241,11 @@ public static partial class OrderRepository
                 INNER JOIN 
                     GetProductCategoryDetailsByLanguageFN(@language) cd ON cd.ProductCategoryId = pd.ProductProductCategory
                 WHERE 
-                    op.[Order] IN @OrderIds;"; 
+                    op.[Order] IN @OrderIds;";
 
         var parameters = new DynamicParameters();
         parameters.Add("language", language);
-        parameters.Add("OrderIds", orderIds.ToArray()); 
+        parameters.Add("OrderIds", orderIds.ToArray());
 
         return await connection.QueryAsync<OrderProductDetailsDto>(sql, parameters);
     }
@@ -307,7 +307,7 @@ public class OrderProductOfferDetailsDto
 #region Order Product Offer In Clause
 public static partial class OrderRepository
 {
-    public static async Task<IEnumerable<OrderProductOfferDetailsDto>> GetOrderProductOffersByIdsAsync(IDbConnection connection, 
+    public static async Task<IEnumerable<OrderProductOfferDetailsDto>> GetOrderProductOffersByIdsAsync(IDbConnection connection,
         IEnumerable<long> orderIds,
         int language)
     {
@@ -348,10 +348,13 @@ public static partial class OrderRepository
 
 public static partial class OrderRepository
 {
-    public static async Task<IEnumerable<OrderDetailsForDeliveryDto>> GetOrderDetailsForDeliveryAsync(IDbConnection connection,
-    int delivery)
-{
-    var sql = $@"
+    public static async Task<IEnumerable<OrderDetailsForDeliveryDto>>
+    GetOrderDetailsForDeliveryAsync(
+        IDbConnection connection,
+        int delivery,
+        byte status)
+    {
+        var sql = $@"
         SELECT 
             o.Id,
             o.OrderStatus,
@@ -394,15 +397,21 @@ public static partial class OrderRepository
         INNER JOIN 
             dbo.[Party] pfp ON pfp.Id = opi.Provider
         WHERE 
-            odi.Delivery = @delivery
+            odi.Delivery = @delivery AND o.OrderStatus = @status
         ORDER BY 
             o.[Id];";
 
-    return await connection.QueryAsync<OrderDetailsForDeliveryDto>(sql, new {delivery});
-}
+        return await connection.QueryAsync<OrderDetailsForDeliveryDto>(sql,
+            new
+            {
+                delivery,
+                status
+            });
+    }
 }
 public class OrderDetailsForDeliveryDto
-{public long Id { get; set; }
+{
+    public long Id { get; set; }
     public byte OrderStatus { get; set; }
     public decimal TotalPrice { get; set; }
     public string TransactionId { get; set; } = null!;
@@ -424,7 +433,7 @@ public class OrderDetailsForDeliveryDto
     public string? ProviderLocationName { get; set; }
     public decimal? ProviderLocationLatitude { get; set; }
     public decimal? ProviderLocationLongitude { get; set; }
-    
+
     // New fields for Party information
     public string ProviderName { get; set; }
     public string CustomerName { get; set; }

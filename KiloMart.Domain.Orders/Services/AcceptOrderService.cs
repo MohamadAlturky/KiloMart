@@ -4,13 +4,14 @@ using KiloMart.Core.Models;
 using KiloMart.DataAccess.Database;
 using KiloMart.Domain.Orders.Common;
 using KiloMart.Domain.Orders.DataAccess;
+using KiloMart.Domain.Orders.Repositories;
 
 namespace KiloMart.Domain.Orders.Services;
 
 public static class AcceptOrderService
 {
 
-    public static async Task<Result<AcceptOrderResponseModel>> Accept(
+    public static async Task<Result<AcceptOrderResponseModel>> ProviderAccept(
         long orderId,
         UserPayLoad userPayLoad,
         IDbFactory dbFactory)
@@ -124,11 +125,80 @@ public static class AcceptOrderService
         }
 
     }
+     public static async Task<Result<AcceptOrderResponseModel>> DeliveryAccept(
+        long orderId,
+        UserPayLoad userPayLoad,
+        IDbFactory dbFactory)
+    {
+        int deliveryId = userPayLoad.Party;
+        var response = new AcceptOrderResponseModel()
+        {
+            OrderId = orderId
+        };
+
+        using var readConnection = dbFactory.CreateDbConnection();
+        readConnection.Open();
+
+        using var connection = dbFactory.CreateDbConnection();
+        connection.Open();
+        using var transaction = connection.BeginTransaction();
+        try
+        {
+            var whereClause = "WHERE [Id] = id";
+            var parameters = new { id = orderId };
+
+            // Get the orders
+            OrderDetailsDto? order = await OrderRepository.GetOrderDetailsFirstOrDefaultAsync(connection, whereClause, parameters);
+            
+            if (order is null)
+            {
+                return Result<AcceptOrderResponseModel>.Fail(["Order Not Found"]);
+            }
+            if(order.Delivery is not null)
+            {
+                return Result<AcceptOrderResponseModel>.Fail(["Some one took this order"]);
+            }
+            if(order.OrderStatus != ((byte)OrderStatus.PREPARING))
+            {
+                return Result<AcceptOrderResponseModel>.Fail(["Order Status is not PREPARING"]);
+            }
+          
+            response.OrderDeliveryInformation = new OrderDeliveryInformation()
+            {
+                Order = orderId,
+                Delivery = userPayLoad.Party
+            };
+
+            response.OrderDeliveryInformation.Id = await OrdersDb.InsertOrderDeliveryInfoAsync(
+                connection,
+                response.OrderDeliveryInformation.Order,
+                response.OrderDeliveryInformation.Delivery,
+                transaction
+            );
+            
+            await OrdersDb.InsertOrderActivityAsync(connection,
+                orderId,
+                DateTime.Now,
+                (byte)OrderActivityType.AcceptedByDelivery,
+                deliveryId,
+                transaction);
+
+            transaction.Commit();
+            return Result<AcceptOrderResponseModel>.Ok(response);
+        }
+        catch (Exception ex)
+        {
+            transaction.Rollback();
+            return Result<AcceptOrderResponseModel>.Fail([ex.Message]);
+        }
+
+    }
 }
 public class AcceptOrderResponseModel
 {
     public long OrderId { get; set; }
-    public OrderProviderInformation OrderProviderInformation { get; set; } = null!;
+    public OrderProviderInformation? OrderProviderInformation { get; set; }
+    public OrderDeliveryInformation? OrderDeliveryInformation { get; set; }
     public List<OrderProductOffer> OrderOffers { get; set; } = [];
 }
 

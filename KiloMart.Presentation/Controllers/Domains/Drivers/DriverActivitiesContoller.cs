@@ -104,4 +104,14 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory, IUserContex
         return Success(wallet);
     }
     #endregion
+
+    #region orders actions
+    [HttpPost("orders/accept")]
+    [Guard([Roles.Delivery])]
+    public async Task<IActionResult> AcceptOrder([FromBody] long orderId)
+    {
+        var result = await AcceptOrderService.DeliveryAccept(orderId, _userContext.Get(), _dbFactory);
+        return result.Success ? Success(result.Data) : Fail(result.Errors);
+    }
+    #endregion
 }

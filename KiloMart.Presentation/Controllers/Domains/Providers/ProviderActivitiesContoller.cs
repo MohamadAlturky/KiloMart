@@ -121,7 +121,7 @@ public class ProviderActivitiesContoller : AppController
     [Guard([Roles.Provider])]
     public async Task<IActionResult> AcceptOrder([FromBody] long orderId)
     {
-        var result = await AcceptOrderService.Accept(orderId, _userContext.Get(), _dbFactory);
+        var result = await AcceptOrderService.ProviderAccept(orderId, _userContext.Get(), _dbFactory);
         return result.Success ? Success(result.Data) : Fail(result.Errors);
     }
     #endregion

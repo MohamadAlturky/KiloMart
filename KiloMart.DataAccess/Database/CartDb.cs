@@ -10,7 +10,7 @@ public static partial class Db
 {
     public static async Task<long> InsertCartAsync(IDbConnection connection,
         int product,
-        float quantity,
+        decimal quantity,
         int customer,
         IDbTransaction? transaction = null)
     {
@@ -32,7 +32,7 @@ public static partial class Db
     public static async Task<bool> UpdateCartAsync(IDbConnection connection,
         long id,
         int product,
-        float quantity,
+        decimal quantity,
         int customer,
         IDbTransaction? transaction = null)
     {
@@ -141,14 +141,14 @@ public class Cart
 {
     public long Id { get; set; }
     public int Product { get; set; }
-    public float Quantity { get; set; }
+    public decimal Quantity { get; set; }
     public int Customer { get; set; }
 }
 public class CartItemWithProduct
 {
     public long CartItemId { get; set; }
     public int CartItemProduct { get; set; }
-    public float CartItemQuantity { get; set; }    
+    public decimal CartItemQuantity { get; set; }    
     public int CartItemCustomer { get; set; }  
     public string ProductImageUrl { get; set; }        
     public int ProductCategoryId { get; set; }         

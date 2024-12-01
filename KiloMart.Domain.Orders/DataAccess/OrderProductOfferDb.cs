@@ -10,7 +10,7 @@ namespace KiloMart.Domain.Orders.DataAccess;
 ///     [Order] [bigint] NOT NULL,
 ///     [ProductOffer] [int] NOT NULL,
 ///     [UnitPrice] [money] NOT NULL,
-///     [Quantity] [float] NOT NULL
+///     [Quantity] [decimal] NOT NULL
 /// );
 /// </summary>
 public static partial class OrdersDb
@@ -19,7 +19,7 @@ public static partial class OrdersDb
         long orderId,
         int productOfferId,
         decimal unitPrice,
-        double quantity,
+        decimal quantity,
         IDbTransaction? transaction = null)
     {
         const string query = @"INSERT INTO [dbo].[OrderProductOffer]
@@ -41,7 +41,7 @@ public static partial class OrdersDb
         long orderId,
         int productOfferId,
         decimal unitPrice,
-        double quantity,
+        decimal quantity,
         IDbTransaction? transaction = null)
     {
         const string query = @"UPDATE [dbo].[OrderProductOffer]
@@ -101,5 +101,5 @@ public class OrderProductOffer
     public long Order { get; set; }
     public int ProductOffer { get; set; }
     public decimal UnitPrice { get; set; }
-    public double Quantity { get; set; }
+    public decimal Quantity { get; set; }
 }

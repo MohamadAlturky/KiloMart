@@ -41,7 +41,7 @@ public partial class Query
 public class OrderRequestItemDto
 {
     public long OrderRequestItemId { get; set; }
-    public float OrderRequestItemQuantity { get; set; }
+    public decimal OrderRequestItemQuantity { get; set; }
     public int ProductId { get; set; }
     public string ProductDescription { get; set; } = null!;
     public string ProductName { get; set; } = null!;

@@ -11,7 +11,7 @@ namespace KiloMart.DataAccess.Database
             decimal offPercentage,
             DateTime fromDate,
             DateTime? toDate,
-            float quantity,
+            decimal quantity,
             int provider,
             IDbTransaction? transaction = null)
         {
@@ -40,7 +40,7 @@ namespace KiloMart.DataAccess.Database
             decimal offPercentage,
             DateTime fromDate,
             DateTime? toDate,
-            float quantity,
+            decimal quantity,
             int provider,
             bool isActive,
             IDbTransaction? transaction = null)
@@ -68,6 +68,24 @@ namespace KiloMart.DataAccess.Database
                 Quantity = quantity,
                 Provider = provider,
                 IsActive = isActive
+            }, transaction);
+
+            return updatedRowsCount > 0;
+        }
+        public static async Task<bool> UpdateProductOfferQuantityAsync(IDbConnection connection,
+            int id,
+            decimal quantity,
+            IDbTransaction? transaction = null)
+        {
+            const string query = @"UPDATE [dbo].[ProductOffer]
+                                    SET 
+                                    [Quantity] = @Quantity
+                                    WHERE [Id] = @Id";
+
+            var updatedRowsCount = await connection.ExecuteAsync(query, new
+            {
+                Id = id,
+                Quantity = quantity
             }, transaction);
 
             return updatedRowsCount > 0;
@@ -116,7 +134,7 @@ namespace KiloMart.DataAccess.Database
         public decimal OffPercentage { get; set; }
         public DateTime FromDate { get; set; }
         public DateTime? ToDate { get; set; }
-        public float Quantity { get; set; }
+        public decimal Quantity { get; set; }
         public int Provider { get; set; }
         public bool IsActive { get; set; }
     }

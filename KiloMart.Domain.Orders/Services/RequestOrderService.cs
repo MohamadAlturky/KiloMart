@@ -46,13 +46,15 @@ public class RequestOrderService
             {
                 OrderStatus = (byte)OrderStatus.ORDER_PLACED,
                 TotalPrice = 0,
-                TransactionId = Guid.NewGuid().ToString()
+                TransactionId = Guid.NewGuid().ToString(),
+                Date = DateTime.Now
             };
             
             response.Order.Id = await OrdersDb.InsertOrderAsync(connection,
                 response.Order.OrderStatus,
                 response.Order.TotalPrice,
                 response.Order.TransactionId,
+                response.Order.Date,
                 transaction);
 
 

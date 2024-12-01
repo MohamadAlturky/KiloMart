@@ -148,7 +148,7 @@ public static partial class Query
         public int CustomerLocation { get; set; }
         public int ProviderLocation { get; set; }
         public long OrderItemId { get; set; }
-        public float ItemQuantity { get; set; }
+        public decimal ItemQuantity { get; set; }
         public decimal ItemUnitPrice { get; set; }
         public decimal OfferPrice { get; set; }
         public decimal OffPercentage { get; set; }

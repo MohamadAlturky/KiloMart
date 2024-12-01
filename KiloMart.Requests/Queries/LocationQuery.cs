@@ -15,8 +15,8 @@ public partial class Query
 public class Location
 {
     public int Id { get; set; }
-    public float Longitude { get; set; }
-    public float Latitude { get; set; }
+    public decimal Longitude { get; set; }
+    public decimal Latitude { get; set; }
     public string Name { get; set; } = null!;
     public int Party { get; set; }
     public bool IsActive { get; set; }
@@ -104,8 +104,8 @@ public class LocationWithPartyInfo
 {
     public int LocationId { get; set; }
     public bool LocationIsActive { get; set; }
-    public double LocationLatitude { get; set; }
-    public double LocationLongitude { get; set; }
+    public decimal LocationLatitude { get; set; }
+    public decimal LocationLongitude { get; set; }
     public string LocationName { get; set; } = null!;
     public int PartyId { get; set; }
     public string PartyDisplayName { get; set; } = null!;

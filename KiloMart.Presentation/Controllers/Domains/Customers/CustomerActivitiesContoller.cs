@@ -452,22 +452,22 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
 
     [HttpPost("orders/cancel")]
     [Guard([Roles.Customer])]
-    public async Task<IActionResult> Cancel([FromBody] long id)
+    public async Task<IActionResult> Cancel([FromBody] long orderId)
     {
         var result = await OrderCancelService.CustomerCancel(
-            id,
+            orderId,
             _userContext.Get(),
             _dbFactory
             );
         if (result.Success)
         {
-            return Ok(new
+            return Success(new
             {
                 Message = "order canceled successfully",
                 Order = result.Data
             });
         }
-        return StatusCode(500, result.Errors);
+        return Fail(result.Errors);
     }
     #endregion
 }

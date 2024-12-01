@@ -124,5 +124,24 @@ public class ProviderActivitiesContoller : AppController
         var result = await AcceptOrderService.ProviderAccept(orderId, _userContext.Get(), _dbFactory);
         return result.Success ? Success(result.Data) : Fail(result.Errors);
     }
+    [HttpPost("orders/cancel")]
+    [Guard([Roles.Provider])]
+    public async Task<IActionResult> Cancel([FromBody] long orderId)
+    {
+        var result = await OrderCancelService.ProviderCancel(
+            orderId,
+            _userContext.Get(),
+            _dbFactory
+            );
+        if (result.Success)
+        {
+            return Success(new
+            {
+                Message = "order canceled successfully",
+                Order = result.Data
+            });
+        }
+        return Fail(result.Errors);
+    }
     #endregion
 }

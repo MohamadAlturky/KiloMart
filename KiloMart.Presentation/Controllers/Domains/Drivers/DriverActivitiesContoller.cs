@@ -120,5 +120,24 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory, IUserContex
         var result = await AcceptOrderService.DeliveryAccept(orderId, _userContext.Get(), _dbFactory);
         return result.Success ? Success(result.Data) : Fail(result.Errors);
     }
+    [HttpPost("orders/cancel")]
+    [Guard([Roles.Delivery])]
+    public async Task<IActionResult> Cancel([FromBody] long orderId)
+    {
+        var result = await OrderCancelService.DeliveryCancel(
+            orderId,
+            _userContext.Get(),
+            _dbFactory
+            );
+        if (result.Success)
+        {
+            return Success(new
+            {
+                Message = "order canceled successfully",
+                Order = result.Data
+            });
+        }
+        return Fail(result.Errors);
+    }
     #endregion
 }

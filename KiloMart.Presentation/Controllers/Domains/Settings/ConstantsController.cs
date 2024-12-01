@@ -57,4 +57,10 @@ public partial class ConstantsController(IDbFactory dbFactory, IUserContext user
         var result = await DatabaseHelper.SelectFromTable("Role", _dbFactory.CreateDbConnection());
         return Success(result);
     }
+    [HttpGet("DeliveryActivityType")]
+    public async Task<IActionResult> GeDeliveryActivityTypes()
+    {
+        var result = await DatabaseHelper.SelectFromTable("DeliveryActivityType", _dbFactory.CreateDbConnection());
+        return Success(result);
+    }
 }

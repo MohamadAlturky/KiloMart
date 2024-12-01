@@ -454,7 +454,7 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
     [Guard([Roles.Customer])]
     public async Task<IActionResult> Cancel([FromBody] long id)
     {
-        var result = await OrderCancelService.Cancel(
+        var result = await OrderCancelService.CustomerCancel(
             id,
             _userContext.Get(),
             _dbFactory

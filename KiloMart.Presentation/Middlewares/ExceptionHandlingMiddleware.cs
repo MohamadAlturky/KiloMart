@@ -23,8 +23,8 @@ public class ExceptionHandlingMiddleware : IMiddleware
                 Message = "un expected error occured try again or contant the backend team.",
                 Errors = new
                 {
-                    ExceptionStackTrace = ex.StackTrace,
                     ExceptionMessage = ex.Message,
+                    ExceptionStackTrace = ex.StackTrace,
                 }
             };
 

@@ -1,14 +1,12 @@
 using Dapper;
+using KiloMart.Domain.Orders.Common;
 using System.Data;
-using System.Data.SqlClient;
+
+
 namespace KiloMart.Domain.Orders.Queries;
-
-
 
 public static partial class OrdersQuery
 {
-
-
     public async static Task<List<Order>> GetOrdersByStatus(byte orderStatus, IDbConnection connection)
     {
         var sql = @"
@@ -68,7 +66,79 @@ public static partial class OrdersQuery
 
         return orders.Distinct().ToList();
     }
+    public static async Task<OrderMinPrice?> GetCheapestOrderByCustomerAndStatusAsync(IDbConnection connection, int customerId, byte status)
+    {
+        const string sql = @"
+        SELECT Top(1)
+            o.Id,
+            o.TotalPrice
+        FROM [Order] o
+        LEFT JOIN OrderCustomerInformation oci ON o.Id = oci.[Order]
+        WHERE oci.Customer = @customer AND o.OrderStatus = @status 
+        ORDER BY o.TotalPrice ASC";
 
+        var parameters = new { customer = customerId, status };
+
+        return await connection.QueryFirstOrDefaultAsync<OrderMinPrice>(sql, parameters);
+    }
+    public static async Task<OrderMinPrice?> GetCheapestOrderByCustomerAndStatusAsync(IDbConnection connection, int customerId)
+    {
+        const string sql = @"
+        SELECT Top(1)
+            o.Id,
+            o.TotalPrice
+        FROM [Order] o
+        LEFT JOIN OrderCustomerInformation oci ON o.Id = oci.[Order]
+        WHERE oci.Customer = @customer AND o.OrderStatus = @status
+        ORDER BY o.TotalPrice ASC";
+
+        var parameters = new { customer = customerId, status = (byte)OrderStatus.COMPLETED };
+
+        return await connection.QueryFirstOrDefaultAsync<OrderMinPrice>(sql, parameters);
+    }
+    public static async Task<List<OrderProductDetail>> GetOrderProductDetailsAsync(IDbConnection connection,
+     long orderId, byte language)
+    {
+        const string sql = @"
+        SELECT 
+            op.Id AS ItemId,
+            op.[Order] AS ItemOrder,
+            op.Quantity AS ItemQuantity,
+            pd.ProductId,
+            pd.ProductImageUrl,
+            pd.ProductProductCategory,
+            pd.ProductIsActive,
+            pd.ProductMeasurementUnit,
+            pd.ProductDescription,
+            pd.ProductName
+        FROM GetProductDetailsByLanguageFN(@language) pd
+        INNER JOIN OrderProduct op ON op.Product = pd.ProductId
+        WHERE [Order] = @orderId";
+
+        var parameters = new { orderId, language };
+        var result = await connection.QueryAsync<OrderProductDetail>(sql, parameters);
+
+        return result.ToList();
+    }
+
+}
+public class OrderProductDetail
+{
+    public int ItemId { get; set; }
+    public long ItemOrder { get; set; }
+    public int ItemQuantity { get; set; }
+    public int ProductId { get; set; }
+    public string ProductImageUrl { get; set; } = null!;
+    public int ProductProductCategory { get; set; }
+    public bool ProductIsActive { get; set; }
+    public string ProductMeasurementUnit { get; set; } = null!;
+    public string ProductDescription { get; set; } = null!;
+    public string ProductName { get; set; } = null!;
+}
+public class OrderMinPrice
+{
+    public long Id { get; set; }
+    public decimal TotalPrice { get; set; }
 }
 
 public class Order
@@ -76,7 +146,7 @@ public class Order
     public long Id { get; set; }
     public byte OrderStatus { get; set; }
     public decimal TotalPrice { get; set; }
-    public string TransactionId { get; set; }
+    public string TransactionId { get; set; } = null!;
     public OrderProviderInformation? ProviderInformation { get; set; }
     public OrderCustomerInformation? CustomerInformation { get; set; }
     public List<OrderActivity> Activities { get; set; } = [];
@@ -111,12 +181,12 @@ public class OrderProductOffer
     public long OrderProductOfferId { get; set; }
     public long ProductOffer { get; set; }
     public decimal UnitPrice { get; set; }
-    public float ProductOfferQuantity { get; set; }
+    public decimal ProductOfferQuantity { get; set; }
 }
 
 public class OrderProduct
 {
     public int OrderProductId { get; set; }
     public int Product { get; set; }
-    public float ProductQuantity { get; set; }
+    public decimal ProductQuantity { get; set; }
 }

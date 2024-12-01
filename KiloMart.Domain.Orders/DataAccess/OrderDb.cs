@@ -18,18 +18,20 @@ public static partial class OrdersDb
         byte orderStatus,
         decimal totalPrice,
         string transactionId,
+        DateTime date,
         IDbTransaction? transaction = null)
     {
         const string query = @"INSERT INTO [dbo].[Order]
-                            ([OrderStatus], [TotalPrice], [TransactionId])
-                            VALUES (@OrderStatus, @TotalPrice, @TransactionId)
+                            ([OrderStatus], [TotalPrice], [TransactionId], [Date])
+                            VALUES (@OrderStatus, @TotalPrice, @TransactionId, @Date)
                             SELECT CAST(SCOPE_IDENTITY() AS BIGINT)";
 
         return await connection.ExecuteScalarAsync<long>(query, new
         {
             OrderStatus = orderStatus,
             TotalPrice = totalPrice,
-            TransactionId = transactionId
+            TransactionId = transactionId,
+            Date = date
         }, transaction);
     }
 
@@ -38,13 +40,15 @@ public static partial class OrdersDb
         byte orderStatus,
         decimal totalPrice,
         string transactionId,
+        DateTime date,
         IDbTransaction? transaction = null)
     {
         const string query = @"UPDATE [dbo].[Order]
                                 SET 
                                 [OrderStatus] = @OrderStatus,
                                 [TotalPrice] = @TotalPrice,
-                                [TransactionId] = @TransactionId
+                                [TransactionId] = @TransactionId,
+                                [Date] = @Date 
                                 WHERE [Id] = @Id";
 
         var updatedRowsCount = await connection.ExecuteAsync(query, new
@@ -52,7 +56,8 @@ public static partial class OrdersDb
             Id = id,
             OrderStatus = orderStatus,
             TotalPrice = totalPrice,
-            TransactionId = transactionId
+            TransactionId = transactionId,
+            Date = date
         }, transaction);
 
         return updatedRowsCount > 0;
@@ -77,7 +82,8 @@ public static partial class OrdersDb
                             [Id], 
                             [OrderStatus], 
                             [TotalPrice], 
-                            [TransactionId]
+                            [TransactionId],
+                            [Date]
                             FROM [dbo].[Order]
                             WHERE [Id] = @Id";
 
@@ -94,4 +100,5 @@ public class Order
     public byte OrderStatus { get; set; }
     public decimal TotalPrice { get; set; }
     public string TransactionId { get; set; } = null!;
+    public DateTime Date { get; set; }
 }

@@ -7,8 +7,8 @@ namespace KiloMart.DataAccess.Database;
 /// Table Specification
 //  CREATE TABLE [dbo].[Location](
 // 	[Id] [int] IDENTITY(1,1) NOT NULL,
-// 	[Longitude] [float] NOT NULL,
-// 	[Latitude] [float] NOT NULL,
+// 	[Longitude] [decimal] NOT NULL,
+// 	[Latitude] [decimal] NOT NULL,
 // 	[Name] [varchar](200) NOT NULL,
 // 	[Party] [int] NOT NULL,
 // 	[IsActive] [bit] NOT NULL
@@ -17,8 +17,8 @@ namespace KiloMart.DataAccess.Database;
 public static partial class Db
 {
     public static async Task<int> InsertLocationAsync(IDbConnection connection,
-        float longitude,
-        float latitude,
+        decimal longitude,
+        decimal latitude,
         string name,
         int party,
         IDbTransaction? transaction = null)
@@ -39,8 +39,8 @@ public static partial class Db
 
     public static async Task<bool> UpdateLocationAsync(IDbConnection connection,
         int id,
-        float longitude,
-        float latitude,
+        decimal longitude,
+        decimal latitude,
         string name,
         int party,
         bool isActive,
@@ -120,8 +120,8 @@ public static partial class Db
 public class Location
 {
     public int Id { get; set; }
-    public float Longitude { get; set; }
-    public float Latitude { get; set; }
+    public decimal Longitude { get; set; }
+    public decimal Latitude { get; set; }
     public string Name { get; set; } = null!;
     public int Party { get; set; }
     public bool IsActive { get; set; }

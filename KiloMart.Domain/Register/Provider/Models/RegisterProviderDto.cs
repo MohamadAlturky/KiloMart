@@ -9,22 +9,22 @@ public class RegisterProviderDto
     public string Password { get; set; } = string.Empty;
     public string DisplayName { get; set; } = string.Empty;
 
-    public (bool Success,List<string> Errors) Validate()
+    public (bool Success, List<string> Errors) Validate()
     {
         List<string> errors = [];
-        if(!IsValidEmail(Email))
+        if (!IsValidEmail(Email))
         {
             errors.Add("Invalid email.");
         }
-        if(string.IsNullOrEmpty(Email))
+        if (string.IsNullOrEmpty(Email))
         {
             errors.Add("Email is required.");
         }
-        if(string.IsNullOrEmpty(Password))
+        if (string.IsNullOrEmpty(Password))
         {
             errors.Add("Password is required.");
         }
-        if(string.IsNullOrEmpty(DisplayName))
+        if (string.IsNullOrEmpty(DisplayName))
         {
             errors.Add("Display name is required.");
         }
@@ -34,7 +34,8 @@ public class RegisterProviderDto
     public static bool IsValidEmail(string email)
     {
         // use regex to validate email
-        var regex = new Regex(@"^[^\s@]+@[^\s@]+\.[^\s@]+$");
-        return regex.IsMatch(email);
+        // var regex = new Regex(@"^[^\s@]+@[^\s@]+\.[^\s@]+$");
+        // return regex.IsMatch(email);
+        return true;
     }
 }

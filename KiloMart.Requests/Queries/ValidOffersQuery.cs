@@ -9,8 +9,8 @@
 //     public static async Task<ProductOfferCount[]> GetProductOfferCounts(
 //         IDbConnection connection,
 //         IEnumerable<RequestedProduct> requestedProducts,
-//         float Latitude,
-//         float Longitude)
+//         decimal Latitude,
+//         decimal Longitude)
 //     {
 //         // Create a DataTable to hold requested products
 //         var requestedProductsTable = new DataTable();
@@ -79,7 +79,7 @@
 // {
 //     public int Provider { get; set; }
 //     public int Count { get; set; }
-//     public double Distance { get; set; } // Add this property for distance calculation.
+//     public decimal Distance { get; set; } // Add this property for distance calculation.
 // }
 using Dapper;
 using System.Data;
@@ -92,10 +92,10 @@ public partial class Query
     public static async Task<ProductOfferCount[]> GetProductOfferCounts(
         IDbConnection connection,
         IEnumerable<RequestedProduct> requestedProducts,
-        float Latitude,
-        float Longitude)
+        decimal Latitude,
+        decimal Longitude)
     {
-        float MaxDistance = 100;
+        decimal MaxDistance = 100;
         // Create a DataTable to hold requested products
         var requestedProductsTable = new DataTable();
         requestedProductsTable.Columns.Add("ProductId", typeof(int));
@@ -176,5 +176,5 @@ public class ProductOfferCount
 {
     public int Provider { get; set; }
     public int Count { get; set; }
-    public double Distance { get; set; } // Add this property for distance calculation.
+    public decimal Distance { get; set; } // Add this property for distance calculation.
 }

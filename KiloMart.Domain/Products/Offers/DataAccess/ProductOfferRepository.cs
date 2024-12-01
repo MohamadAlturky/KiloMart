@@ -45,7 +45,7 @@ public class ProductOffer
     public decimal OffPercentage { get; set; }
     public DateTime FromDate { get; set; }
     public DateTime? ToDate { get; set; }
-    public float Quantity { get; set; }
+    public decimal Quantity { get; set; }
     public int Provider { get; set; }
     public bool IsActive { get; set; }
 }

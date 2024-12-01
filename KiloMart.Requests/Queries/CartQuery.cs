@@ -1,0 +1,61 @@
+﻿using System.Data;
+using Dapper;
+
+namespace KiloMart.Requests.Queries;
+
+public partial class Query
+{
+    public static async Task<PriceSummary?> GetPriceSummaryByCustomerAsync(IDbConnection connection, int customerId)
+    {
+        const string sql = @"
+            SELECT SUM(MAX) AS MaxValue, SUM(MIN) AS MinValue FROM (
+                SELECT p.MaxPrice * c.Quantity AS MAX, p.MinPrice * c.Quantity AS MIN
+                FROM (
+                    SELECT po.Product,
+                        MAX(po.Price) AS MaxPrice,
+                        MIN(po.Price) AS MinPrice 
+                    FROM ProductOffer po
+                    GROUP BY po.Product
+                ) p 
+                INNER JOIN Cart c
+                ON c.Product = p.Product AND c.Customer = @customer
+            ) DataTable";
+
+        var parameters = new { customer = customerId };
+
+        var result = await connection.QueryFirstOrDefaultAsync<PriceSummary?>(sql, parameters);
+
+        return result;
+    }
+    public static async Task<ProductPriceInfo[]> GetProductPriceRangeForCustomer(IDbConnection connection, int customerId)
+    {
+        var query = @"
+                SELECT 
+                    Product,
+                    MIN(Price) AS MinPrice,
+                    MAX(Price) AS MaxPrice 
+                FROM ProductOffer 
+                WHERE IsActive = 1 
+                AND Product IN (SELECT Product FROM Cart WHERE Customer = @customer)
+                GROUP BY Product;";
+
+        var priceInfo = await connection.QueryAsync<ProductPriceInfo>(
+            query,
+            new { customer = customerId });
+
+        return priceInfo.ToArray();
+    }
+}
+
+public class ProductPriceInfo
+{
+    public int Product { get; set; }
+    public decimal MinPrice { get; set; }
+    public decimal MaxPrice { get; set; }
+}
+
+public class PriceSummary
+{
+    public decimal? MinValue { get; set; }
+    public decimal? MaxValue { get; set; }
+}

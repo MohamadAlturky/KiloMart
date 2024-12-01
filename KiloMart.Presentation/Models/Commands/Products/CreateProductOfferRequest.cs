@@ -6,7 +6,7 @@ public class CreateProductOfferRequest
     public decimal Price { get; set; }
     public decimal OffPercentage { get; set; }
     public DateTime FromDate { get; set; }
-    public float Quantity { get; set; }
+    public decimal Quantity { get; set; }
 
     public (bool Success, string[] Errors) Validate()
     {

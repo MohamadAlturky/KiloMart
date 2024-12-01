@@ -13,7 +13,7 @@ public class ProductRequestInsertModel
     public int ProductCategory { get; set; }
     public decimal Price { get; set; }
     public decimal OffPercentage { get; set; }
-    public float Quantity { get; set; }
+    public decimal Quantity { get; set; }
 
     /// <summary>
     /// Data

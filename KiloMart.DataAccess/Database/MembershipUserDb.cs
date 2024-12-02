@@ -22,11 +22,12 @@ public static partial class Db
         string passwordHash,
         byte role,
         int party,
+        byte language,
         IDbTransaction? transaction = null)
     {
         const string query = @"INSERT INTO [dbo].[MembershipUser]
-                            ([Email], [EmailConfirmed], [PasswordHash], [Role], [Party])
-                            VALUES (@Email, @EmailConfirmed, @PasswordHash, @Role, @Party)
+                            ([Email], [EmailConfirmed], [PasswordHash], [Role], [Party],[Language])
+                            VALUES (@Email, @EmailConfirmed, @PasswordHash, @Role, @Party, @Language)
                             SELECT CAST(SCOPE_IDENTITY() AS INT)";
 
         return await connection.ExecuteScalarAsync<int>(query, new
@@ -35,7 +36,8 @@ public static partial class Db
             EmailConfirmed = emailConfirmed,
             PasswordHash = passwordHash,
             Role = role,
-            Party = party
+            Party = party,
+            Language = language
         }, transaction);
     }
 
@@ -46,6 +48,7 @@ public static partial class Db
         string passwordHash,
         byte role,
         int party,
+        byte language,
         bool isActive,
         IDbTransaction? transaction = null)
     {
@@ -56,7 +59,8 @@ public static partial class Db
                                 [PasswordHash] = @PasswordHash,
                                 [Role] = @Role,
                                 [Party] = @Party,
-                                [IsActive] = @IsActive
+                                [IsActive] = @IsActive,
+                                [Language] = @Language
                                 WHERE [Id] = @Id";
 
         var updatedRowsCount = await connection.ExecuteAsync(query, new
@@ -67,7 +71,8 @@ public static partial class Db
             PasswordHash = passwordHash,
             Role = role,
             Party = party,
-            IsActive = isActive
+            IsActive = isActive,
+            Language = language
         }, transaction);
 
         return updatedRowsCount > 0;
@@ -95,7 +100,8 @@ public static partial class Db
                             [PasswordHash], 
                             [Role], 
                             [Party], 
-                            [IsActive]
+                            [IsActive],
+                            [Language]
                             FROM [dbo].[MembershipUser]
                             WHERE [Id] = @Id";
 
@@ -114,7 +120,8 @@ public static partial class Db
                             [PasswordHash], 
                             [Role], 
                             [Party], 
-                            [IsActive]
+                            [IsActive],
+                            [Language]
                             FROM [dbo].[MembershipUser]
                             WHERE [Email] = @Email";
 
@@ -132,6 +139,7 @@ public class MembershipUser
     public bool EmailConfirmed { get; set; }
     public string PasswordHash { get; set; } = null!;
     public byte Role { get; set; }
+    public byte Language { get; set; }
     public int Party { get; set; }
     public bool IsActive { get; set; }
 }

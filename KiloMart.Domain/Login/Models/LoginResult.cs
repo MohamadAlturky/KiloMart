@@ -8,4 +8,5 @@ public class LoginResult
     public string UserName { get; set; }
     public string? Token { get; set; }
     public string[] Errors { get; set; } = [];
+    public byte Language { get; set; }
 }

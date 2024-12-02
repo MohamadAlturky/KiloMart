@@ -16,7 +16,8 @@ public abstract class BaseRegisterService
         IConfiguration configuration,
         string email,
         string password,
-        string displayName)
+        string displayName,
+        byte language)
     {
         using var connection = dbFactory.CreateDbConnection();
         connection.Open();
@@ -32,7 +33,7 @@ public abstract class BaseRegisterService
 
             var partyId = await CreateParty(connection, displayName, transaction);
             await CreatePartyType(connection, partyId, transaction);
-            var membershipUserId = await CreateMembershipUser(connection, email, password, UserRole, partyId, transaction);
+            var membershipUserId = await CreateMembershipUser(connection, email, password, UserRole, partyId, language, transaction);
             var verificationToken = await GenerateVerificationToken(membershipUserId, connection, transaction);
             transaction.Commit();
             return new RegisterResult { IsSuccess = true, UserId = membershipUserId, PartyId = partyId, VerificationToken = verificationToken };
@@ -75,14 +76,14 @@ public abstract class BaseRegisterService
     }
 
 
-    private static async Task<int> CreateMembershipUser(IDbConnection connection, string email, string password, Roles role, int partyId, IDbTransaction transaction)
+    private static async Task<int> CreateMembershipUser(IDbConnection connection, string email, string password, Roles role, int partyId,byte language, IDbTransaction transaction)
     {
         var passwordHash = HashHandler.GetHash(password);
         return await connection.QuerySingleAsync<int>(
-            @"INSERT INTO MembershipUser (Email, EmailConfirmed, PasswordHash, Role, Party,IsActive) 
+            @"INSERT INTO MembershipUser (Email, EmailConfirmed, PasswordHash, Role, Party,IsActive, Language) 
             OUTPUT INSERTED.Id 
-            VALUES (@Email, @EmailConfirmed, @PasswordHash, @Role, @Party, @IsActive)",
-            new { Email = email, EmailConfirmed = false, PasswordHash = passwordHash, Role = (byte)role, Party = partyId, IsActive = false },
+            VALUES (@Email, @EmailConfirmed, @PasswordHash, @Role, @Party, @IsActive,@Language)",
+            new { Email = email, EmailConfirmed = false, PasswordHash = passwordHash, Role = (byte)role, Party = partyId, IsActive = false,Language = language },
             transaction
         );
     }

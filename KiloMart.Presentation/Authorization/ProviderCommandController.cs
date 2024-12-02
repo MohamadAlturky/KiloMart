@@ -34,7 +34,8 @@ public class ProviderCommandController(IConfiguration configuration,
             _configuration,
             dto.Email,
             dto.Password,
-            dto.DisplayName);
+            dto.DisplayName,
+            dto.Language);
         return Success(result);
     }
 

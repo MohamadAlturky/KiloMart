@@ -37,7 +37,8 @@ public class CustomerCommandController : AppController
                             _configuration,
                             dto.Email,
                             dto.Password,
-                            dto.DisplayName);
+                            dto.DisplayName,
+                            dto.Language);
         // return Ok(result);
         return result.IsSuccess
             ? Success(new

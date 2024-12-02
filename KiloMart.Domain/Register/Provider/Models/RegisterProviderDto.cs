@@ -8,6 +8,7 @@ public class RegisterProviderDto
     public string Email { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
     public string DisplayName { get; set; } = string.Empty;
+    public byte Language { get; set; }
 
     public (bool Success, List<string> Errors) Validate()
     {
@@ -27,6 +28,10 @@ public class RegisterProviderDto
         if (string.IsNullOrEmpty(DisplayName))
         {
             errors.Add("Display name is required.");
+        }
+        if (Language == 0)
+        {
+            errors.Add("Language is required.");
         }
         return (errors.Count == 0, errors);
     }

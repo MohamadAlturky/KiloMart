@@ -9,4 +9,5 @@ public class MembershipUserDto
     public bool IsActive { get; set; }
     public string Email { get; set; } = string.Empty;
     public int Party { get; set; }
+    public byte Language { get; set; }
 }

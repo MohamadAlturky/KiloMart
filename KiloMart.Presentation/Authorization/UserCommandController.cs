@@ -69,7 +69,8 @@ public class UserCommandController : AppController
                 result.Token,
                 result.Email,
                 result.UserName,
-                result.Role
+                result.Role,
+                result.Language
             })
         : Fail("User Name Or Password Is Not Valid");
     }

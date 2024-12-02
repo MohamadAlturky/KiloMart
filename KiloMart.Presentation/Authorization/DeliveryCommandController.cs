@@ -39,7 +39,8 @@ public class DeliveryCommandController : AppController
             _configuration,
             dto.Email,
             dto.Password,
-            dto.DisplayName);
+            dto.DisplayName,
+            dto.Language);
         return Success(result);
     }
 

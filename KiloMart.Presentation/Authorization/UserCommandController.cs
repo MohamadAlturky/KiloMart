@@ -1,8 +1,10 @@
+using Dapper;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.Domain.Login.Models;
 using KiloMart.Domain.Login.Services;
 using KiloMart.Domain.Register.Activate;
+using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Controllers;
 using Microsoft.AspNetCore.Mvc;
 
@@ -73,6 +75,51 @@ public class UserCommandController : AppController
                 result.Language
             })
         : Fail("User Name Or Password Is Not Valid");
+    }
+    #endregion
+
+    #region language
+    public class LanguageDto
+    {
+        public byte Language { get; set; }
+    }
+    [HttpGet("language/mine")]
+    [Guard([
+        Roles.Admin,
+        Roles.Delivery,
+        Roles.Provider,
+        Roles.Customer])]
+    public async Task<IActionResult> LanguageMine()
+    {
+        int membershipUserId = _userContext.Get().Id;
+
+        using var connection = _dbFactory.CreateDbConnection();
+
+        try
+        {
+            // Open the connection
+            connection.Open();
+
+            // Prepare and execute the SQL query using Dapper
+            var languageDto = await connection.QuerySingleOrDefaultAsync<LanguageDto>(
+               "SELECT Language FROM [KiloMartMasterDb].[dbo].[MembershipUser] WHERE Id = @Id",
+               new { Id = membershipUserId }
+           );
+
+            // Check if a language was found
+            if (languageDto is null)
+            {
+                return DataNotFound("Language preference not found.");
+            }
+            else
+            {
+                return Success(new { Language = languageDto.Language });
+            }
+        }
+        catch (Exception ex)
+        {
+            return Fail(new string[] { ex.Message });
+        }
     }
     #endregion
 

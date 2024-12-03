@@ -12,6 +12,8 @@ public static partial class Db
         int FirstTimeInMinutesToMakeTheCircleBigger,
         decimal FirstCircleRaduis,
         int SecondTimeInMinutesToMakeTheCircleBigger,
+        int MaxMinutesToCancelOrderWaitingADelivery,
+        int MaxMinutesToCancelOrderWaitingAProvider,
         decimal SecondCircleRaduis,
         IDbTransaction? transaction = null)
     {
@@ -23,7 +25,9 @@ public static partial class Db
                                 [SecondCircleRaduis] = @SecondCircleRaduis,
                                 [SecondTimeInMinutesToMakeTheCircleBigger] = @SecondTimeInMinutesToMakeTheCircleBigger,
                                 [FirstCircleRaduis] = @FirstCircleRaduis,
-                                [FirstTimeInMinutesToMakeTheCircleBigger] = @FirstTimeInMinutesToMakeTheCircleBigger 
+                                [FirstTimeInMinutesToMakeTheCircleBigger] = @FirstTimeInMinutesToMakeTheCircleBigger, 
+                                [MaxMinutesToCancelOrderWaitingAProvider] = @MaxMinutesToCancelOrderWaitingAProvider, 
+                                [MaxMinutesToCancelOrderWaitingADelivery] = @MaxMinutesToCancelOrderWaitingADelivery 
                                 WHERE [Id] = @Id";
 
         var updatedRowsCount = await connection.ExecuteAsync(query, new
@@ -35,7 +39,9 @@ public static partial class Db
             FirstTimeInMinutesToMakeTheCircleBigger,
             FirstCircleRaduis,
             SecondTimeInMinutesToMakeTheCircleBigger,
-            SecondCircleRaduis
+            SecondCircleRaduis,
+            MaxMinutesToCancelOrderWaitingADelivery,
+            MaxMinutesToCancelOrderWaitingAProvider
         }, transaction);
 
         return updatedRowsCount > 0;
@@ -52,7 +58,9 @@ public static partial class Db
                             [SecondCircleRaduis],
                             [SecondTimeInMinutesToMakeTheCircleBigger],
                             [FirstCircleRaduis],
-                            [FirstTimeInMinutesToMakeTheCircleBigger]                            
+                            [FirstTimeInMinutesToMakeTheCircleBigger],
+                            [MaxMinutesToCancelOrderWaitingADelivery],
+                            [MaxMinutesToCancelOrderWaitingAProvider]                            
                             FROM [dbo].[SystemSettings]
                             WHERE [Id] = @Id";
 
@@ -72,4 +80,6 @@ public class SystemSettings
     public int SecondTimeInMinutesToMakeTheCircleBigger { get; set; }
     public decimal FirstCircleRaduis { get; set; }
     public int FirstTimeInMinutesToMakeTheCircleBigger { get; set; }
+    public int MaxMinutesToCancelOrderWaitingAProvider { get; set; }
+    public int MaxMinutesToCancelOrderWaitingADelivery { get; set; }
 }

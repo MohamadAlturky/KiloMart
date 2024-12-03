@@ -41,7 +41,7 @@ public class RequestOrderService
 
 
         try
-        {   
+        {
             response.Order = new()
             {
                 OrderStatus = (byte)OrderStatus.ORDER_PLACED,
@@ -49,7 +49,7 @@ public class RequestOrderService
                 TransactionId = Guid.NewGuid().ToString(),
                 Date = DateTime.Now
             };
-            
+
             response.Order.Id = await OrdersDb.InsertOrderAsync(connection,
                 response.Order.OrderStatus,
                 response.Order.TotalPrice,
@@ -57,6 +57,19 @@ public class RequestOrderService
                 response.Order.Date,
                 transaction);
 
+            foreach (var code in model.DiscountCodes)
+            {
+                var discountCode = await Db.GetDiscountCodeByCodeAsync(code, readConnection);
+                if (discountCode is not null)
+                {
+                    await Db.CreateOrderDiscountCodeAsync(connection,
+                                    response.Order.Id,
+                                    discountCode.Id,
+                                    transaction);
+                    response.DiscountCodes.Add(discountCode);
+                }
+
+            }
 
             response.CustomerInformation = new()
             {
@@ -122,6 +135,7 @@ public class RequestOrderService
 public class CreateOrderRequestModel
 {
     public List<RequestedProduct> RequestedProducts { get; set; } = null!;
+    public List<string> DiscountCodes { get; set; } = null!;
     public int LocationId { get; set; }
     public (bool Success, string[] Errors) Validate()
     {
@@ -130,6 +144,10 @@ public class CreateOrderRequestModel
         if (RequestedProducts is null)
         {
             errors.Add("No Requested Products");
+        }
+        if (DiscountCodes is null)
+        {
+            errors.Add("DiscountCodes shouldn't be null, you can send it as an empty array");
         }
         if (LocationId == 0)
         {
@@ -149,6 +167,7 @@ public class CreateOrderResponseModel
 {
     public Order Order { get; set; } = new();
     public List<OrderProduct> Items { get; set; } = [];
+    public List<KiloMart.DataAccess.Database.DiscountCode> DiscountCodes { get; set; } = [];
     public OrderCustomerInformation CustomerInformation { get; set; } = new();
     public ProductOfferCount[] ProductOfferCounts { get; set; } = [];
 }

@@ -62,13 +62,15 @@ public class RequestOrderService
                 var discountCode = await Db.GetDiscountCodeByCodeAsync(code, readConnection);
                 if (discountCode is not null)
                 {
-                    await Db.CreateOrderDiscountCodeAsync(connection,
-                                    response.Order.Id,
-                                    discountCode.Id,
-                                    transaction);
-                    response.DiscountCodes.Add(discountCode);
+                    if (discountCode.IsActive)
+                    {
+                        await Db.CreateOrderDiscountCodeAsync(connection,
+                                        response.Order.Id,
+                                        discountCode.Id,
+                                        transaction);
+                        response.DiscountCodes.Add(discountCode);
+                    }
                 }
-
             }
 
             response.CustomerInformation = new()

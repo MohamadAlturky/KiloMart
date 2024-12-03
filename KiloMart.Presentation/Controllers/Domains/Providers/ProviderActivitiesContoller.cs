@@ -1,5 +1,6 @@
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
+using KiloMart.DataAccess.Database;
 using KiloMart.Domain.Orders.Services;
 using KiloMart.Domain.ProductRequests.Add;
 using KiloMart.Domain.Register.Utils;
@@ -144,4 +145,66 @@ public class ProviderActivitiesContoller : AppController
         return Fail(result.Errors);
     }
     #endregion
+
+    
+    #region Activities
+
+    [HttpGet("activities/by-date-range")]
+    [Guard([Roles.Provider])]
+    public async Task<IActionResult> GetByDateRange(
+            [FromQuery] DateTime startDate,
+            [FromQuery] DateTime endDate)
+    {
+        int ProviderId = _userContext.Get().Party;
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        var activities = await Db.GetProviderActivitiesByDateBetweenAndProviderAsync(startDate, endDate, ProviderId, connection);
+        return Success(activities);
+    }
+
+    [HttpGet("activities/by-date-bigger")]
+    [Guard([Roles.Provider])]
+    public async Task<IActionResult> GetByDateBigger(
+        [FromQuery] DateTime date)
+    {
+        int ProviderId = _userContext.Get().Party;
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        var activities = await Db.GetProviderActivitiesByDateBiggerAndProviderAsync(date, ProviderId, connection);
+        return Success(activities);
+    }
+    [HttpGet("activities/all")]
+    [Guard([Roles.Provider])]
+    public async Task<IActionResult> GetMine()
+    {
+        int ProviderId = _userContext.Get().Party;
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        var activities = await Db.GetProviderActivitiesByProviderIdAsync(ProviderId, connection);
+        return Success(activities);
+    }
+
+    #endregion
+
+    #region Wallets
+    [HttpGet("wallet/mine")]
+    [Guard([Roles.Provider])]
+    public async Task<IActionResult> GetByProviderId()
+    {
+        int ProviderId = _userContext.Get().Party;
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        var wallet = await Db.GetProviderWalletByProviderIdAsync(ProviderId, connection);
+        if (wallet == null)
+        {
+            return DataNotFound("No Wallet For This Provider");
+        }
+        return Success(wallet);
+    }
+    #endregion
+
 }

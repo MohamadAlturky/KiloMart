@@ -25,48 +25,48 @@ public class AppSettingsController : AppController
         _hubContext = hubContext;
     }
 
-    [HttpGet("{key}")]
-    public async Task<IActionResult> GetSetting(ConstantSettings key)
-    {
-        var setting = await _settingsProvider.GetSettingAsync((int)key);
-        if (setting is null)
-        {
-            return DataNotFound($"Setting with key {key} not found.");
-        }
-        return Success(setting);
-    }
+    // [HttpGet("{key}")]
+    // public async Task<IActionResult> GetSetting(ConstantSettings key)
+    // {
+    //     var setting = await _settingsProvider.GetSettingAsync((int)key);
+    //     if (setting is null)
+    //     {
+    //         return DataNotFound($"Setting with key {key} not found.");
+    //     }
+    //     return Success(setting);
+    // }
 
-    [HttpPut("{key}")]
-    public async Task<IActionResult> UpdateSetting(ConstantSettings key, [FromBody] string value)
-    {
-        await _settingsProvider.UpdateSettingAsync((int)key, value);
-        return Success();
-    }
+    // [HttpPut("{key}")]
+    // public async Task<IActionResult> UpdateSetting(ConstantSettings key, [FromBody] string value)
+    // {
+    //     await _settingsProvider.UpdateSettingAsync((int)key, value);
+    //     return Success();
+    // }
 
-    [HttpPost("invalidate-cache")]
-    public async Task<IActionResult> InvalidateCache()
-    {
-        await _settingsProvider.InvalidateCacheAsync();
-        return Success();
-    }
+    // [HttpPost("invalidate-cache")]
+    // public async Task<IActionResult> InvalidateCache()
+    // {
+    //     await _settingsProvider.InvalidateCacheAsync();
+    //     return Success();
+    // }
 
-    [HttpGet("cancel-multi-provider-order")]
-    public async Task<IActionResult> GetCancelWhenOrderFromMultiProviders()
-    {
-        var setting = await _settingsProvider.GetSettingAsync((int)ConstantSettings.CancelWhenOrderFromMultiProviders);
-        if (setting == null)
-        {
-            return DataNotFound("Setting not found.");
-        }
-        return Success(bool.Parse(setting));
-    }
+    // [HttpGet("cancel-multi-provider-order")]
+    // public async Task<IActionResult> GetCancelWhenOrderFromMultiProviders()
+    // {
+    //     var setting = await _settingsProvider.GetSettingAsync((int)ConstantSettings.CancelWhenOrderFromMultiProviders);
+    //     if (setting == null)
+    //     {
+    //         return DataNotFound("Setting not found.");
+    //     }
+    //     return Success(bool.Parse(setting));
+    // }
 
-    [HttpPut("cancel-multi-provider-order")]
-    public async Task<IActionResult> SetCancelWhenOrderFromMultiProviders([FromBody] bool value)
-    {
-        await _settingsProvider.UpdateSettingAsync((int)ConstantSettings.CancelWhenOrderFromMultiProviders, value.ToString());
-        return Success();
-    }
+    // [HttpPut("cancel-multi-provider-order")]
+    // public async Task<IActionResult> SetCancelWhenOrderFromMultiProviders([FromBody] bool value)
+    // {
+    //     await _settingsProvider.UpdateSettingAsync((int)ConstantSettings.CancelWhenOrderFromMultiProviders, value.ToString());
+    //     return Success();
+    // }
 
     [HttpPost("notify")]
     public async Task<IActionResult> Notify([FromBody] string message, [FromQuery] int userId)

@@ -79,6 +79,33 @@ public class UserCommandController : AppController
     #endregion
 
     #region language
+
+    [HttpPost("language/change")]
+    [Guard([
+        Roles.Admin,
+        Roles.Delivery,
+        Roles.Provider,
+        Roles.Customer])]
+    public async Task<IActionResult> ChangeLanguage([FromBody] LanguageDto request)
+    {
+        int membershipUserId = _userContext.Get().Id;
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+        if (request.Language != 2 && request.Language != 1)
+        {
+            return ValidationError(new List<string> { "Invalid language" });
+        }
+
+        // Prepare and execute the SQL query using Dapper
+        await connection.ExecuteAsync(
+           @"
+           UPDATE [dbo].[MembershipUser]
+            SET Language = @Language 
+            WHERE Id = @Id",
+           new { Id = membershipUserId, Language = request.Language }
+       );
+        return Success(new { TheNewLanguage = request.Language, UserId = membershipUserId });
+    }
     public class LanguageDto
     {
         public byte Language { get; set; }

@@ -9,7 +9,7 @@ using KiloMart.DataAccess.Database;
 namespace KiloMart.Presentation.Controllers;
 
 [ApiController]
-[Route("api/admin/settings")]
+[Route("api/admin")]
 public class AppSettingsController : AppController
 {
     private readonly IAppSettingsProvider _settingsProvider;

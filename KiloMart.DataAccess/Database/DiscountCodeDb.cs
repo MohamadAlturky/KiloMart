@@ -112,6 +112,25 @@ namespace KiloMart.DataAccess.Database
                 Id = id
             });
         }
+        public static async Task<DiscountCode?> GetDiscountCodeByCodeAsync(string code, IDbConnection connection)
+        {
+            const string query = @"SELECT 
+                                    [Id], 
+                                    [Code], 
+                                    [Value], 
+                                    [Description], 
+                                    [StartDate], 
+                                    [EndDate], 
+                                    [DiscountType], 
+                                    [IsActive]
+                                    FROM [dbo].[DiscountCode]
+                                    WHERE [Code] = @Code";
+
+            return await connection.QueryFirstOrDefaultAsync<DiscountCode>(query, new
+            {
+                Code = code
+            });
+        }
     }
 
     public class DiscountCode

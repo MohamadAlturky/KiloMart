@@ -12,8 +12,8 @@ public static partial class Db
         IDbTransaction? transaction = null)
     {
         const string query = @"INSERT INTO [dbo].[ProductDiscount]
-                            ([Product], [DiscountCode], [AssignedDate])
-                            VALUES (@Product, @DiscountCode, @AssignedDate)
+                            ([Product], [DiscountCode], [AssignedDate], [IsActive])
+                            VALUES (@Product, @DiscountCode, @AssignedDate, 1)
                             SELECT CAST(SCOPE_IDENTITY() AS BIGINT)";
 
         return await connection.ExecuteScalarAsync<long>(query, new

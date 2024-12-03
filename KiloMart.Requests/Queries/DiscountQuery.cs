@@ -92,6 +92,31 @@ public partial class Query
 
         return (discountCodes.ToArray(), totalCount);
     }
+
+    public static async Task<DiscountCode[]> GetDiscountCodesByProductAsync(
+            IDbConnection connection,
+            int productId)
+    {
+        var query = @"
+            SELECT 
+                d.Id,
+                d.Code,
+                d.Value,
+                d.Description,
+                d.StartDate,
+                d.EndDate,
+                d.DiscountType,
+                d.IsActive
+            FROM DiscountCode d
+            INNER JOIN ProductDiscount pd ON d.Id = pd.DiscountCode
+            WHERE pd.Product = @ProductId";
+
+        var discountCodes = await connection.QueryAsync<DiscountCode>(
+            query,
+            new { ProductId = productId });
+
+        return discountCodes.ToArray();
+    }
 }
 public class DiscountCode
 {

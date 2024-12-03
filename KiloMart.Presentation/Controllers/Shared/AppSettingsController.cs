@@ -19,7 +19,7 @@ public class AppSettingsController : AppController
         IDbFactory dbFactory,
         IAppSettingsProvider settingsProvider,
         IHubContext<NotificationHub> hubContext,
-        IUserContext userContext) 
+        IUserContext userContext)
             : base(dbFactory, userContext)
     {
         _settingsProvider = settingsProvider;
@@ -91,13 +91,13 @@ public class AppSettingsController : AppController
     {
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
-        
+
         var settings = await Db.GetSystemSettingsByIdAsync(0, connection);
         if (settings is null)
         {
             return DataNotFound($"System settings with ID {0} not found.");
         }
-        
+
         return Success(settings);
     }
 
@@ -119,10 +119,14 @@ public class AppSettingsController : AppController
         var updated = await Db.UpdateSystemSettingsAsync(
             connection,
             0,
-            request.DeliveryOrderFee??settings.DeliveryOrderFee,
-            request.ProviderOrderFee??settings.ProviderOrderFee,
-            request.CancelOrderWhenNoProviderHasAllProducts??settings.CancelOrderWhenNoProviderHasAllProducts);
-        
+            request.DeliveryOrderFee ?? settings.DeliveryOrderFee,
+            request.ProviderOrderFee ?? settings.ProviderOrderFee,
+            request.CancelOrderWhenNoProviderHasAllProducts ?? settings.CancelOrderWhenNoProviderHasAllProducts,
+            request.FirstTimeInMinutesToMakeTheCircleBigger ?? settings.FirstTimeInMinutesToMakeTheCircleBigger,
+            request.FirstCircleRaduis ?? settings.FirstCircleRaduis,
+            request.SecondTimeInMinutesToMakeTheCircleBigger ?? settings.SecondTimeInMinutesToMakeTheCircleBigger,
+            request.SecondCircleRaduis ?? settings.SecondCircleRaduis);
+
         if (!updated)
         {
             return DataNotFound($"System settings with ID {0} not found or not updated.");
@@ -138,4 +142,8 @@ public class SystemSettingsUpdateRequest
     public double? DeliveryOrderFee { get; set; }
     public double? ProviderOrderFee { get; set; }
     public bool? CancelOrderWhenNoProviderHasAllProducts { get; set; }
+    public decimal? SecondCircleRaduis { get; set; }
+    public int? SecondTimeInMinutesToMakeTheCircleBigger { get; set; }
+    public decimal? FirstCircleRaduis { get; set; }
+    public int? FirstTimeInMinutesToMakeTheCircleBigger { get; set; }
 }

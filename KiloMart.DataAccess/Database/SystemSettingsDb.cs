@@ -9,13 +9,21 @@ public static partial class Db
         double deliveryOrderFee,
         double providerOrderFee,
         bool cancelOrderWhenNoProviderHasAllProducts,
+        int FirstTimeInMinutesToMakeTheCircleBigger,
+        decimal FirstCircleRaduis,
+        int SecondTimeInMinutesToMakeTheCircleBigger,
+        decimal SecondCircleRaduis,
         IDbTransaction? transaction = null)
     {
         const string query = @"UPDATE [dbo].[SystemSettings]
                                 SET 
                                 [DeliveryOrderFee] = @DeliveryOrderFee,
                                 [ProviderOrderFee] = @ProviderOrderFee,
-                                [CancelOrderWhenNoProviderHasAllProducts] = @CancelOrderWhenNoProviderHasAllProducts
+                                [CancelOrderWhenNoProviderHasAllProducts] = @CancelOrderWhenNoProviderHasAllProducts,
+                                [SecondCircleRaduis] = @SecondCircleRaduis,
+                                [SecondTimeInMinutesToMakeTheCircleBigger] = @SecondTimeInMinutesToMakeTheCircleBigger,
+                                [FirstCircleRaduis] = @FirstCircleRaduis,
+                                [FirstTimeInMinutesToMakeTheCircleBigger] = @FirstTimeInMinutesToMakeTheCircleBigger 
                                 WHERE [Id] = @Id";
 
         var updatedRowsCount = await connection.ExecuteAsync(query, new
@@ -23,7 +31,11 @@ public static partial class Db
             Id = id,
             DeliveryOrderFee = deliveryOrderFee,
             ProviderOrderFee = providerOrderFee,
-            CancelOrderWhenNoProviderHasAllProducts = cancelOrderWhenNoProviderHasAllProducts
+            CancelOrderWhenNoProviderHasAllProducts = cancelOrderWhenNoProviderHasAllProducts,
+            FirstTimeInMinutesToMakeTheCircleBigger,
+            FirstCircleRaduis,
+            SecondTimeInMinutesToMakeTheCircleBigger,
+            SecondCircleRaduis
         }, transaction);
 
         return updatedRowsCount > 0;
@@ -36,7 +48,11 @@ public static partial class Db
                             [Id], 
                             [DeliveryOrderFee], 
                             [ProviderOrderFee], 
-                            [CancelOrderWhenNoProviderHasAllProducts]
+                            [CancelOrderWhenNoProviderHasAllProducts],
+                            [SecondCircleRaduis],
+                            [SecondTimeInMinutesToMakeTheCircleBigger],
+                            [FirstCircleRaduis],
+                            [FirstTimeInMinutesToMakeTheCircleBigger]                            
                             FROM [dbo].[SystemSettings]
                             WHERE [Id] = @Id";
 
@@ -52,4 +68,8 @@ public class SystemSettings
     public double DeliveryOrderFee { get; set; }
     public double ProviderOrderFee { get; set; }
     public bool CancelOrderWhenNoProviderHasAllProducts { get; set; }
+    public decimal SecondCircleRaduis { get; set; }
+    public int SecondTimeInMinutesToMakeTheCircleBigger { get; set; }
+    public decimal FirstCircleRaduis { get; set; }
+    public int FirstTimeInMinutesToMakeTheCircleBigger { get; set; }
 }

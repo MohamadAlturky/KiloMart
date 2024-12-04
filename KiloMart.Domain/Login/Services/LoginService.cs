@@ -1,5 +1,6 @@
 using Dapper;
 using KiloMart.Core.Contracts;
+using KiloMart.DataAccess.Database;
 using KiloMart.Domain.Login.Handlers;
 using KiloMart.Domain.Login.Models;
 using KiloMart.Domain.Register.Utils;
@@ -11,7 +12,7 @@ public class LoginService
 {
     public static async Task<LoginResult> Login(string email, string password, IDbFactory dbFactory, IConfiguration configuration)
     {
-        var connection = dbFactory.CreateDbConnection();
+        using var connection = dbFactory.CreateDbConnection();
         connection.Open();
         var user = await connection.QueryFirstOrDefaultAsync<MembershipUserDto>(
                 @"SELECT Id, EmailConfirmed, PasswordHash, IsActive, Role, Party, Email, Language
@@ -36,11 +37,16 @@ public class LoginService
 
         // var token = JwtTokenHandler.GenerateAccessToken(user, configuration);
         var token = JwtTokenHandler.GenerateJwtToken(user, configuration);
+        var party = await Db.GetPartyByIdAsync(user.Party, connection);
+        if (party is null)
+        {
+            return new LoginResult { Success = false, Errors = ["The User Party Is Not Found"] };
+        }
         return new LoginResult
         {
             Success = true,
             Token = token,
-            UserName = user.Email,
+            UserName = party.DisplayName,
             Email = user.Email,
             Role = CheckRole(user.Role),
             Language = user.Language

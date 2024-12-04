@@ -118,6 +118,15 @@ public class ProviderActivitiesContoller : AppController
     #endregion
 
     #region orders
+    [HttpGet("orders/requested-orders")]
+    // [Guard([Roles.Customer])]
+    public async Task<IActionResult> GetMineByStatus([FromQuery] byte language)
+    {
+        var result = await ReadOrderService.GetRequestedOrders(language,
+            _dbFactory);
+
+        return result.Success ? Success(result.Data) : Fail(result.Errors);
+    }
     [HttpPost("orders/accept")]
     [Guard([Roles.Provider])]
     public async Task<IActionResult> AcceptOrder([FromBody] long orderId)

@@ -29,11 +29,58 @@ public static class ReadOrderService
             // Get the orders
             var orders = await OrderRepository.GetOrderDetailsAsync(connection, whereClause, parameters);
 
-            if(orders is null)
+            if (orders is null)
             {
                 return Result<List<AggregatedOrder>>.Ok([]);
             }
-            if(!orders.Any())
+            if (!orders.Any())
+            {
+                return Result<List<AggregatedOrder>>.Ok([]);
+            }
+            var ordersIds = orders.Select(e => e.Id).ToList();
+
+            // Get the orders products
+            var ordersProducts = await OrderRepository.GetOrderProductsByIdsAsync(connection, ordersIds, language);
+
+            // Get the orders products offers
+            var ordersOffersProducts = await OrderRepository.GetOrderProductOffersByIdsAsync(connection, ordersIds, language);
+
+            List<AggregatedOrder> aggregatedOrders = OrderAggregator.Aggregate(
+                orders.AsList(),
+                ordersProducts.AsList(),
+                ordersOffersProducts.AsList());
+
+            return Result<List<AggregatedOrder>>.Ok(aggregatedOrders);
+        }
+        catch (Exception e)
+        {
+            return Result<List<AggregatedOrder>>.Fail([e.Message]);
+        }
+    }
+    #endregion
+
+    #region provider
+    public static async Task<Result<List<AggregatedOrder>>> GetRequestedOrders(
+        byte language,
+        IDbFactory dbFactory)
+    {
+        try
+        {
+            byte status = (byte) OrderStatus.ORDER_PLACED;
+            using var connection = dbFactory.CreateDbConnection();
+            connection.Open();
+
+            var whereClause = "WHERE OrderStatus = @status";
+            var parameters = new { status };
+
+            // Get the orders
+            var orders = await OrderRepository.GetOrderDetailsAsync(connection, whereClause, parameters);
+
+            if (orders is null)
+            {
+                return Result<List<AggregatedOrder>>.Ok([]);
+            }
+            if (!orders.Any())
             {
                 return Result<List<AggregatedOrder>>.Ok([]);
             }
@@ -75,15 +122,15 @@ public static class ReadOrderService
             // Get the orders
             IEnumerable<OrderDetailsDto>? orders = await OrderRepository.GetOrderDetailsAsync(connection, whereClause, parameters);
 
-            if(orders is null)
+            if (orders is null)
             {
                 return Result<List<OrderDetailsDto>>.Ok([]);
             }
-            if(!orders.Any())
+            if (!orders.Any())
             {
                 return Result<List<OrderDetailsDto>>.Ok([]);
             }
-            
+
             return Result<List<OrderDetailsDto>>.Ok(orders.AsList());
         }
         catch (Exception e)
@@ -108,15 +155,15 @@ public static class ReadOrderService
             // Get the orders
             IEnumerable<OrderDetailsDto>? orders = await OrderRepository.GetOrderDetailsAsync(connection, whereClause, parameters);
 
-            if(orders is null)
+            if (orders is null)
             {
                 return Result<List<OrderDetailsDto>>.Ok([]);
             }
-            if(!orders.Any())
+            if (!orders.Any())
             {
                 return Result<List<OrderDetailsDto>>.Ok([]);
             }
-            
+
             return Result<List<OrderDetailsDto>>.Ok(orders.AsList());
         }
         catch (Exception e)

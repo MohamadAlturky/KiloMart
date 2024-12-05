@@ -140,4 +140,121 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory, IUserContex
         return Fail(result.Errors);
     }
     #endregion
+
+    #region Withdrawal Actions
+
+    [HttpPost("Withdraw/create")]
+    [Guard([Roles.Delivery])]
+    public async Task<IActionResult> InsertWithdrawAsync([FromBody] InsertWithdrawRequest request)
+    {
+        int deliveryID = _userContext.Get().Party;
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        var id = await Db.InsertWithdrawAsync(
+            connection,
+            deliveryID,
+            request.BankAccountNumber,
+            request.IbanNumber,
+            DateTime.Now,
+            false);
+
+        return Success(new { Id = id });
+    }
+
+    [HttpPut("Withdraw/update/{id}")]
+    [Guard([Roles.Delivery])]
+    public async Task<IActionResult> UpdateWithdrawAsync(long id, [FromBody] UpdateWithdrawRequest request)
+    {
+        int deliveryID = _userContext.Get().Party;
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+        Withdraw? withdraw = await Db.GetWithdrawByIdAsync(id, connection);
+        if (withdraw is null)
+        {
+            return DataNotFound();
+        }
+        if (withdraw.Delivery != deliveryID)
+        {
+            return Fail("Un Authorized this withdraw isn't for you");
+        }
+        if (withdraw.Done)
+        {
+            return Fail("this withdraw is done!! can't edit it");
+        }
+        var success = await Db.UpdateWithdrawAsync(
+            connection,
+            id,
+            withdraw.Delivery,
+            request.BankAccountNumber ?? withdraw.BankAccountNumber,
+            request.IbanNumber ?? withdraw.IBanNumber,
+            withdraw.Date,
+            withdraw.Done);
+
+        return success ? Success() : Fail("Update failed.");
+    }
+
+    [HttpDelete("Withdraw/delete/{id}")]
+    [Guard([Roles.Delivery])]
+    public async Task<IActionResult> DeleteWithdrawAsync(long id)
+    {
+        int deliveryID = _userContext.Get().Party;
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        Withdraw? withdraw = await Db.GetWithdrawByIdAsync(id, connection);
+        if (withdraw is null)
+        {
+            return DataNotFound();
+        }
+        if (withdraw.Delivery != deliveryID)
+        {
+            return Fail("Un Authorized this withdraw isn't for you");
+        }
+        var success = await Db.DeleteWithdrawAsync(connection, id);
+        return success ? Success() : Fail("Deletion failed.");
+    }
+
+    [HttpGet("Withdraw/{id}")]
+    [Guard([Roles.Delivery])]
+    public async Task<IActionResult> GetWithdrawByIdAsync(long id)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        var withdraw = await Db.GetWithdrawByIdAsync(id, connection);
+        return withdraw is not null ? Success(withdraw) : DataNotFound("Withdrawal not found.");
+    }
+    [HttpGet("Withdraw/mine")]
+    [Guard([Roles.Delivery])]
+    public async Task<IActionResult> GetWithdrawsByDeliveryAsync()
+    {
+        int deliveryId = _userContext.Get().Party;
+
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        var withdraws = await Db.GetWithdrawsByDeliveryAsync(deliveryId, connection);
+        return Success(withdraws);
+    }
+    #endregion
+}
+
+// Request models for Insert and Update actions
+public class InsertWithdrawRequest
+{
+
+    public string BankAccountNumber { get; set; }
+
+    public string IbanNumber { get; set; }
+
+}
+
+public class UpdateWithdrawRequest
+{
+
+    public string? BankAccountNumber { get; set; }
+
+    public string? IbanNumber { get; set; }
+
 }

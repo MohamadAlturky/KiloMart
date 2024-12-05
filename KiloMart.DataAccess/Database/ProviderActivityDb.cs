@@ -12,18 +12,20 @@ public static partial class Db
         DateTime date,
         float value,
         int Provider,
+        long order,
         IDbTransaction? transaction = null)
     {
         const string query = @"INSERT INTO [dbo].[ProviderActivity]
-                            ([Date], [Value], [Provider])
-                            VALUES (@Date, @Value, @Provider)
+                            ([Date], [Value], [Provider],[Order])
+                            VALUES (@Date, @Value, @Provider, @Order)
                             SELECT CAST(SCOPE_IDENTITY() AS BIGINT)";
 
         return await connection.ExecuteScalarAsync<long>(query, new
         {
             Date = date,
             Value = value,
-            Provider = Provider
+            Provider = Provider,
+            Order = order
         }, transaction);
     }
 
@@ -32,6 +34,7 @@ public static partial class Db
         DateTime date,
         float value,
         int Provider,
+        long order,
         IDbTransaction? transaction = null)
     {
         const string query = @"UPDATE [dbo].[ProviderActivity]
@@ -39,6 +42,7 @@ public static partial class Db
                                 [Date] = @Date,
                                 [Value] = @Value,
                                 [Provider] = @Provider
+                                [Order] = @Order
                                 WHERE [Id] = @Id";
 
         var updatedRowsCount = await connection.ExecuteAsync(query, new
@@ -46,7 +50,8 @@ public static partial class Db
             Id = id,
             Date = date,
             Value = value,
-            Provider = Provider
+            Provider = Provider,
+            Order = order
         }, transaction);
 
         return updatedRowsCount > 0;
@@ -71,7 +76,8 @@ public static partial class Db
                             [Id], 
                             [Date], 
                             [Value], 
-                            [Provider]
+                            [Provider],
+                            [Order]
                             FROM [dbo].[ProviderActivity]
                             WHERE [Id] = @Id";
 
@@ -87,7 +93,8 @@ public static partial class Db
                             [Id], 
                             [Date], 
                             [Value], 
-                            [Provider]
+                            [Provider],
+                            [Order]
                             FROM [dbo].[ProviderActivity]
                             WHERE [Provider] = @ProviderId
                             ORDER BY [Id] DESC";
@@ -107,7 +114,8 @@ public static partial class Db
                             [Id], 
                             [Date], 
                             [Value], 
-                            [Provider]
+                            [Provider],
+                            [Order]
                             FROM [dbo].[ProviderActivity]
                             WHERE [Date] BETWEEN @StartDate AND @EndDate
                             AND [Provider] = @ProviderId
@@ -130,7 +138,8 @@ public static partial class Db
                             [Id], 
                             [Date], 
                             [Value], 
-                            [Provider]
+                            [Provider],
+                            [Order]
                             FROM [dbo].[ProviderActivity]
                             WHERE [Date] > @Date
                             AND [Provider] = @ProviderId
@@ -150,4 +159,5 @@ public class ProviderActivity
     public DateTime Date { get; set; }
     public float Value { get; set; }
     public int Provider { get; set; }
+    public long Order { get; set; }
 }

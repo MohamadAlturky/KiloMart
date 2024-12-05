@@ -127,7 +127,8 @@ public class AppSettingsController : AppController
             request.SecondTimeInMinutesToMakeTheCircleBigger ?? settings.SecondTimeInMinutesToMakeTheCircleBigger,
             request.MaxMinutesToCancelOrderWaitingADelivery ?? settings.MaxMinutesToCancelOrderWaitingADelivery,
             request.MaxMinutesToCancelOrderWaitingAProvider ?? settings.MaxMinutesToCancelOrderWaitingAProvider,
-            request.SecondCircleRaduis ?? settings.SecondCircleRaduis);
+            request.SecondCircleRaduis ?? settings.SecondCircleRaduis,
+            request.MinOrderValue??settings.MinOrderValue);
 
         if (!updated)
         {
@@ -147,6 +148,7 @@ public class SystemSettingsUpdateRequest
     public decimal? SecondCircleRaduis { get; set; }
     public int? SecondTimeInMinutesToMakeTheCircleBigger { get; set; }
     public decimal? FirstCircleRaduis { get; set; }
+    public decimal? MinOrderValue { get; set; }
     public int? FirstTimeInMinutesToMakeTheCircleBigger { get; set; }
     public int? MaxMinutesToCancelOrderWaitingAProvider { get; set; }
     public int? MaxMinutesToCancelOrderWaitingADelivery { get; set; }

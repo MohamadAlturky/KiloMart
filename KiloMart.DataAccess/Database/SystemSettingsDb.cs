@@ -15,6 +15,7 @@ public static partial class Db
         int MaxMinutesToCancelOrderWaitingADelivery,
         int MaxMinutesToCancelOrderWaitingAProvider,
         decimal SecondCircleRaduis,
+        decimal MinOrderValue,
         IDbTransaction? transaction = null)
     {
         const string query = @"UPDATE [dbo].[SystemSettings]
@@ -27,7 +28,8 @@ public static partial class Db
                                 [FirstCircleRaduis] = @FirstCircleRaduis,
                                 [FirstTimeInMinutesToMakeTheCircleBigger] = @FirstTimeInMinutesToMakeTheCircleBigger, 
                                 [MaxMinutesToCancelOrderWaitingAProvider] = @MaxMinutesToCancelOrderWaitingAProvider, 
-                                [MaxMinutesToCancelOrderWaitingADelivery] = @MaxMinutesToCancelOrderWaitingADelivery 
+                                [MaxMinutesToCancelOrderWaitingADelivery] = @MaxMinutesToCancelOrderWaitingADelivery,
+                                [MinOrderValue] = @MinOrderValue 
                                 WHERE [Id] = @Id";
 
         var updatedRowsCount = await connection.ExecuteAsync(query, new
@@ -41,7 +43,8 @@ public static partial class Db
             SecondTimeInMinutesToMakeTheCircleBigger,
             SecondCircleRaduis,
             MaxMinutesToCancelOrderWaitingADelivery,
-            MaxMinutesToCancelOrderWaitingAProvider
+            MaxMinutesToCancelOrderWaitingAProvider,
+            MinOrderValue
         }, transaction);
 
         return updatedRowsCount > 0;
@@ -61,6 +64,7 @@ public static partial class Db
                             [FirstTimeInMinutesToMakeTheCircleBigger],
                             [MaxMinutesToCancelOrderWaitingADelivery],
                             [MaxMinutesToCancelOrderWaitingAProvider]                            
+                            [MinOrderValue],
                             FROM [dbo].[SystemSettings]
                             WHERE [Id] = @Id";
 
@@ -79,6 +83,7 @@ public class SystemSettings
     public decimal SecondCircleRaduis { get; set; }
     public int SecondTimeInMinutesToMakeTheCircleBigger { get; set; }
     public decimal FirstCircleRaduis { get; set; }
+    public decimal MinOrderValue { get; set; }
     public int FirstTimeInMinutesToMakeTheCircleBigger { get; set; }
     public int MaxMinutesToCancelOrderWaitingAProvider { get; set; }
     public int MaxMinutesToCancelOrderWaitingADelivery { get; set; }

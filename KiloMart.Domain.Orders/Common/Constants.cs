@@ -1,5 +1,6 @@
 ﻿namespace KiloMart.Domain.Orders.Common;
-public enum OrderStatus {
+public enum OrderStatus
+{
     ORDER_PLACED = 1,
     PREPARING = 2,
     SHIPPED = 3,
@@ -55,3 +56,15 @@ public enum OrderActivityType
 //     (8, 'CanceledByDelivery'),
 //     (9, 'ShippedByDelivery'),
 //     (10, 'DeliveredByDelivery');
+
+
+public enum PaymentType
+{
+    Cash = 1,
+    Elcetronic = 2
+}
+
+//  INSERT INTO PaymentType([Id], [Name])
+//  VALUES 
+//      (1, 'Cash'),
+//      (2, 'Elcetronic')

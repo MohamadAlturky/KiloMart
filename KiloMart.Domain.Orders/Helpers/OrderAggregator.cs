@@ -26,8 +26,8 @@ public static class OrderAggregator
                 aggregatedOrders[order.Id] = new AggregatedOrder
                 {
                     OrderDetails = order,
-                    OrderProductDetails = new List<OrderProductDetailsDto>(),
-                    OrderProductOfferDetails = new List<OrderProductOfferDetailsDto>()
+                    OrderProductDetails = [],
+                    OrderProductOfferDetails = []
                 };
             }
         }

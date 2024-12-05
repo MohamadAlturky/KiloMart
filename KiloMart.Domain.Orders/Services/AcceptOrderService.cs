@@ -107,6 +107,7 @@ public static class AcceptOrderService
                 totalPrice,
                 order.TransactionId,
                 order.Date,
+                order.PaymentType,
                 transaction);
             await OrdersDb.InsertOrderActivityAsync(connection,
                 orderId,

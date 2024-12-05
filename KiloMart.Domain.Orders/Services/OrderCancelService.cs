@@ -49,6 +49,7 @@ public class OrderCancelService
                 order.TotalPrice,
                 order.TransactionId,
                 order.Date,
+                order.PaymentType,
                 transaction);
 
             await OrdersDb.InsertOrderActivityAsync(connection,
@@ -112,6 +113,7 @@ public class OrderCancelService
                 order.TotalPrice,
                 order.TransactionId,
                 order.Date,
+                order.PaymentType,
                 transaction);
 
             await OrdersDb.InsertOrderActivityAsync(connection,
@@ -175,6 +177,7 @@ public class OrderCancelService
                 order.TotalPrice,
                 order.TransactionId,
                 order.Date,
+                order.PaymentType,
                 transaction);
 
             await OrdersDb.InsertOrderActivityAsync(connection,

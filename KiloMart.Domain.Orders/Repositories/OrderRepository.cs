@@ -17,6 +17,7 @@ public static partial class OrderRepository
                 o.TotalPrice,
                 o.TransactionId,
                 o.Date,
+                o.PaymentType,
                 oci.Customer,
                 oci.Location AS CustomerLocation,
                 oci.Id AS CustomerInformationId,
@@ -63,6 +64,7 @@ public static partial class OrderRepository
                 o.TotalPrice,
                 o.TransactionId,
                 o.Date,
+                o.PaymentType,
                 oci.Customer,
                 oci.Location AS CustomerLocation,
                 oci.Id AS CustomerInformationId,
@@ -106,6 +108,9 @@ public class OrderDetailsDto
     public decimal TotalPrice { get; set; }
     public string TransactionId { get; set; } = null!;
     public DateTime Date { get; set; }
+    public byte PaymentType { get; set; }
+
+
     public int? Customer { get; set; }
     public int? CustomerLocation { get; set; }
     public int? CustomerInformationId { get; set; }
@@ -361,6 +366,7 @@ public static partial class OrderRepository
             o.TotalPrice,
             o.TransactionId,
             o.Date,
+            o.PaymentType,
             oci.Customer,
             oci.Location AS CustomerLocation,
             oci.Id AS CustomerInformationId,
@@ -416,6 +422,8 @@ public class OrderDetailsForDeliveryDto
     public decimal TotalPrice { get; set; }
     public string TransactionId { get; set; } = null!;
     public DateTime Date { get; set; }
+    public byte PaymentType { get; set; }
+
     public int? Customer { get; set; }
     public int? CustomerLocation { get; set; }
     public int? CustomerInformationId { get; set; }

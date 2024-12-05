@@ -19,11 +19,12 @@ public static partial class OrdersDb
         decimal totalPrice,
         string transactionId,
         DateTime date,
+        byte paymentType,
         IDbTransaction? transaction = null)
     {
         const string query = @"INSERT INTO [dbo].[Order]
-                            ([OrderStatus], [TotalPrice], [TransactionId], [Date])
-                            VALUES (@OrderStatus, @TotalPrice, @TransactionId, @Date)
+                            ([OrderStatus], [TotalPrice], [TransactionId], [Date],[PaymentType])
+                            VALUES (@OrderStatus, @TotalPrice, @TransactionId, @Date, @PaymentType)
                             SELECT CAST(SCOPE_IDENTITY() AS BIGINT)";
 
         return await connection.ExecuteScalarAsync<long>(query, new
@@ -31,7 +32,8 @@ public static partial class OrdersDb
             OrderStatus = orderStatus,
             TotalPrice = totalPrice,
             TransactionId = transactionId,
-            Date = date
+            Date = date,
+            PaymentType = paymentType
         }, transaction);
     }
 
@@ -41,6 +43,7 @@ public static partial class OrdersDb
         decimal totalPrice,
         string transactionId,
         DateTime date,
+        byte paymentType,
         IDbTransaction? transaction = null)
     {
         const string query = @"UPDATE [dbo].[Order]
@@ -48,7 +51,8 @@ public static partial class OrdersDb
                                 [OrderStatus] = @OrderStatus,
                                 [TotalPrice] = @TotalPrice,
                                 [TransactionId] = @TransactionId,
-                                [Date] = @Date 
+                                [Date] = @Date,
+                                [PaymentType] = @PaymentType
                                 WHERE [Id] = @Id";
 
         var updatedRowsCount = await connection.ExecuteAsync(query, new
@@ -57,7 +61,8 @@ public static partial class OrdersDb
             OrderStatus = orderStatus,
             TotalPrice = totalPrice,
             TransactionId = transactionId,
-            Date = date
+            Date = date,
+            PaymentType = paymentType
         }, transaction);
 
         return updatedRowsCount > 0;
@@ -83,7 +88,8 @@ public static partial class OrdersDb
                             [OrderStatus], 
                             [TotalPrice], 
                             [TransactionId],
-                            [Date]
+                            [Date],
+                            [PaymentType]
                             FROM [dbo].[Order]
                             WHERE [Id] = @Id";
 
@@ -101,4 +107,5 @@ public class Order
     public decimal TotalPrice { get; set; }
     public string TransactionId { get; set; } = null!;
     public DateTime Date { get; set; }
+    public byte PaymentType { get; set; }
 }

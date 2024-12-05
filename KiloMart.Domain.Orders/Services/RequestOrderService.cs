@@ -47,7 +47,8 @@ public class RequestOrderService
                 OrderStatus = (byte)OrderStatus.ORDER_PLACED,
                 TotalPrice = 0,
                 TransactionId = Guid.NewGuid().ToString(),
-                Date = DateTime.Now
+                Date = DateTime.Now,
+                PaymentType = model.PaymentType
             };
 
             response.Order.Id = await OrdersDb.InsertOrderAsync(connection,
@@ -55,6 +56,7 @@ public class RequestOrderService
                 response.Order.TotalPrice,
                 response.Order.TransactionId,
                 response.Order.Date,
+                response.Order.PaymentType,
                 transaction);
 
             foreach (var code in model.DiscountCodes)
@@ -139,6 +141,7 @@ public class CreateOrderRequestModel
     public List<RequestedProduct> RequestedProducts { get; set; } = null!;
     public List<string> DiscountCodes { get; set; } = null!;
     public int LocationId { get; set; }
+    public byte PaymentType { get; set; }
     public (bool Success, string[] Errors) Validate()
     {
         var errors = new List<string>();
@@ -154,6 +157,10 @@ public class CreateOrderRequestModel
         if (LocationId == 0)
         {
             errors.Add("LocationId required");
+        }
+        if (PaymentType == 0)
+        {
+            errors.Add("PaymentType required");
         }
 
         if (RequestedProducts is not null && RequestedProducts.Count == 0)

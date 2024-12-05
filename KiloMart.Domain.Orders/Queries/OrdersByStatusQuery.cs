@@ -7,65 +7,68 @@ namespace KiloMart.Domain.Orders.Queries;
 
 public static partial class OrdersQuery
 {
-    public async static Task<List<Order>> GetOrdersByStatus(byte orderStatus, IDbConnection connection)
-    {
-        var sql = @"
-            SELECT 
-                o.Id, o.OrderStatus, o.TotalPrice, o.TransactionId,
-                opi.Id AS ProviderInfoId, opi.Provider, opi.Location AS ProviderLocation,
-                oci.Id AS CustomerInfoId, oci.Customer, oci.Location AS CustomerLocation,
-                oa.Id AS ActivityId, oa.Date, oa.OrderActivityType, oa.OperatedBy,
-                opo.Id AS OrderProductOfferId, opo.ProductOffer, opo.UnitPrice, opo.Quantity AS ProductOfferQuantity,
-                op.Id AS OrderProductId, op.Product, op.Quantity AS ProductQuantity
-            FROM [Order] o
-            LEFT JOIN OrderProviderInformation opi ON o.Id = opi.[Order]
-            LEFT JOIN OrderCustomerInformation oci ON o.Id = oci.[Order]
-            LEFT JOIN OrderActivity oa ON o.Id = oa.[Order]
-            LEFT JOIN OrderProductOffer opo ON o.Id = opo.[Order]
-            LEFT JOIN OrderProduct op ON o.Id = op.[Order]
-            WHERE o.OrderStatus = @OrderStatus;
-        ";
+    #warning Deprecated
 
-        var orderDictionary = new Dictionary<long, Order>();
+    // public async static Task<List<Order>> GetOrdersByStatus(byte orderStatus, IDbConnection connection)
+    // {
+    //     var sql = @"
+    //         SELECT 
+    //             o.Id, o.OrderStatus, o.TotalPrice, o.TransactionId,
+    //             opi.Id AS ProviderInfoId, opi.Provider, opi.Location AS ProviderLocation,
+    //             oci.Id AS CustomerInfoId, oci.Customer, oci.Location AS CustomerLocation,
+    //             oa.Id AS ActivityId, oa.Date, oa.OrderActivityType, oa.OperatedBy,
+    //             opo.Id AS OrderProductOfferId, opo.ProductOffer, opo.UnitPrice, opo.Quantity AS ProductOfferQuantity,
+    //             op.Id AS OrderProductId, op.Product, op.Quantity AS ProductQuantity
+    //         FROM [Order] o
+    //         LEFT JOIN OrderProviderInformation opi ON o.Id = opi.[Order]
+    //         LEFT JOIN OrderCustomerInformation oci ON o.Id = oci.[Order]
+    //         LEFT JOIN OrderActivity oa ON o.Id = oa.[Order]
+    //         LEFT JOIN OrderProductOffer opo ON o.Id = opo.[Order]
+    //         LEFT JOIN OrderProduct op ON o.Id = op.[Order]
+    //         WHERE o.OrderStatus = @OrderStatus;
+    //     ";
 
-        var orders = await connection.QueryAsync<Order, OrderProviderInformation?, OrderCustomerInformation?, OrderActivity?, OrderProductOffer?, OrderProduct?, Order>(
-            sql,
-            (order, providerInfo, customerInfo, activity, productOffer, product) =>
-            {
-                if (!orderDictionary.TryGetValue(order.Id, out var currentOrder))
-                {
-                    currentOrder = order;
-                    currentOrder.ProviderInformation = providerInfo;
-                    currentOrder.CustomerInformation = customerInfo;
-                    currentOrder.Activities = [];
-                    currentOrder.ProductOffers = [];
-                    currentOrder.Products = [];
-                    orderDictionary.Add(currentOrder.Id, currentOrder);
-                }
+    //     var orderDictionary = new Dictionary<long, Order>();
 
-                if (activity is not null && !currentOrder.Activities.Any(a => a.ActivityId == activity.ActivityId))
-                {
-                    currentOrder.Activities.Add(activity);
-                }
+    //     var orders = await connection.QueryAsync<Order, OrderProviderInformation?, OrderCustomerInformation?, OrderActivity?, OrderProductOffer?, OrderProduct?, Order>(
+    //         sql,
+    //         (order, providerInfo, customerInfo, activity, productOffer, product) =>
+    //         {
+    //             if (!orderDictionary.TryGetValue(order.Id, out var currentOrder))
+    //             {
+    //                 currentOrder = order;
+    //                 currentOrder.ProviderInformation = providerInfo;
+    //                 currentOrder.CustomerInformation = customerInfo;
+    //                 currentOrder.Activities = [];
+    //                 currentOrder.ProductOffers = [];
+    //                 currentOrder.Products = [];
+    //                 orderDictionary.Add(currentOrder.Id, currentOrder);
+    //             }
 
-                if (productOffer is not null && !currentOrder.ProductOffers.Any(po => po.OrderProductOfferId == productOffer.OrderProductOfferId))
-                {
-                    currentOrder.ProductOffers.Add(productOffer);
-                }
+    //             if (activity is not null && !currentOrder.Activities.Any(a => a.ActivityId == activity.ActivityId))
+    //             {
+    //                 currentOrder.Activities.Add(activity);
+    //             }
 
-                if (product is not null && !currentOrder.Products.Any(p => p.OrderProductId == product.OrderProductId))
-                {
-                    currentOrder.Products.Add(product);
-                }
+    //             if (productOffer is not null && !currentOrder.ProductOffers.Any(po => po.OrderProductOfferId == productOffer.OrderProductOfferId))
+    //             {
+    //                 currentOrder.ProductOffers.Add(productOffer);
+    //             }
 
-                return currentOrder;
-            },
-            new { OrderStatus = orderStatus },
-            splitOn: "ProviderInfoId,CustomerInfoId,ActivityId,OrderProductOfferId,OrderProductId"
-        );
+    //             if (product is not null && !currentOrder.Products.Any(p => p.OrderProductId == product.OrderProductId))
+    //             {
+    //                 currentOrder.Products.Add(product);
+    //             }
 
-        return orders.Distinct().ToList();
-    }
+    //             return currentOrder;
+    //         },
+    //         new { OrderStatus = orderStatus },
+    //         splitOn: "ProviderInfoId,CustomerInfoId,ActivityId,OrderProductOfferId,OrderProductId"
+    //     );
+
+    //     return orders.Distinct().ToList();
+    // }
+   
     public static async Task<OrderMinPrice?> GetCheapestOrderByCustomerAndStatusAsync(IDbConnection connection, int customerId, byte status)
     {
         const string sql = @"
@@ -141,18 +144,18 @@ public class OrderMinPrice
     public decimal TotalPrice { get; set; }
 }
 
-public class Order
-{
-    public long Id { get; set; }
-    public byte OrderStatus { get; set; }
-    public decimal TotalPrice { get; set; }
-    public string TransactionId { get; set; } = null!;
-    public OrderProviderInformation? ProviderInformation { get; set; }
-    public OrderCustomerInformation? CustomerInformation { get; set; }
-    public List<OrderActivity> Activities { get; set; } = [];
-    public List<OrderProductOffer> ProductOffers { get; set; } = [];
-    public List<OrderProduct> Products { get; set; } = [];
-}
+// public class Order
+// {
+//     public long Id { get; set; }
+//     public byte OrderStatus { get; set; }
+//     public decimal TotalPrice { get; set; }
+//     public string TransactionId { get; set; } = null!;
+//     public OrderProviderInformation? ProviderInformation { get; set; }
+//     public OrderCustomerInformation? CustomerInformation { get; set; }
+//     public List<OrderActivity> Activities { get; set; } = [];
+//     public List<OrderProductOffer> ProductOffers { get; set; } = [];
+//     public List<OrderProduct> Products { get; set; } = [];
+// }
 
 public class OrderProviderInformation
 {

@@ -15,6 +15,12 @@ public partial class ConstantsController(IDbFactory dbFactory, IUserContext user
         var result = await DatabaseHelper.SelectFromTable("OrderActivityType", _dbFactory.CreateDbConnection());
         return Success(result);
     }
+    [HttpGet("PaymentType")]
+    public async Task<IActionResult> GetPaymentTypes()
+    {
+        var result = await DatabaseHelper.SelectFromTable("PaymentType", _dbFactory.CreateDbConnection());
+        return Success(result);
+    }
     [HttpGet("DiscountType")]
     public async Task<IActionResult> GetDiscountTypes()
     {

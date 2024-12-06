@@ -6,65 +6,60 @@ public static partial class Db
 {
     public static async Task<bool> UpdateSystemSettingsAsync(IDbConnection connection,
         int id,
-        double deliveryOrderFee,
-        double providerOrderFee,
+        decimal deliveryOrderFee,
+        decimal systemOrderFee,
         bool cancelOrderWhenNoProviderHasAllProducts,
-        int FirstTimeInMinutesToMakeTheCircleBigger,
-        decimal FirstCircleRaduis,
-        int SecondTimeInMinutesToMakeTheCircleBigger,
-        int MaxMinutesToCancelOrderWaitingADelivery,
-        int MaxMinutesToCancelOrderWaitingAProvider,
-        decimal SecondCircleRaduis,
-        decimal MinOrderValue,
+        int timeInMinutesToMakeTheCircleBigger,
+        decimal circleRaduis,
+        int maxMinutesToCancelOrderWaitingAProvider,
+        decimal minOrderValue,
+        decimal distanceToAdd,
+        decimal maxDistanceToAdd,
         IDbTransaction? transaction = null)
     {
         const string query = @"UPDATE [dbo].[SystemSettings]
                                 SET 
                                 [DeliveryOrderFee] = @DeliveryOrderFee,
-                                [ProviderOrderFee] = @ProviderOrderFee,
+                                [SystemOrderFee] = @SystemOrderFee,
                                 [CancelOrderWhenNoProviderHasAllProducts] = @CancelOrderWhenNoProviderHasAllProducts,
-                                [SecondCircleRaduis] = @SecondCircleRaduis,
-                                [SecondTimeInMinutesToMakeTheCircleBigger] = @SecondTimeInMinutesToMakeTheCircleBigger,
-                                [FirstCircleRaduis] = @FirstCircleRaduis,
-                                [FirstTimeInMinutesToMakeTheCircleBigger] = @FirstTimeInMinutesToMakeTheCircleBigger, 
-                                [MaxMinutesToCancelOrderWaitingAProvider] = @MaxMinutesToCancelOrderWaitingAProvider, 
-                                [MaxMinutesToCancelOrderWaitingADelivery] = @MaxMinutesToCancelOrderWaitingADelivery,
-                                [MinOrderValue] = @MinOrderValue 
+                                [TimeInMinutesToMakeTheCircleBigger] = @TimeInMinutesToMakeTheCircleBigger,
+                                [CircleRaduis] = @CircleRaduis,
+                                [MaxMinutesToCancelOrderWaitingAProvider] = @MaxMinutesToCancelOrderWaitingAProvider,
+                                [MinOrderValue] = @MinOrderValue,
+                                [DistanceToAdd] = @DistanceToAdd,
+                                [MaxDistanceToAdd] = @MaxDistanceToAdd
                                 WHERE [Id] = @Id";
 
         var updatedRowsCount = await connection.ExecuteAsync(query, new
         {
             Id = id,
             DeliveryOrderFee = deliveryOrderFee,
-            ProviderOrderFee = providerOrderFee,
+            SystemOrderFee = systemOrderFee,
             CancelOrderWhenNoProviderHasAllProducts = cancelOrderWhenNoProviderHasAllProducts,
-            FirstTimeInMinutesToMakeTheCircleBigger,
-            FirstCircleRaduis,
-            SecondTimeInMinutesToMakeTheCircleBigger,
-            SecondCircleRaduis,
-            MaxMinutesToCancelOrderWaitingADelivery,
-            MaxMinutesToCancelOrderWaitingAProvider,
-            MinOrderValue
+            TimeInMinutesToMakeTheCircleBigger = timeInMinutesToMakeTheCircleBigger,
+            CircleRaduis = circleRaduis,
+            MaxMinutesToCancelOrderWaitingAProvider = maxMinutesToCancelOrderWaitingAProvider,
+            MinOrderValue = minOrderValue,
+            DistanceToAdd = distanceToAdd,
+            MaxDistanceToAdd = maxDistanceToAdd
         }, transaction);
 
         return updatedRowsCount > 0;
     }
-
 
     public static async Task<SystemSettings?> GetSystemSettingsByIdAsync(int id, IDbConnection connection)
     {
         const string query = @"SELECT 
                             [Id], 
                             [DeliveryOrderFee], 
-                            [ProviderOrderFee], 
+                            [SystemOrderFee], 
                             [CancelOrderWhenNoProviderHasAllProducts],
-                            [SecondCircleRaduis],
-                            [SecondTimeInMinutesToMakeTheCircleBigger],
-                            [FirstCircleRaduis],
-                            [FirstTimeInMinutesToMakeTheCircleBigger],
-                            [MaxMinutesToCancelOrderWaitingADelivery],
-                            [MaxMinutesToCancelOrderWaitingAProvider]                            
+                            [TimeInMinutesToMakeTheCircleBigger],
+                            [CircleRaduis],
+                            [MaxMinutesToCancelOrderWaitingAProvider],
                             [MinOrderValue],
+                            [DistanceToAdd],
+                            [MaxDistanceToAdd]
                             FROM [dbo].[SystemSettings]
                             WHERE [Id] = @Id";
 
@@ -74,17 +69,17 @@ public static partial class Db
         });
     }
 }
+
 public class SystemSettings
 {
     public int Id { get; set; }
-    public double DeliveryOrderFee { get; set; }
-    public double ProviderOrderFee { get; set; }
+    public decimal DeliveryOrderFee { get; set; }
+    public decimal SystemOrderFee { get; set; }
     public bool CancelOrderWhenNoProviderHasAllProducts { get; set; }
-    public decimal SecondCircleRaduis { get; set; }
-    public int SecondTimeInMinutesToMakeTheCircleBigger { get; set; }
-    public decimal FirstCircleRaduis { get; set; }
-    public decimal MinOrderValue { get; set; }
-    public int FirstTimeInMinutesToMakeTheCircleBigger { get; set; }
+    public int TimeInMinutesToMakeTheCircleBigger { get; set; }
+    public decimal CircleRaduis { get; set; }
     public int MaxMinutesToCancelOrderWaitingAProvider { get; set; }
-    public int MaxMinutesToCancelOrderWaitingADelivery { get; set; }
+    public decimal MinOrderValue { get; set; }
+    public decimal DistanceToAdd { get; set; }
+    public decimal MaxDistanceToAdd { get; set; }
 }

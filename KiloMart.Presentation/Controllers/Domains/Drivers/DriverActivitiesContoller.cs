@@ -17,16 +17,42 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory, IUserContex
 {
     #region Orders reading
 
+    // [HttpGet("orders/ready-to-deliver")]
+    // [Guard([Roles.Delivery])]
+    // public async Task<IActionResult> GetReadyForDeliver()
+    // {
+    //     var result = await ReadOrderService.GetReadyForDeliverAsync(
+    //         _userContext,
+    //         _dbFactory);
+
+    //     return result.Success ? Success(result.Data) : Fail(result.Errors);
+    // }
+    
     [HttpGet("orders/ready-to-deliver")]
     [Guard([Roles.Delivery])]
-    public async Task<IActionResult> GetReadyForDeliver()
+    public async Task<IActionResult> GetReadyForDeliver(
+        [FromQuery] decimal latitude,
+        [FromQuery] decimal longitude)
     {
-        var result = await ReadOrderService.GetReadyForDeliverAsync(
-            _userContext,
+        using var connection = _dbFactory.CreateDbConnection();
+
+        SystemSettings? settings = await Db.GetSystemSettingsByIdAsync(0, connection);
+        if(settings is null)
+        {
+            return Fail("System Settings is null");
+        } 
+        var result = await GetReadyToDeliverService.List(
+            latitude,
+            longitude,
+            settings.TimeInMinutesToMakeTheCircleBigger,
+            settings.DistanceToAdd,
+            settings.MaxDistanceToAdd,
+            settings.CircleRaduis,
             _dbFactory);
 
         return result.Success ? Success(result.Data) : Fail(result.Errors);
     }
+    
     [HttpGet("orders/completed")]
     [Guard([Roles.Delivery])]
     public async Task<IActionResult> GetCompletedForDeliveryAsync()

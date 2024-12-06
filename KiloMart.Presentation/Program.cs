@@ -154,6 +154,7 @@ using KiloMart.Presentation.Middlewares;
 using KiloMart.Presentation.Tracking;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddMemoryCache();
 
 // Dependency Injection
 builder.Services.AddHttpContextAccessor();

@@ -1,6 +1,8 @@
 // DriversTrackerController.cs
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
+using KiloMart.Domain.Register.Utils;
+using KiloMart.Presentation.Authorization;
 using KiloMart.Presentation.Controllers;
 using KiloMart.Presentation.Tracking;
 using Microsoft.AspNetCore.Mvc;
@@ -22,9 +24,11 @@ public class DriversTrackerController : AppController
         _driversTrackerService = driversTrackerService;
     }
 
-    [HttpPost("{userId}")]
-    public IActionResult CreateOrUpdate(int userId, [FromBody] CreateDriverLocationRequest location)
+    [HttpPost("")]
+    [Guard([Roles.Delivery])]
+    public IActionResult CreateOrUpdate([FromBody] CreateDriverLocationRequest location)
     {
+        int userId = _userContext.Get().Party;
         _driversTrackerService.CreateOrUpdate(userId, location.Latitude, location.Longitude);
         return Success();
     }

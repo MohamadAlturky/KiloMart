@@ -76,7 +76,7 @@ namespace KiloMart.Domain.Orders.Services
                     ) AS ProviderDistanceInKilometers,
                     6371 *
                     ACOS(COS(RADIANS(@Latitude)) * COS(RADIANS(cl.[Latitude])) * COS(RADIANS(cl.[Longitude]) - RADIANS(@Longitude)) 
-                    + SIN(RADIANS(@Latitude)) * SIN(RADIANS(cl.[Latitude]))) AS DistanceInKm
+                    + SIN(RADIANS(@Latitude)) * SIN(RADIANS(cl.[Latitude]))) AS DistanceInKm,
                     oa.[Date] AS DateWhenProviderAcceptIt,
                     GETDATE() AS NOW,
 

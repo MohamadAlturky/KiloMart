@@ -67,7 +67,8 @@ public static class AcceptOrderService
                 response.OrderProviderInformation.Location,
                 transaction
             );
-            var offers = await OrdersDb.GetProductOffersAsync(readConnection, products.Select(e => new RequestedProductForAcceptOrder()
+            var offers = await OrdersDb.GetProductOffersAsync(readConnection, products.Select(e => 
+            new RequestedProductForAcceptOrder()
             {
                 ProductId = e.Product,
                 RequestedQuantity = e.Quantity
@@ -80,7 +81,7 @@ public static class AcceptOrderService
                     var orderOffer = new OrderProductOffer
                     {
                         Order = orderId,
-                        ProductOffer = item.OfferProductId,
+                        ProductOffer = item.OfferId,
                         Quantity = item.RequestedQuantity,
                         UnitPrice = item.OfferPrice
                     };

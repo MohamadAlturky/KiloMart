@@ -145,5 +145,5 @@ public class WithDrawAdminController(IDbFactory dbFactory, IUserContext userCont
 public class AcceptWithdrawRequest
 {
     public long WithdrawId { get; set; }
-    public float TotalValue { get; set; }
+    public decimal TotalValue { get; set; }
 }

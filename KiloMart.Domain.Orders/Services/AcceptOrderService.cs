@@ -102,6 +102,7 @@ public static class AcceptOrderService
                 }
             }
             decimal totalPrice = response.OrderOffers.Sum(o => o.UnitPrice * o.Quantity);
+            
             await OrdersDb.UpdateOrderAsync(connection,
                 order.Id,
                 (byte)OrderStatus.PREPARING,
@@ -110,6 +111,7 @@ public static class AcceptOrderService
                 order.Date,
                 order.PaymentType,
                 transaction);
+
             await OrdersDb.InsertOrderActivityAsync(connection,
                 orderId,
                 DateTime.Now,

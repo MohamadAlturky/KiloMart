@@ -1,6 +1,7 @@
 ﻿using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.Core.Models;
+using KiloMart.DataAccess.Database;
 using KiloMart.Domain.Orders.Common;
 using KiloMart.Domain.Orders.DataAccess;
 using KiloMart.Domain.Orders.Repositories;
@@ -78,6 +79,7 @@ public class OrderCancelService
         UserPayLoad userPayLoad,
         IDbFactory dbFactory)
     {
+        int providerId = userPayLoad.Party;
         using var readConnection = dbFactory.CreateDbConnection();
         readConnection.Open();
         var whereClause = "WHERE Id = @orderId";
@@ -123,6 +125,34 @@ public class OrderCancelService
                 userPayLoad.Party,
                 transaction);
 
+            ////////////////////
+            ////////////////////
+            ////////////////////
+            ////////////////////
+            //return the offers
+            ////////////////////
+            ////////////////////
+            ////////////////////
+            ////////////////////
+            var ordersOffers = await OrderRepository
+            .GetAllOrderProductOffersByOrderIdAsync(
+                connection,
+                order.Id);
+
+            foreach (var item in ordersOffers)
+            {
+
+                await Db.IncreaseProductOfferQuantityAsync(connection,
+                    item.ProductOffer,
+                    item.Quantity,
+                    transaction);
+            }
+
+            ////////////////////
+            ////////////////////
+            ////////////////////
+            ////////////////////
+            ////////////////////
             transaction.Commit();
             order.OrderStatus = (byte)OrderActivityType.CanceledByProviderBeforeDeliveryAcceptIt;
             return Result<CancelOrderResponse>.Ok(new()
@@ -187,6 +217,41 @@ public class OrderCancelService
                 userPayLoad.Party,
                 transaction);
 
+            ////////////////////
+            ////////////////////
+            ////////////////////
+            ////////////////////
+            //return the offers
+            ////////////////////
+            ////////////////////
+            ////////////////////
+            ////////////////////
+            var ordersOffers = await OrderRepository
+            .GetAllOrderProductOffersByOrderIdAsync(
+                connection,
+                order.Id);
+
+            foreach (var item in ordersOffers)
+            {
+
+                await Db.IncreaseProductOfferQuantityAsync(connection,
+                    item.ProductOffer,
+                    item.Quantity,
+                    transaction);
+            }
+
+            ////////////////////
+            ////////////////////
+            ////////////////////
+            ////////////////////
+            ////////////////////
+
+
+
+
+
+
+
             transaction.Commit();
             order.OrderStatus = (byte)OrderActivityType.CanceledByDelivery;
             return Result<CancelOrderResponse>.Ok(new()
@@ -205,5 +270,5 @@ public class OrderCancelService
 public class CancelOrderResponse
 {
     public OrderDetailsDto Order { get; set; } = null!;
-    public string Status { get; set; }  = null!;
+    public string Status { get; set; } = null!;
 }

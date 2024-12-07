@@ -446,3 +446,38 @@ public class OrderDetailsForDeliveryDto
     public string ProviderName { get; set; }
     public string CustomerName { get; set; }
 }
+
+
+#region get offers
+public static partial class OrderRepository
+{
+    public static async Task<IEnumerable<OrderProductOfferDto>> GetAllOrderProductOffersByOrderIdAsync(IDbConnection connection,
+        long orderId)
+    {
+        var sql = @"
+            SELECT 
+                op.[Id],
+                op.[Order],
+                op.[ProductOffer], 
+                op.[Quantity],
+                op.UnitPrice
+            FROM 
+                OrderProductOffer op
+            WHERE 
+                op.[Order] = @OrderId;";
+
+        return await connection.QueryAsync<OrderProductOfferDto>(sql, new 
+        {
+            OrderId = orderId
+        });
+    }
+}
+public class OrderProductOfferDto
+{
+    public long Id { get; set; }
+    public long Order { get; set; }
+    public int ProductOffer { get; set; }
+    public decimal Quantity { get; set; }
+    public decimal UnitPrice { get; set; }
+}
+#endregion

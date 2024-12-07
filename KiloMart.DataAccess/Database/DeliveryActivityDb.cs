@@ -10,7 +10,7 @@ public static partial class Db
 {
     public static async Task<long> InsertDeliveryActivityAsync(IDbConnection connection,
         DateTime date,
-        float value,
+        decimal value,
         byte type,
         int delivery,
         IDbTransaction? transaction = null)

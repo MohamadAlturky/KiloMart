@@ -9,7 +9,7 @@ namespace KiloMart.DataAccess.Database;
 public static partial class Db
 {
     public static async Task<int> InsertDeliveryWalletAsync(IDbConnection connection,
-        float value,
+        decimal value,
         int delivery,
         IDbTransaction? transaction = null)
     {
@@ -27,7 +27,7 @@ public static partial class Db
 
     public static async Task<bool> UpdateDeliveryWalletAsync(IDbConnection connection,
         int id,
-        float value,
+        decimal value,
         int delivery,
         IDbTransaction? transaction = null)
     {
@@ -93,6 +93,6 @@ public static partial class Db
 public class DeliveryWallet
 {
     public int Id { get; set; }
-    public float Value { get; set; }
+    public decimal Value { get; set; }
     public int Delivery { get; set; }
 }

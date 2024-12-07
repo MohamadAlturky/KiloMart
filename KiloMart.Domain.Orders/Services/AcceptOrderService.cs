@@ -2,6 +2,7 @@ using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.Core.Models;
 using KiloMart.DataAccess.Database;
+using KiloMart.Domain.Delivery.Activity;
 using KiloMart.Domain.Orders.Common;
 using KiloMart.Domain.Orders.DataAccess;
 using KiloMart.Domain.Orders.Repositories;
@@ -24,6 +25,13 @@ public static class AcceptOrderService
 
         using var readConnection = dbFactory.CreateDbConnection();
         readConnection.Open();
+
+        SystemSettings? systemSettings = await Db.GetSystemSettingsByIdAsync(0, readConnection);
+
+        if (systemSettings is null)
+        {
+            return Result<AcceptOrderResponseModel>.Fail(["System Settings Not Found"]);
+        }
         var location = await Db.GetLocationByPartyAsync(providerId, readConnection);
 
         if (location is null)
@@ -67,7 +75,7 @@ public static class AcceptOrderService
                 response.OrderProviderInformation.Location,
                 transaction
             );
-            var offers = await OrdersDb.GetProductOffersAsync(readConnection, products.Select(e => 
+            var offers = await OrdersDb.GetProductOffersAsync(readConnection, products.Select(e =>
             new RequestedProductForAcceptOrder()
             {
                 ProductId = e.Product,
@@ -102,7 +110,21 @@ public static class AcceptOrderService
                 }
             }
             decimal totalPrice = response.OrderOffers.Sum(o => o.UnitPrice * o.Quantity);
-            
+
+            if (totalPrice < systemSettings.MinOrderValue)
+            {
+                transaction.Rollback();
+                return Result<AcceptOrderResponseModel>.Fail(["Total Price is less than the MinOrderValue that is configured by the admin"]);
+            }
+            totalPrice += systemSettings.SystemOrderFee + systemSettings.DeliveryOrderFee;
+
+            await Db.InsertSystemActivityAsync(
+                connection,
+                DateTime.Now,
+                systemSettings.SystemOrderFee,
+                orderId,
+                transaction);
+
             await OrdersDb.UpdateOrderAsync(connection,
                 order.Id,
                 (byte)OrderStatus.PREPARING,
@@ -129,10 +151,10 @@ public static class AcceptOrderService
         }
 
     }
-     public static async Task<Result<AcceptOrderResponseModel>> DeliveryAccept(
-        long orderId,
-        UserPayLoad userPayLoad,
-        IDbFactory dbFactory)
+    public static async Task<Result<AcceptOrderResponseModel>> DeliveryAccept(
+       long orderId,
+       UserPayLoad userPayLoad,
+       IDbFactory dbFactory)
     {
         int deliveryId = userPayLoad.Party;
         var response = new AcceptOrderResponseModel()
@@ -143,6 +165,12 @@ public static class AcceptOrderService
         using var readConnection = dbFactory.CreateDbConnection();
         readConnection.Open();
 
+        SystemSettings? systemSettings = await Db.GetSystemSettingsByIdAsync(0, readConnection);
+
+        if (systemSettings is null)
+        {
+            return Result<AcceptOrderResponseModel>.Fail(["System Settings Not Found"]);
+        }
         using var connection = dbFactory.CreateDbConnection();
         connection.Open();
         using var transaction = connection.BeginTransaction();
@@ -153,20 +181,20 @@ public static class AcceptOrderService
 
             // Get the orders
             OrderDetailsDto? order = await OrderRepository.GetOrderDetailsFirstOrDefaultAsync(connection, whereClause, parameters);
-            
+
             if (order is null)
             {
                 return Result<AcceptOrderResponseModel>.Fail(["Order Not Found"]);
             }
-            if(order.Delivery is not null)
+            if (order.Delivery is not null)
             {
                 return Result<AcceptOrderResponseModel>.Fail(["Some one took this order"]);
             }
-            if(order.OrderStatus != ((byte)OrderStatus.PREPARING))
+            if (order.OrderStatus != ((byte)OrderStatus.PREPARING))
             {
                 return Result<AcceptOrderResponseModel>.Fail(["Order Status is not PREPARING"]);
             }
-          
+
             response.OrderDeliveryInformation = new OrderDeliveryInformation()
             {
                 Order = orderId,
@@ -179,13 +207,50 @@ public static class AcceptOrderService
                 response.OrderDeliveryInformation.Delivery,
                 transaction
             );
-            
+
             await OrdersDb.InsertOrderActivityAsync(connection,
                 orderId,
                 DateTime.Now,
                 (byte)OrderActivityType.AcceptedByDelivery,
                 deliveryId,
                 transaction);
+
+            await Db.InsertDeliveryActivityAsync(
+                connection,
+                DateTime.Now,
+                systemSettings.DeliveryOrderFee,
+                (byte)DeliveryActivityType.Receives,
+                userPayLoad.Party,
+                transaction);
+
+            DeliveryWallet? wallet = await Db.GetDeliveryWalletByDeliveryIdAsync(userPayLoad.Party,
+             readConnection);
+
+            if (wallet is null)
+            {
+                await Db.InsertDeliveryWalletAsync(
+                    connection,
+                    systemSettings.DeliveryOrderFee,
+                    userPayLoad.Party,
+                    transaction);
+            }
+            else
+            {
+                await Db.UpdateDeliveryWalletAsync(
+                                connection,
+                                wallet.Id,
+                                wallet.Value + systemSettings.DeliveryOrderFee,
+                                userPayLoad.Party,
+                                transaction);
+            }
+            // await OrdersDb.UpdateOrderAsync(connection,
+            //     order.Id,
+            //     order.OrderStatus,
+            //     order.TotalPrice + systemSettings.DeliveryOrderFee,
+            //     order.TransactionId,
+            //     order.Date,
+            //     order.PaymentType,
+            //     transaction);
 
             transaction.Commit();
             return Result<AcceptOrderResponseModel>.Ok(response);

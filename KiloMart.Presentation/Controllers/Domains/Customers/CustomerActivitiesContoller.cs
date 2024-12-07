@@ -34,7 +34,7 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
     //     return Success(new { deals = result });
     // }
 
-    
+
     [HttpGet("get-best-deals")]
     public async Task<IActionResult> GetBestDeals([FromQuery] byte language = 1, [FromQuery] int numberOfReturnedRecords = 5)
     {
@@ -42,7 +42,7 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
         var result = await ProductQuery.GetProductsBestDeals(connection, language, numberOfReturnedRecords);
         return Success(new { deals = result });
     }
-    
+
     #endregion
 
     #region min order value
@@ -448,7 +448,26 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
         }
         return Fail(result.Errors);
     }
+    [HttpPost("orders/change-payment-type")]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> UpdateOrderPaymentType(
+            [FromBody] UpdateOrderPaymentRequestModel model)
+    {
+        if (model is null)
+        {
+            return ValidationError(new List<string> { "Invalid request model." });
+        }
 
+        var userPayload = _userContext.Get();
+
+        var result = await ChangeOrderPaymentTypeService.UpdateOrderPaymentType(model, userPayload, _dbFactory);
+
+        if (result.Success)
+        {
+            return Success(result.Data);
+        }
+        return Fail(result.Errors);
+    }
 
     [HttpPost("orders/cancel")]
     [Guard([Roles.Customer])]

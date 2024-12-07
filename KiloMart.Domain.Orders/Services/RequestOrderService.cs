@@ -119,12 +119,12 @@ public class RequestOrderService
 
                 response.Items.Add(orderItem);
             }
-            var productOfferCounts = await Query.GetProductOfferCounts(readConnection,
-                model.RequestedProducts,
-                location.Latitude,
-                location.Longitude);
+            // var productOfferCounts = await Query.GetProductOfferCounts(readConnection,
+            //     model.RequestedProducts,
+            //     location.Latitude,
+            //     location.Longitude);
 
-            response.ProductOfferCounts = productOfferCounts;
+            // response.ProductOfferCounts = productOfferCounts;
             transaction.Commit();
             return Result<CreateOrderResponseModel>.Ok(response);
         }
@@ -178,7 +178,7 @@ public class CreateOrderResponseModel
     public List<OrderProduct> Items { get; set; } = [];
     public List<KiloMart.DataAccess.Database.DiscountCode> DiscountCodes { get; set; } = [];
     public OrderCustomerInformation CustomerInformation { get; set; } = new();
-    public ProductOfferCount[] ProductOfferCounts { get; set; } = [];
+    //public ProductOfferCount[] ProductOfferCounts { get; set; } = [];
 }
 
 

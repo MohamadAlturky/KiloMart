@@ -9,7 +9,7 @@ public static partial class Db
         string name,
         string url,
         int delivary,
-        DeliveryDocumentType documentType,
+        byte documentType,
         IDbTransaction? transaction = null)
     {
         const string query = @"INSERT INTO [dbo].[DelivaryDocument]
@@ -22,7 +22,7 @@ public static partial class Db
             Name = name,
             Url = url,
             Delivary = delivary,
-            DocumentType = (int)documentType
+            DocumentType = documentType
         }, transaction);
     }
 
@@ -31,7 +31,7 @@ public static partial class Db
         string name,
         string url,
         int delivary,
-        DeliveryDocumentType documentType,
+        byte documentType,
         IDbTransaction? transaction = null)
     {
         const string query = @"UPDATE [dbo].[DelivaryDocument]
@@ -83,13 +83,22 @@ public static partial class Db
             Id = id
         });
     }
-}
+    public static async Task<IEnumerable<DeliveryDocument>> GetDeliveryDocumentByDelivaryIdAsync(int delivaryId, IDbConnection connection)
+    {
+        const string query = @"SELECT 
+                            [Id], 
+                            [Name], 
+                            [Url], 
+                            [Delivary], 
+                            [DocumentType]
+                            FROM [dbo].[DelivaryDocument]
+                            WHERE [Delivary] = @DelivaryId";
 
-public enum DeliveryDocumentType : byte
-{
-    // Add your document types here
-    Undefined = 0,
-    // Add other types as needed
+        return await connection.QueryAsync<DeliveryDocument>(query, new
+        {
+            DelivaryId = delivaryId
+        });
+    }
 }
 
 public class DeliveryDocument
@@ -98,5 +107,5 @@ public class DeliveryDocument
     public string Name { get; set; } = null!;
     public string Url { get; set; } = null!;
     public int Delivary { get; set; }
-    public DeliveryDocumentType DocumentType { get; set; }
+    public byte DocumentType { get; set; }
 }

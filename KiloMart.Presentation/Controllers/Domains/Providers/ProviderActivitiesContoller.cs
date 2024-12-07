@@ -39,7 +39,7 @@ public class ProviderActivitiesContoller : AppController
             return ValidationError(new List<string> { "File is required" });
         }
         Guid fileName = Guid.NewGuid();
-        var filePath = await FileService.SaveFileAsync(request.ImageFile,
+        var filePath = await FileService.SaveImageFileAsync(request.ImageFile,
             _environment.WebRootPath,
             fileName);
 
@@ -155,7 +155,7 @@ public class ProviderActivitiesContoller : AppController
     }
     #endregion
 
-    
+
     #region Activities
 
     [HttpGet("activities/by-date-range")]
@@ -216,4 +216,111 @@ public class ProviderActivitiesContoller : AppController
     }
     #endregion
 
+
+    #region provider documents
+
+    public class UploadProviderDocumentModel
+    {
+        /// <summary>
+        /// Image file for the document
+        /// </summary>
+        public IFormFile? ImageFile { get; set; }
+
+        /// <summary>
+        /// Document type
+        /// </summary>
+        public byte DocumentType { get; set; }
+
+        /// <summary>
+        /// Name of the document
+        /// </summary>
+        public string Name { get; set; } = null!;
+
+
+        public (bool Success, string[] Errors) Validate()
+        {
+            var errors = new List<string>();
+
+            if (DocumentType <= 0)
+                errors.Add("Document type must be specified.");
+
+            if (string.IsNullOrWhiteSpace(Name))
+                errors.Add("Name is required.");
+
+            if (ImageFile is null)
+                errors.Add("Image file is required.");
+
+            return (errors.Count == 0, errors.ToArray());
+        }
+    }
+
+    [HttpPost("documents/upload")]
+    [Guard([Roles.Provider])]
+    public async Task<IActionResult> Insert([FromForm] UploadProviderDocumentModel request)
+    {
+        (bool success, string[] errors) = request.Validate();
+        if (!success)
+        {
+            return ValidationError(errors);
+        }
+
+        if (request.ImageFile is null)
+        {
+            return ValidationError(new List<string> { "File is required" });
+        }
+
+        Guid fileName = Guid.NewGuid();
+        var filePath = await FileService.SaveImageFileAsync(request.ImageFile,
+            _environment.WebRootPath,
+            fileName);
+
+        using var connection = _dbFactory.CreateDbConnection();
+
+        int providerId = _userContext.Get().Party;
+        int documentId = await Db.InsertProviderDocumentAsync(
+            connection,
+            request.Name,
+            request.DocumentType,
+            filePath,
+            providerId);
+
+        return Success(new { documentId });
+    }
+
+    [HttpGet("documents/mine")]
+    [Guard([Roles.Provider])]
+    public async Task<IActionResult> GetProviderDocumentsByProviderIdAsync()
+    {
+        int providerId = _userContext.Get().Party;
+
+        using var connection = _dbFactory.CreateDbConnection();
+
+        var result = await Db.GetProviderDocumentsByProviderIdAsync(providerId, connection);
+
+        return Success(result.ToList());
+    }
+
+    [HttpGet("documents/by-id")]
+    [Guard([Roles.Provider])]
+    public async Task<IActionResult> GetProviderDocumentByIdAsync(
+        [FromQuery] int id
+    )
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+
+        ProviderDocument? providerDocument = await Db.GetProviderDocumentByIdAsync(id, connection);
+
+        if (providerDocument is null)
+        {
+            return DataNotFound();
+        }
+
+        if (providerDocument.Provider != _userContext.Get().Party)
+        {
+            return Fail("Unauthorized: You can't access another provider's document.");
+        }
+
+        return Success(providerDocument);
+    }
+    #endregion
 }

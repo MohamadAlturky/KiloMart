@@ -32,7 +32,7 @@ public class ProductController(
             return BadRequest("File is required");
         }
         Guid fileName = Guid.NewGuid();
-        var filePath = await FileService.SaveFileAsync(product.File,
+        var filePath = await FileService.SaveImageFileAsync(product.File,
             _environment.WebRootPath,
             fileName);
 

@@ -6,15 +6,20 @@ using KiloMart.Domain.Orders.Repositories;
 using KiloMart.Domain.Orders.Services;
 using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Authorization;
+using KiloMart.Presentation.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KiloMart.Presentation.Controllers.Domains.Drivers;
 
 [ApiController]
 [Route("api/drivers")]
-public partial class DriverActivitiesContoller(IDbFactory dbFactory, IUserContext userContext)
+public partial class DriverActivitiesContoller(IDbFactory dbFactory,
+ IUserContext userContext,
+  IWebHostEnvironment environment)
  : AppController(dbFactory, userContext)
 {
+    private readonly IWebHostEnvironment _environment = environment;
+
     #region Orders reading
 
     // [HttpGet("orders/ready-to-deliver")]
@@ -27,7 +32,7 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory, IUserContex
 
     //     return result.Success ? Success(result.Data) : Fail(result.Errors);
     // }
-    
+
     [HttpGet("orders/ready-to-deliver")]
     [Guard([Roles.Delivery])]
     public async Task<IActionResult> GetReadyForDeliver(
@@ -37,10 +42,10 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory, IUserContex
         using var connection = _dbFactory.CreateDbConnection();
 
         SystemSettings? settings = await Db.GetSystemSettingsByIdAsync(0, connection);
-        if(settings is null)
+        if (settings is null)
         {
             return Fail("System Settings is null");
-        } 
+        }
         var result = await GetReadyToDeliverService.List(
             latitude,
             longitude,
@@ -52,7 +57,7 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory, IUserContex
 
         return result.Success ? Success(result.Data) : Fail(result.Errors);
     }
-    
+
     [HttpGet("orders/completed")]
     [Guard([Roles.Delivery])]
     public async Task<IActionResult> GetCompletedForDeliveryAsync()
@@ -264,6 +269,105 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory, IUserContex
         return Success(withdraws);
     }
     #endregion
+
+    #region documents
+
+    public class UploadDeliveryDocumentModel
+    {
+        /// <summary>
+        /// Image file for the product
+        /// </summary>                                                                                                                                                                
+        public IFormFile? ImageFile { get; set; }
+
+        /// <summary>
+        /// Data
+        /// </summary>
+        public byte DocumentType { get; set; }
+        public string Name { get; set; } = null!;
+
+
+
+        public (bool Success, string[] Errors) Validate()
+        {
+            var errors = new List<string>();
+
+            if (DocumentType <= 0)
+                errors.Add("Type must be specified.");
+
+            if (string.IsNullOrWhiteSpace(Name))
+                errors.Add("Name is required.");
+
+            if (ImageFile is null)
+                errors.Add("ImageFile is required.");
+
+
+            return (errors.Count == 0, errors.ToArray());
+        }
+    }
+    [HttpPost("documents/upload")]
+    [Guard([Roles.Delivery])]
+    public async Task<IActionResult> Insert([FromForm] UploadDeliveryDocumentModel request)
+    {
+        int deliveryId = _userContext.Get().Party;
+        (bool success, string[] errors) = request.Validate();
+        if (!success)
+        {
+            return ValidationError(errors);
+        }
+
+        if (request.ImageFile is null)
+        {
+            return ValidationError(new List<string> { "File is required" });
+        }
+        Guid fileName = Guid.NewGuid();
+        var filePath = await FileService.SaveImageFileAsync(request.ImageFile,
+            _environment.WebRootPath,
+            fileName);
+        using var connection = _dbFactory.CreateDbConnection();
+
+        int documentId = await Db.InsertDeliveryDocumentAsync(
+            connection,
+            request.Name,
+            filePath,
+            deliveryId,
+            request.DocumentType);
+
+
+        return Success(new { documentId });
+    }
+
+    [HttpGet("documents/mine")]
+    [Guard([Roles.Delivery])]
+    public async Task<IActionResult> GetDeliveryDocumentByDelivaryIdAsync()
+    {
+        int deliveryId = _userContext.Get().Party;
+        using var connection = _dbFactory.CreateDbConnection();
+        var result = await Db.GetDeliveryDocumentByDelivaryIdAsync(deliveryId, connection);
+        return Success(result.ToList());
+
+    }
+    [HttpGet("documents/by-id")]
+    [Guard([Roles.Delivery])]
+    public async Task<IActionResult> GetDeliveryDocumentByDelivaryIdAsync(
+        [FromQuery] int id
+    )
+    {
+        int deliveryId = _userContext.Get().Party;
+        using var connection = _dbFactory.CreateDbConnection();
+        DeliveryDocument? deliveryDocument = await Db.GetDeliveryDocumentByIdAsync(id, connection);
+        if (deliveryDocument is null)
+        {
+            return DataNotFound();
+        }
+        if (deliveryDocument.Delivary != deliveryId)
+        {
+            return Fail("Un Authorized you can't see another one document");
+        }
+        return Success(deliveryDocument);
+    }
+    #endregion
+
+
 }
 
 // Request models for Insert and Update actions
@@ -284,3 +388,4 @@ public class UpdateWithdrawRequest
     public string? IbanNumber { get; set; }
 
 }
+

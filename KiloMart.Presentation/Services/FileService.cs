@@ -9,7 +9,7 @@ public static class FileService
         "image/jpg",
         "image/webp"];
 
-    public static async Task<string> SaveFileAsync(IFormFile file, string webRootPath, Guid fileName, string subDirectory = "images")
+    public static async Task<string> SaveImageFileAsync(IFormFile file, string webRootPath, Guid fileName, string subDirectory = "images")
     {
         if (file is null || file.Length == 0)
             throw new ArgumentException("No file was uploaded.");

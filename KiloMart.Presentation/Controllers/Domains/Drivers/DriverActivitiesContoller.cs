@@ -151,6 +151,16 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory,
         var result = await AcceptOrderService.DeliveryAccept(orderId, _userContext.Get(), _dbFactory);
         return result.Success ? Success(result.Data) : Fail(result.Errors);
     }
+    [HttpPost("orders/complete")]
+    [Guard([Roles.Delivery])]
+    public async Task<IActionResult> CompleteOrder([FromBody] long orderId)
+    {
+        var result = await CompleteOrderService.CompleteOrder(new CompleteOrderRequestModel
+        {
+            OrderId = orderId
+        }, _userContext.Get(), _dbFactory);
+        return result.Success ? Success(result.Data) : Fail(result.Errors);
+    }
     [HttpPost("orders/cancel")]
     [Guard([Roles.Delivery])]
     public async Task<IActionResult> Cancel([FromBody] long orderId)

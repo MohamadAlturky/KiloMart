@@ -41,7 +41,9 @@ public enum OrderActivityType
     AcceptedByDelivery = 7,
     CanceledByDelivery = 8,
     ShippedByDelivery = 9,
-    DeliveredByDelivery = 10
+    DeliveredByDelivery = 10,
+
+    CompletedByDelivery = 11,
 }
 
 // INSERT INTO OrderActivityType([Id], [Name])
@@ -55,7 +57,8 @@ public enum OrderActivityType
 //     (7, 'AcceptedByDelivery'),
 //     (8, 'CanceledByDelivery'),
 //     (9, 'ShippedByDelivery'),
-//     (10, 'DeliveredByDelivery');
+//     (10, 'DeliveredByDelivery'),
+//     (11, 'CompletedByDelivery');
 
 
 public enum PaymentType

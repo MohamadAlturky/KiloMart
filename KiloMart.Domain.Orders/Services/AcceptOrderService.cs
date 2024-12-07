@@ -215,34 +215,10 @@ public static class AcceptOrderService
                 deliveryId,
                 transaction);
 
-            await Db.InsertDeliveryActivityAsync(
-                connection,
-                DateTime.Now,
-                systemSettings.DeliveryOrderFee,
-                (byte)DeliveryActivityType.Receives,
-                userPayLoad.Party,
-                transaction);
 
-            DeliveryWallet? wallet = await Db.GetDeliveryWalletByDeliveryIdAsync(userPayLoad.Party,
-             readConnection);
-
-            if (wallet is null)
-            {
-                await Db.InsertDeliveryWalletAsync(
-                    connection,
-                    systemSettings.DeliveryOrderFee,
-                    userPayLoad.Party,
-                    transaction);
-            }
-            else
-            {
-                await Db.UpdateDeliveryWalletAsync(
-                                connection,
-                                wallet.Id,
-                                wallet.Value + systemSettings.DeliveryOrderFee,
-                                userPayLoad.Party,
-                                transaction);
-            }
+            
+            
+            
             // await OrdersDb.UpdateOrderAsync(connection,
             //     order.Id,
             //     order.OrderStatus,

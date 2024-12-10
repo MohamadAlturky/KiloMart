@@ -54,14 +54,14 @@ public class LocationDetailsController(IDbFactory dbFactory, IUserContext userCo
         }
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{locationId}")]
     [Guard([Roles.Customer, Roles.Provider])]
-    public async Task<IActionResult> GetDetails(int id)
+    public async Task<IActionResult> GetDetails(int locationId)
     {
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
-        var query = "SELECT * FROM [dbo].[LocationDetails] WHERE [Id] = @Id AND IsActive = 1;";
-        var result = await connection.QuerySingleOrDefaultAsync<LocationDetails>(query, new { Id = id });
+        var query = "SELECT * FROM [dbo].[LocationDetails] WHERE [Location] = @locationId";
+        var result = await connection.QuerySingleOrDefaultAsync<LocationDetails>(query, new { locationId = locationId });
 
         if (result is null)
         {

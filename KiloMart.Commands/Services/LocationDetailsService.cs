@@ -84,6 +84,17 @@ namespace KiloMart.Commands.Services
             {
                 var connection = dbFactory.CreateDbConnection();
                 connection.Open();
+                Location? location = await Db.GetLocationByIdAsync(model.Location, connection);
+                
+                if (location is null)
+                {
+                    return Result<LocationDetails>.Fail(["Not Found"]);
+                }
+                if (location.Party != userPayLoad.Party)
+                {
+                    return Result<LocationDetails>.Fail(["Un Authorized"]);
+                }
+                
                 var id = await Db.InsertLocationDetailsAsync(connection, model.BuildingType, model.BuildingNumber, model.FloorNumber, model.ApartmentNumber, model.StreetNumber, model.PhoneNumber, model.Location);
                 var locationDetails = new LocationDetails
                 {

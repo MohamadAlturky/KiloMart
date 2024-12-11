@@ -126,10 +126,81 @@ public class ProductController(
 
         return Success(
             new
+            {
+                data = result,
+                totalCount
+            });
+    }
+
+
+    [HttpGet("admin/paginated-by-category")]
+    public async Task<IActionResult> GetAllLocalizedPaginatedByCategoryForAdmin(
+        [FromQuery] int category,
+        [FromQuery] byte language = 1,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] bool isActive = true)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        // Calculate OFFSET for pagination
+        int offset = (page - 1) * pageSize;
+
+        var countSql = @"SELECT COUNT(*) 
+                FROM Product WITH (NOLOCK) 
+                    WHERE IsActive = @isActive AND ProductCategory = @category";
+        int totalCount = await connection.ExecuteScalarAsync<int>(countSql, new { isActive });
+
+        // SQL query with pagination, using OFFSET and FETCH
+        string sql = @"
+        SELECT
+            p.[Id]
+            , p.[ImageUrl]
+            , p.[ProductCategory]
+            , p.[IsActive]
+            , p.[MeasurementUnit]
+            , p.[Description]
+            , p.[Name]
+            , pl.[Language]
+            , pl.[Product]
+            , pl.[MeasurementUnit] AS LocalizedMeasurementUnit
+            , pl.[Description] AS LocalizedDescription
+            , pl.[Name] AS LocalizedName
+        FROM Product p WITH (NOLOCK)
+        LEFT JOIN ProductLocalized pl WITH (NOLOCK)
+            ON p.Id = pl.Product AND pl.Language = @language
+        WHERE p.IsActive = @isActive AND ProductCategory = @category
+        ORDER BY p.[Id]
+        OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
+
+        // Query execution with pagination parameters
+        var products = await connection.QueryAsync<ProductSqlQueryResponse>(
+            sql,
+            new { language, offset, pageSize, isActive, category }
+        );
+
+        // Transforming results
+        List<ProductApiResponseDto> result = [];
+        foreach (var product in products)
         {
-            data = result,
-            totalCount
-        });
+            result.Add(new()
+            {
+                Id = product.Id,
+                Name = product.LocalizedName ?? product.Name,
+                Description = product.LocalizedDescription ?? product.Description,
+                MeasurementUnit = product.LocalizedMeasurementUnit ?? product.MeasurementUnit,
+                IsActive = product.IsActive,
+                ImageUrl = product.ImageUrl
+            });
+        }
+
+        return Success(
+            new
+            {
+                data = result,
+                totalCount
+            });
     }
 
 
@@ -292,7 +363,7 @@ public class ProductController(
         List<ProductApiResponseWithOfferDto> result = new();
         foreach (var product in products)
         {
-            result.Add(new()
+            result.Add(new ProductApiResponseWithOfferDto()
             {
                 Id = product.Id,
                 Name = product.LocalizedName ?? product.Name,
@@ -300,6 +371,8 @@ public class ProductController(
                 ImageUrl = product.ImageUrl,
                 MinPrice = product.MinPrice,
                 MaxPrice = product.MaxPrice,
+                Description = product.LocalizedDescription ?? product.Description,
+                MeasurementUnit = product.LocalizedMeasurementUnit ?? product.MeasurementUnit
             });
         }
 
@@ -308,6 +381,196 @@ public class ProductController(
             data = result,
             totalCount
         });
+    }
+
+    #region  old
+    // [HttpGet("admin/paginated-with-offer-by-category")]
+    // public async Task<IActionResult> GetProductsWithOfferPaginatedForAdminWithCategory(
+    //     [FromQuery] int category,
+    //     [FromQuery] byte language = 1,
+    //     [FromQuery] int page = 1,
+    //     [FromQuery] int pageSize = 10)
+    // {
+    //     using var connection = _dbFactory.CreateDbConnection();
+    //     connection.Open();
+    //     bool isActive = true;
+    //     // Calculate OFFSET for pagination
+    //     int offset = (page - 1) * pageSize;
+
+    //     var countSql = @"SELECT COUNT(*) 
+    //             FROM Product p WITH (NOLOCK)
+    //             INNER JOIN (
+    //                 SELECT Product, MAX(Price) AS MaxPrice, MIN(Price) AS MinPrice, Sum(Quantity) AS QuantitySum
+    //                 FROM ProductOffer
+    //                     Where IsActive = 1
+    //                 GROUP BY Product
+    //             ) po
+    //             ON p.Id = po.Product
+    //             WHERE p.IsActive = @isActive AND ProductCategory = @category AND QuantitySum != 0";
+    //     int totalCount = await connection.ExecuteScalarAsync<int>(countSql, new { isActive, category });
+
+    //     // SQL query with pagination, using OFFSET and FETCH
+    //     string sql = @"
+    //             SELECT
+    //                 p.[Id]
+    //                 , p.[ImageUrl]
+    //                 , p.[ProductCategory]
+    //                 , p.[IsActive]
+    //                 , p.[MeasurementUnit]
+    //                 , p.[Description]
+    //                 , p.[Name]
+    //                 , pl.[Language]
+    //                 , pl.[Product]
+    //                 , pl.[MeasurementUnit] AS LocalizedMeasurementUnit
+    //                 , pl.[Description] AS LocalizedDescription
+    //                 , pl.[Name] AS LocalizedName
+    //                 , po.MaxPrice
+    //                 , po.MinPrice
+    //             FROM Product p WITH (NOLOCK)
+    //             LEFT JOIN ProductLocalized pl WITH (NOLOCK)
+    //                 ON p.Id = pl.Product AND pl.Language = @language
+    //             INNER JOIN (
+    //                 SELECT Product, MAX(Price) AS MaxPrice, MIN(Price) AS MinPrice, Sum(Quantity) AS QuantitySum
+    //                 FROM ProductOffer
+    //                     Where IsActive = 1
+    //                 GROUP BY Product
+    //             ) po
+    //             ON p.Id = po.Product
+    //             WHERE p.IsActive = @isActive AND ProductCategory = @category AND QuantitySum != 0
+    //             ORDER BY p.[Id]
+    //             OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
+
+    //     // Query execution with pagination parameters
+    //     var products = await connection.QueryAsync<ProductApiResponseWithOffer>(
+    //         sql,
+    //         new { language, offset, pageSize, isActive, category }
+    //     );
+
+    //     // Transforming results
+    //     List<ProductApiResponseWithOfferDto> result = new();
+    //     foreach (var product in products)
+    //     {
+    //         result.Add(new()
+    //         {
+    //             Id = product.Id,
+    //             Name = product.LocalizedName ?? product.Name,
+    //             IsActive = product.IsActive,
+    //             ImageUrl = product.ImageUrl,
+    //             MinPrice = product.MinPrice,
+    //             MaxPrice = product.MaxPrice,
+    //             MeasurementUnit = product.LocalizedMeasurementUnit ?? product.MeasurementUnit,
+    //             Description = product.LocalizedDescription ?? product.Description,
+
+    //         });
+    //     }
+
+    //     return Success(new
+    //     {
+    //         data = result,
+    //         totalCount
+    //     });
+    // }
+
+
+
+    // [HttpGet("customer/paginated-with-offer")]
+    // public async Task<IActionResult> GetProductsWithOfferPaginatedForCustomer(
+    //     [FromQuery] int category,
+    //     [FromQuery] byte language = 1,
+    //     [FromQuery] int page = 1,
+    //     [FromQuery] int pageSize = 10)
+    // {
+    //     using var connection = _dbFactory.CreateDbConnection();
+    //     connection.Open();
+    //     bool isActive = true;
+    //     // Calculate OFFSET for pagination
+    //     int offset = (page - 1) * pageSize;
+
+    //     var countSql = @"SELECT COUNT(*) 
+    //             FROM Product p WITH (NOLOCK)
+    //             INNER JOIN (
+    //                 SELECT Product, MAX(Price) AS MaxPrice, MIN(Price) AS MinPrice, Sum(Quantity) AS QuantitySum
+    //                 FROM ProductOffer
+    //                     Where IsActive = 1
+    //                 GROUP BY Product
+    //             ) po
+    //             ON p.Id = po.Product
+    //             WHERE p.IsActive = @isActive AND ProductCategory = @category AND QuantitySum != 0";
+    //     int totalCount = await connection.ExecuteScalarAsync<int>(countSql, new { isActive, category });
+
+    //     // SQL query with pagination, using OFFSET and FETCH
+    //     string sql = @"
+    //             SELECT
+    //                 p.[Id]
+    //                 , p.[ImageUrl]
+    //                 , p.[ProductCategory]
+    //                 , p.[IsActive]
+    //                 , p.[MeasurementUnit]
+    //                 , p.[Description]
+    //                 , p.[Name]
+    //                 , pl.[Language]
+    //                 , pl.[Product]
+    //                 , pl.[MeasurementUnit] AS LocalizedMeasurementUnit
+    //                 , pl.[Description] AS LocalizedDescription
+    //                 , pl.[Name] AS LocalizedName
+    //                 , po.MaxPrice
+    //                 , po.MinPrice
+    //             FROM Product p WITH (NOLOCK)
+    //             LEFT JOIN ProductLocalized pl WITH (NOLOCK)
+    //                 ON p.Id = pl.Product AND pl.Language = @language
+    //             INNER JOIN (
+    //                 SELECT Product, MAX(Price) AS MaxPrice, MIN(Price) AS MinPrice, Sum(Quantity) AS QuantitySum
+    //                 FROM ProductOffer
+    //                     Where IsActive = 1
+    //                 GROUP BY Product
+    //             ) po
+    //             ON p.Id = po.Product
+    //             WHERE p.IsActive = @isActive AND ProductCategory = @category AND QuantitySum != 0
+    //             ORDER BY p.[Id]
+    //             OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
+
+    //     // Query execution with pagination parameters
+    //     var products = await connection.QueryAsync<ProductApiResponseWithOffer>(
+    //         sql,
+    //         new { language, offset, pageSize, isActive, category }
+    //     );
+
+    //     // Transforming results
+    //     List<ProductApiResponseWithOfferDto> result = new();
+    //     foreach (var product in products)
+    //     {
+    //         result.Add(new()
+    //         {
+    //             Id = product.Id,
+    //             Name = product.LocalizedName ?? product.Name,
+    //             IsActive = product.IsActive,
+    //             ImageUrl = product.ImageUrl,
+    //             MinPrice = product.MinPrice,
+    //             MaxPrice = product.MaxPrice,
+    //             MeasurementUnit = product.LocalizedMeasurementUnit ?? product.MeasurementUnit,
+    //             Description = product.LocalizedDescription ?? product.Description,
+
+    //         });
+    //     }
+
+    //     return Success(new
+    //     {
+    //         data = result,
+    //         totalCount
+    //     });
+    // }
+
+    #endregion
+
+    #region new
+    [HttpGet("admin/paginated-with-offer-by-category")]
+    public async Task<IActionResult> GetProductsWithOfferPaginatedForAdminWithCategory(
+        [FromQuery] int category,
+        [FromQuery] byte language = 1,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        return await GetProductsWithOfferPaginated(category, language, page, pageSize, true);
     }
 
     [HttpGet("customer/paginated-with-offer")]
@@ -317,85 +580,81 @@ public class ProductController(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10)
     {
+        return await GetProductsWithOfferPaginated(category, language, page, pageSize, false);
+    }
+
+    private async Task<IActionResult> GetProductsWithOfferPaginated(int category, byte language, int page, int pageSize, bool isAdmin)
+    {
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
+
         bool isActive = true;
-        // Calculate OFFSET for pagination
         int offset = (page - 1) * pageSize;
 
         var countSql = @"SELECT COUNT(*) 
-                FROM Product p WITH (NOLOCK)
-                INNER JOIN (
-                    SELECT Product, MAX(Price) AS MaxPrice, MIN(Price) AS MinPrice, Sum(Quantity) AS QuantitySum
-                    FROM ProductOffer
-                        Where IsActive = 1
-                    GROUP BY Product
-                ) po
-                ON p.Id = po.Product
-                WHERE p.IsActive = @isActive AND ProductCategory = @category AND QuantitySum != 0";
+            FROM Product p WITH (NOLOCK)
+            INNER JOIN (
+                SELECT Product, MAX(Price) AS MaxPrice, MIN(Price) AS MinPrice, Sum(Quantity) AS QuantitySum
+                FROM ProductOffer
+                    WHERE IsActive = 1
+                GROUP BY Product
+            ) po
+            ON p.Id = po.Product
+            WHERE p.IsActive = @isActive AND ProductCategory = @category AND QuantitySum != 0";
+
         int totalCount = await connection.ExecuteScalarAsync<int>(countSql, new { isActive, category });
 
-        // SQL query with pagination, using OFFSET and FETCH
         string sql = @"
-                SELECT
-                    p.[Id]
-                    , p.[ImageUrl]
-                    , p.[ProductCategory]
-                    , p.[IsActive]
-                    , p.[MeasurementUnit]
-                    , p.[Description]
-                    , p.[Name]
-                    , pl.[Language]
-                    , pl.[Product]
-                    , pl.[MeasurementUnit] AS LocalizedMeasurementUnit
-                    , pl.[Description] AS LocalizedDescription
-                    , pl.[Name] AS LocalizedName
-                    , po.MaxPrice
-                    , po.MinPrice
-                FROM Product p WITH (NOLOCK)
-                LEFT JOIN ProductLocalized pl WITH (NOLOCK)
-                    ON p.Id = pl.Product AND pl.Language = @language
-                INNER JOIN (
-                    SELECT Product, MAX(Price) AS MaxPrice, MIN(Price) AS MinPrice, Sum(Quantity) AS QuantitySum
-                    FROM ProductOffer
-                        Where IsActive = 1
-                    GROUP BY Product
-                ) po
-                ON p.Id = po.Product
-                WHERE p.IsActive = @isActive AND ProductCategory = @category AND QuantitySum != 0
-                ORDER BY p.[Id]
-                OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
+            SELECT
+                p.[Id]
+                , p.[ImageUrl]
+                , p.[ProductCategory]
+                , p.[IsActive]
+                , p.[MeasurementUnit]
+                , p.[Description]
+                , p.[Name]
+                , pl.[Language]
+                , pl.[Product]
+                , pl.[MeasurementUnit] AS LocalizedMeasurementUnit
+                , pl.[Description] AS LocalizedDescription
+                , pl.[Name] AS LocalizedName
+                , po.MaxPrice
+                , po.MinPrice
+            FROM Product p WITH (NOLOCK)
+            LEFT JOIN ProductLocalized pl WITH (NOLOCK)
+                ON p.Id = pl.Product AND pl.Language = @language
+            INNER JOIN (
+                SELECT Product, MAX(Price) AS MaxPrice, MIN(Price) AS MinPrice, Sum(Quantity) AS QuantitySum
+                FROM ProductOffer
+                    WHERE IsActive = 1
+                GROUP BY Product
+            ) po
+            ON p.Id = po.Product
+            WHERE p.IsActive = @isActive AND ProductCategory = @category AND QuantitySum != 0
+            ORDER BY p.[Id]
+            OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
 
-        // Query execution with pagination parameters
         var products = await connection.QueryAsync<ProductApiResponseWithOffer>(
             sql,
             new { language, offset, pageSize, isActive, category }
         );
 
-        // Transforming results
-        List<ProductApiResponseWithOfferDto> result = new();
-        foreach (var product in products)
+        var result = products.Select(product => new ProductApiResponseWithOfferDto
         {
-            result.Add(new()
-            {
-                Id = product.Id,
-                Name = product.LocalizedName ?? product.Name,
-                IsActive = product.IsActive,
-                ImageUrl = product.ImageUrl,
-                MinPrice = product.MinPrice,
-                MaxPrice = product.MaxPrice,
-                MeasurementUnit = product.LocalizedMeasurementUnit ?? product.MeasurementUnit,
-                Description = product.LocalizedDescription ?? product.Description,
+            Id = product.Id,
+            Name = product.LocalizedName ?? product.Name,
+            IsActive = product.IsActive,
+            ImageUrl = product.ImageUrl,
+            MinPrice = product.MinPrice,
+            MaxPrice = product.MaxPrice,
+            MeasurementUnit = product.LocalizedMeasurementUnit ?? product.MeasurementUnit,
+            Description = product.LocalizedDescription ?? product.Description,
+        }).ToList();
 
-            });
-        }
-
-        return Success(new
-        {
-            data = result,
-            totalCount
-        });
+        return Success(new { data = result, totalCount });
     }
+
+    #endregion
 
     public class ProductApiResponseWithOffer
     {

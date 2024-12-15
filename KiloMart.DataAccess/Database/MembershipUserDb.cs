@@ -26,8 +26,8 @@ public static partial class Db
         IDbTransaction? transaction = null)
     {
         const string query = @"INSERT INTO [dbo].[MembershipUser]
-                            ([Email], [EmailConfirmed], [PasswordHash], [Role], [Party],[Language])
-                            VALUES (@Email, @EmailConfirmed, @PasswordHash, @Role, @Party, @Language)
+                            ([Email], [EmailConfirmed], [PasswordHash], [Role], [Party],[Language],[IsActive])
+                            VALUES (@Email, @EmailConfirmed, @PasswordHash, @Role, @Party, @Language, @IsActive)
                             SELECT CAST(SCOPE_IDENTITY() AS INT)";
 
         return await connection.ExecuteScalarAsync<int>(query, new
@@ -37,7 +37,8 @@ public static partial class Db
             PasswordHash = passwordHash,
             Role = role,
             Party = party,
-            Language = language
+            Language = language,
+            IsActive = true
         }, transaction);
     }
 

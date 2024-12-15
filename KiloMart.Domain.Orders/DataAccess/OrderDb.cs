@@ -91,7 +91,24 @@ public static partial class OrdersDb
 
         return updatedRowsCount > 0;
     }
+    public static async Task<bool> UpdateOrderIsPaidAsync(IDbConnection connection,
+            long id,
+            bool isPaid,
+            IDbTransaction? transaction = null)
+    {
+        const string query = @"UPDATE [dbo].[Order]
+                                SET 
+                                [IsPaid] = @IsPaid
+                                WHERE [Id] = @Id";
 
+        var updatedRowsCount = await connection.ExecuteAsync(query, new
+        {
+            Id = id,
+            IsPaid = isPaid
+        }, transaction);
+
+        return updatedRowsCount > 0;
+    }
     public static async Task<bool> DeleteOrderAsync(IDbConnection connection, long id, IDbTransaction? transaction = null)
     {
         const string query = @"DELETE FROM [dbo].[Order]

@@ -2,6 +2,7 @@ using Dapper;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Database;
+using KiloMart.Domain.Orders.DataAccess;
 using KiloMart.Domain.Orders.Repositories;
 using KiloMart.Domain.Orders.Services;
 using KiloMart.Domain.Register.Utils;
@@ -179,6 +180,25 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory,
             });
         }
         return Fail(result.Errors);
+    }
+    [HttpPost("orders/receive-money")]
+    [Guard([Roles.Delivery])]
+    public async Task<IActionResult> ReceiveMoney([FromBody] long orderId)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        var result = await OrdersDb.UpdateOrderIsPaidAsync(
+            connection,
+            orderId,
+            true);
+        if (result)
+        {
+            return Success(new
+            {
+                Message = "order canceled successfully",
+                Order = orderId
+            });
+        }
+        return Fail("the order already paid");
     }
     #endregion
 

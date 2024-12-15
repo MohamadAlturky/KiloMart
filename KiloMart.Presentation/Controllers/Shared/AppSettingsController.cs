@@ -68,15 +68,28 @@ public class AppSettingsController : AppController
     //     await _settingsProvider.UpdateSettingAsync((int)ConstantSettings.CancelWhenOrderFromMultiProviders, value.ToString());
     //     return Success();
     // }
-
+    public class NotificationDto
+    {
+        public string Title { get; set; } = null!;
+        public string Message { get; set; } = null!;
+    }
     [HttpPost("notify")]
-    public async Task<IActionResult> Notify([FromBody] string message, [FromQuery] int userId)
+    public async Task<IActionResult> Notify([FromBody] NotificationDto dto, [FromQuery] int userId)
     {
         //await _hubContext.SendChatMessage(userId,message);
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+        await Db.InsertNotificationAsync(
+            connection,
+            dto.Title,
+            dto.Message,
+            DateTime.Now,
+            userId,
+            "");
         foreach (var connectionId in NotificationHub._connections.GetConnections(userId))
         {
             await _hubContext.Clients.Client(connectionId).SendAsync("ReceiveNotification",
-             new { Message = $"this message is just for you user Id = {userId} the message :\n {message}" });
+             new { Message = $"this message is just for you user Id = {userId}, the title = {dto.Title}, the message :\n {dto.Message}" });
         }
         return Success();
     }
@@ -125,7 +138,7 @@ public class AppSettingsController : AppController
             request.TimeInMinutesToMakeTheCircleBigger ?? settings.TimeInMinutesToMakeTheCircleBigger,
             request.CircleRaduis ?? settings.CircleRaduis,
             request.MaxMinutesToCancelOrderWaitingAProvider ?? settings.MaxMinutesToCancelOrderWaitingAProvider,
-            request.MinOrderValue??settings.MinOrderValue,
+            request.MinOrderValue ?? settings.MinOrderValue,
             request.DistanceToAdd ?? settings.DistanceToAdd,
             request.MaxDistanceToAdd ?? settings.MaxDistanceToAdd);
 
@@ -138,7 +151,7 @@ public class AppSettingsController : AppController
     }
     #endregion
 
-    
+
 }
 
 public class SystemSettingsUpdateRequest

@@ -18,6 +18,7 @@ public static partial class OrderRepository
                 o.TransactionId,
                 o.Date,
                 o.PaymentType,
+                o.IsPaid,
                 oci.Customer,
                 oci.Location AS CustomerLocation,
                 oci.Id AS CustomerInformationId,
@@ -65,6 +66,7 @@ public static partial class OrderRepository
                 o.TransactionId,
                 o.Date,
                 o.PaymentType,
+                o.IsPaid,
                 oci.Customer,
                 oci.Location AS CustomerLocation,
                 oci.Id AS CustomerInformationId,
@@ -109,7 +111,7 @@ public class OrderDetailsDto
     public string TransactionId { get; set; } = null!;
     public DateTime Date { get; set; }
     public byte PaymentType { get; set; }
-
+    public bool IsPaid { get; set; }
 
     public int? Customer { get; set; }
     public int? CustomerLocation { get; set; }
@@ -367,6 +369,7 @@ public static partial class OrderRepository
             o.TransactionId,
             o.Date,
             o.PaymentType,
+            o.IsPaid,
             oci.Customer,
             oci.Location AS CustomerLocation,
             oci.Id AS CustomerInformationId,
@@ -423,7 +426,7 @@ public class OrderDetailsForDeliveryDto
     public string TransactionId { get; set; } = null!;
     public DateTime Date { get; set; }
     public byte PaymentType { get; set; }
-
+    public bool IsPaid { get; set; }
     public int? Customer { get; set; }
     public int? CustomerLocation { get; set; }
     public int? CustomerInformationId { get; set; }
@@ -466,7 +469,7 @@ public static partial class OrderRepository
             WHERE 
                 op.[Order] = @OrderId;";
 
-        return await connection.QueryAsync<OrderProductOfferDto>(sql, new 
+        return await connection.QueryAsync<OrderProductOfferDto>(sql, new
         {
             OrderId = orderId
         });

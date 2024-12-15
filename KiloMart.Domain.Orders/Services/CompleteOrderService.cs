@@ -104,6 +104,7 @@ public class CompleteOrderService
                 order.TransactionId,
                 order.Date,
                 order.PaymentType,
+                order.IsPaid,
                 transaction);
             // Log order activity
             OrderActivity activity = new()

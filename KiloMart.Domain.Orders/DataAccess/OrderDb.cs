@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using Microsoft.Identity.Client;
 using System.Data;
 
 namespace KiloMart.Domain.Orders.DataAccess;
@@ -19,12 +20,13 @@ public static partial class OrdersDb
         decimal totalPrice,
         string transactionId,
         DateTime date,
+        bool isPaid,
         byte paymentType,
         IDbTransaction? transaction = null)
     {
         const string query = @"INSERT INTO [dbo].[Order]
-                            ([OrderStatus], [TotalPrice], [TransactionId], [Date],[PaymentType])
-                            VALUES (@OrderStatus, @TotalPrice, @TransactionId, @Date, @PaymentType)
+                            ([OrderStatus], [TotalPrice], [TransactionId], [Date],[PaymentType],[IsPaid])
+                            VALUES (@OrderStatus, @TotalPrice, @TransactionId, @Date, @PaymentType, @IsPaid)
                             SELECT CAST(SCOPE_IDENTITY() AS BIGINT)";
 
         return await connection.ExecuteScalarAsync<long>(query, new
@@ -33,7 +35,8 @@ public static partial class OrdersDb
             TotalPrice = totalPrice,
             TransactionId = transactionId,
             Date = date,
-            PaymentType = paymentType
+            PaymentType = paymentType,
+            IsPaid = isPaid
         }, transaction);
     }
 
@@ -44,6 +47,7 @@ public static partial class OrdersDb
         string transactionId,
         DateTime date,
         byte paymentType,
+        bool isPaid,
         IDbTransaction? transaction = null)
     {
         const string query = @"UPDATE [dbo].[Order]
@@ -52,6 +56,7 @@ public static partial class OrdersDb
                                 [TotalPrice] = @TotalPrice,
                                 [TransactionId] = @TransactionId,
                                 [Date] = @Date,
+                                [IsPaid] = @IsPaid,
                                 [PaymentType] = @PaymentType
                                 WHERE [Id] = @Id";
 
@@ -62,7 +67,8 @@ public static partial class OrdersDb
             TotalPrice = totalPrice,
             TransactionId = transactionId,
             Date = date,
-            PaymentType = paymentType
+            PaymentType = paymentType,
+            IsPaid = isPaid
         }, transaction);
 
         return updatedRowsCount > 0;
@@ -107,7 +113,8 @@ public static partial class OrdersDb
                             [TotalPrice], 
                             [TransactionId],
                             [Date],
-                            [PaymentType]
+                            [PaymentType],
+                            [IsPaid]
                             FROM [dbo].[Order]
                             WHERE [Id] = @Id";
 
@@ -126,4 +133,5 @@ public class Order
     public string TransactionId { get; set; } = null!;
     public DateTime Date { get; set; }
     public byte PaymentType { get; set; }
+    public bool IsPaid { get; set; }
 }

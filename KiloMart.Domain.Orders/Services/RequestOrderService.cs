@@ -48,7 +48,8 @@ public class RequestOrderService
                 TotalPrice = 0,
                 TransactionId = Guid.NewGuid().ToString(),
                 Date = DateTime.Now,
-                PaymentType = model.PaymentType
+                PaymentType = model.PaymentType,
+                IsPaid = false
             };
 
             response.Order.Id = await OrdersDb.InsertOrderAsync(connection,
@@ -56,6 +57,7 @@ public class RequestOrderService
                 response.Order.TotalPrice,
                 response.Order.TransactionId,
                 response.Order.Date,
+                response.Order.IsPaid,
                 response.Order.PaymentType,
                 transaction);
 

@@ -218,7 +218,7 @@ public class UserCommandController : AppController
         }
     }
     #endregion
-    
+
     #region deactivate user
     [HttpPost("deactivate-user")]
     public async Task<IActionResult> DeactivateUser()
@@ -234,7 +234,12 @@ public class UserCommandController : AppController
     }
     #endregion
 
-
-
+    #region logout
+    [HttpPost("logout")]
+    public IActionResult Logout()
+    {
+        return Success("Just Delete the Token From The Client Side");
+    }
+    #endregion
 }
 

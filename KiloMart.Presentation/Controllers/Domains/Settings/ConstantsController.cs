@@ -1,5 +1,8 @@
+using Dapper;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
+using KiloMart.DataAccess.Database;
+using KiloMart.Domain.Register.Utils;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KiloMart.Presentation.Controllers.Domains.Settings;
@@ -9,6 +12,43 @@ namespace KiloMart.Presentation.Controllers.Domains.Settings;
 public partial class ConstantsController(IDbFactory dbFactory, IUserContext userContext)
  : AppController(dbFactory, userContext)
 {
+    [HttpGet("migrate-admin")]
+    public async Task<IActionResult> Migrate()
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+        string email = "admin@system.kilomart";
+        var membershipUser = await Db.GetMembershipUserByEmailAsync(
+            email,
+            connection);
+        if(membershipUser is not null)
+        {
+            return Fail("user already exist");
+        }
+        // Create a new MembershipUser instance
+        var newUser = new MembershipUser
+        {
+            Email = email,
+            EmailConfirmed = true,
+            PasswordHash = HashHandler.GetHash("12345@kilomart.admin.secret"),
+            Role = 4,
+            Party = 9,
+            IsActive = true,
+            Language = 1
+        };
+        int id = await Db.InsertMembershipUserAsync(
+            connection,
+            newUser.Email,
+            newUser.EmailConfirmed,
+            newUser.PasswordHash,
+            newUser.Role,
+            newUser.Party,
+            newUser.Language);
+
+
+        return Success(new { id });
+    }
+
     [HttpGet("OrderActivityType")]
     public async Task<IActionResult> GetOrderActivityTypes()
     {

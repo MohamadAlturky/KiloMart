@@ -118,11 +118,34 @@ public class ProviderActivitiesContoller : AppController
     #endregion
 
     #region orders
+    [HttpGet("orders/mine-by-status")]
+    [Guard([Roles.Provider])]
+    public async Task<IActionResult> GetMineByStatus([FromQuery] byte language,
+    [FromQuery] byte status)
+    {
+        var result = await ReadOrderService.GetMineByStatusForProviderAsync(language,
+            status,
+            _userContext,
+            _dbFactory);
+
+        return result.Success ? Success(result.Data) : Fail(result.Errors);
+    }
     [HttpGet("orders/requested-orders")]
     // [Guard([Roles.Customer])]
     public async Task<IActionResult> GetMineByStatus([FromQuery] byte language)
     {
         var result = await ReadOrderService.GetRequestedOrders(language,
+            _dbFactory);
+
+        return result.Success ? Success(result.Data) : Fail(result.Errors);
+    }
+    [HttpGet("orders/preparing")]
+    // [Guard([Roles.Customer])]
+    public async Task<IActionResult> GetPreparingOrders([FromQuery] byte language)
+    {
+        var result = await ReadOrderService.GetPreparingOrders(
+            language,
+            _userContext.Get().Party,
             _dbFactory);
 
         return result.Success ? Success(result.Data) : Fail(result.Errors);

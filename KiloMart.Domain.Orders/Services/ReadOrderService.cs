@@ -60,6 +60,55 @@ public static class ReadOrderService
     #endregion
 
     #region provider
+
+public static async Task<Result<List<AggregatedOrder>>> GetMineByStatusForProviderAsync(
+        byte language,
+        byte status,
+        IUserContext userContext,
+        IDbFactory dbFactory)
+    {
+        try
+        {
+            var partyId = userContext.Get().Party;
+
+            using var connection = dbFactory.CreateDbConnection();
+            connection.Open();
+
+            var whereClause = "WHERE Provider = @provider AND OrderStatus = @status";
+            var parameters = new { provider = partyId, status };
+
+            // Get the orders
+            var orders = await OrderRepository.GetOrderDetailsAsync(connection, whereClause, parameters);
+
+            if (orders is null)
+            {
+                return Result<List<AggregatedOrder>>.Ok([]);
+            }
+            if (!orders.Any())
+            {
+                return Result<List<AggregatedOrder>>.Ok([]);
+            }
+            var ordersIds = orders.Select(e => e.Id).ToList();
+
+            // Get the orders products
+            var ordersProducts = await OrderRepository.GetOrderProductsByIdsAsync(connection, ordersIds, language);
+
+            // Get the orders products offers
+            var ordersOffersProducts = await OrderRepository.GetOrderProductOffersByIdsAsync(connection, ordersIds, language);
+
+            List<AggregatedOrder> aggregatedOrders = OrderAggregator.Aggregate(
+                orders.AsList(),
+                ordersProducts.AsList(),
+                ordersOffersProducts.AsList());
+
+            return Result<List<AggregatedOrder>>.Ok(aggregatedOrders);
+        }
+        catch (Exception e)
+        {
+            return Result<List<AggregatedOrder>>.Fail([e.Message]);
+        }
+    }
+
     public static async Task<Result<List<AggregatedOrder>>> GetRequestedOrders(
         byte language,
         IDbFactory dbFactory)
@@ -75,6 +124,51 @@ public static class ReadOrderService
 
             // Get the orders
             var orders = await OrderRepository.GetOrderDetailsAsync(connection, whereClause, parameters);
+
+            if (orders is null)
+            {
+                return Result<List<AggregatedOrder>>.Ok([]);
+            }
+            if (!orders.Any())
+            {
+                return Result<List<AggregatedOrder>>.Ok([]);
+            }
+            var ordersIds = orders.Select(e => e.Id).ToList();
+
+            // Get the orders products
+            var ordersProducts = await OrderRepository.GetOrderProductsByIdsAsync(connection, ordersIds, language);
+
+            // Get the orders products offers
+            var ordersOffersProducts = await OrderRepository.GetOrderProductOffersByIdsAsync(connection, ordersIds, language);
+
+            List<AggregatedOrder> aggregatedOrders = OrderAggregator.Aggregate(
+                orders.AsList(),
+                ordersProducts.AsList(),
+                ordersOffersProducts.AsList());
+
+            return Result<List<AggregatedOrder>>.Ok(aggregatedOrders);
+        }
+        catch (Exception e)
+        {
+            return Result<List<AggregatedOrder>>.Fail([e.Message]);
+        }
+    }
+    public static async Task<Result<List<AggregatedOrder>>> GetPreparingOrders(
+        byte language,
+        int providerId,
+        IDbFactory dbFactory)
+    {
+        try
+        {
+            byte status = (byte) OrderStatus.PREPARING;
+            using var connection = dbFactory.CreateDbConnection();
+            connection.Open();
+
+            var whereClause = "WHERE OrderStatus = @status AND opi.Provider = @providerId";
+            var parameters = new { status,providerId };
+
+            // Get the orders
+            IEnumerable<OrderDetailsDto>? orders = await OrderRepository.GetOrderDetailsAsync(connection, whereClause, parameters);
 
             if (orders is null)
             {

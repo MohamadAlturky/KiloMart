@@ -54,9 +54,14 @@ public class CompleteOrderService
                 return Result<CompleteOrderResponseModel>.Fail(["Cannot complete an order that is not SHIPPED"]);
             }
 
+            if (!order.IsPaid)
+            {
+                return Result<CompleteOrderResponseModel>.Fail(["the order is not paid"]);
+            }
+
             #region InsertDeliveryActivity
             decimal value = 0;
-            if(order.PaymentType == ((byte)PaymentType.Cash))
+            if (order.PaymentType == ((byte)PaymentType.Cash))
             {
                 value = systemSettings.DeliveryOrderFee;
             }

@@ -179,5 +179,62 @@ public class UserCommandController : AppController
         return result ? Success() : Fail();
     }
     #endregion
+
+
+    #region reset password
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+    {
+        string email = _userContext.Get().Email;
+        // Validate the request
+        var (success, errors) = request.Validate();
+        if (!success)
+            return ValidationError(errors);
+
+        // Call the service to reset the password
+        var result = await ResetPasswordService.ChangePassword(email, request.OldPassword, request.NewPassword, _dbFactory);
+
+        return result.Success ?
+            Success("Password has been successfully reset.")
+            : Fail(result.Errors);
+    }
+
+    public class ResetPasswordRequest
+    {
+        public string OldPassword { get; set; } = null!; // This could be a token sent via email for verification.
+        public string NewPassword { get; set; } = null!;
+
+        public (bool success, List<string> errors) Validate()
+        {
+            var errors = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(OldPassword))
+                errors.Add("OldPassword is required.");
+
+            if (string.IsNullOrWhiteSpace(NewPassword) || NewPassword.Length < 6)
+                errors.Add("New password must be at least 6 characters long.");
+
+            return errors.Count == 0 ? (true, errors) : (false, errors);
+        }
+    }
+    #endregion
+    
+    #region deactivate user
+    [HttpPost("deactivate-user")]
+    public async Task<IActionResult> DeactivateUser()
+    {
+        int userId = _userContext.Get().Id;
+        int partyId = _userContext.Get().Party;
+        // Call the service to deactivate the user
+        var result = await DeActivateUserService.DeactivateUser(userId, partyId, _dbFactory);
+
+        return result.Success ?
+            Success("User has been successfully deactivated.")
+            : Fail(result.Errors);
+    }
+    #endregion
+
+
+
 }
 

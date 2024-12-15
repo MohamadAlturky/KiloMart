@@ -1,6 +1,7 @@
 using Dapper;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
+using KiloMart.DataAccess.Database;
 using KiloMart.Domain.Login.Models;
 using KiloMart.Domain.Login.Services;
 using KiloMart.Domain.Register.Activate;
@@ -192,16 +193,53 @@ public class UserCommandController : AppController
             return ValidationError(errors);
 
         // Call the service to reset the password
-        var result = await ResetPasswordService.ChangePassword(email, request.OldPassword, request.NewPassword, _dbFactory);
+        var result = await ResetPasswordService.ChangePassword(
+            email,
+            request.Code,
+            _userContext.Get().Id,
+            request.OldPassword,
+            request.NewPassword,
+            _dbFactory);
 
         return result.Success ?
             Success("Password has been successfully reset.")
             : Fail(result.Errors);
     }
+    [HttpPost("send-reset-password-token")]
+    public async Task<IActionResult> SendResetPasswordToken()
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        int userId = _userContext.Get().Id;
+        string code = GenerateRandomString(4);
+        DateTime date = DateTime.Now;
+
+        await Db.InsertResetPasswordCodeAsync(
+            connection,
+            code,
+            userId,
+            date);
+        return Success(new { Code = code });
+    }
+    public static string GenerateRandomString(int length)
+    {
+        const string chars = "0123456789";
+        Random random = new();
+        char[] result = new char[length];
+
+        for (int i = 0; i < length; i++)
+        {
+            result[i] = chars[random.Next(chars.Length)];
+        }
+
+        return new string(result);
+    }
 
     public class ResetPasswordRequest
     {
-        public string OldPassword { get; set; } = null!; // This could be a token sent via email for verification.
+        public string OldPassword { get; set; } = null!;
+        public string Code { get; set; } = null!;
         public string NewPassword { get; set; } = null!;
 
         public (bool success, List<string> errors) Validate()

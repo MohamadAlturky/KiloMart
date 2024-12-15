@@ -9,10 +9,22 @@ namespace KiloMart.Domain.Login.Services;
 
 public class ResetPasswordService
 {
-    public static async Task<ChangePasswordResult> ChangePassword(string email, string currentPassword, string newPassword, IDbFactory dbFactory)
+    public static async Task<ChangePasswordResult> ChangePassword(string email,
+        string code,
+        int membershipUser,
+        string currentPassword,
+        string newPassword,
+         IDbFactory dbFactory)
     {
         using var connection = dbFactory.CreateDbConnection();
         connection.Open();
+
+        var storedCode = await Db.GetResetPasswordCodeByCodeAsync(code, membershipUser, connection);
+
+        if (storedCode is null)
+        {
+            return new ChangePasswordResult { Success = false, Errors = ["Invalid Code."] };
+        }
 
         // Retrieve the user by email
         var user = await connection.QueryFirstOrDefaultAsync<MembershipUserDto>(

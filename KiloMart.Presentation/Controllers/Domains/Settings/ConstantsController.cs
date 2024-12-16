@@ -21,7 +21,7 @@ public partial class ConstantsController(IDbFactory dbFactory, IUserContext user
         var membershipUser = await Db.GetMembershipUserByEmailAsync(
             email,
             connection);
-        if(membershipUser is not null)
+        if (membershipUser is not null)
         {
             return Fail("user already exist");
         }
@@ -53,6 +53,34 @@ public partial class ConstantsController(IDbFactory dbFactory, IUserContext user
     public async Task<IActionResult> GetOrderActivityTypes()
     {
         var result = await DatabaseHelper.SelectFromTable("OrderActivityType", _dbFactory.CreateDbConnection());
+        return Success(result);
+    }
+    [HttpGet("FAQType")]
+    public IActionResult GetFAQTypes()
+    {
+        var result = new List<DatabaseSettingsTable>()
+        {
+            new()
+            {
+                Id = 0,
+                Name = "For all"
+            },
+            new()
+            {
+                Id = 1,
+                Name = "For Customers"
+            },
+            new()
+            {
+                Id = 2,
+                Name = "For Providers"
+            },
+            new()
+            {
+                Id = 3,
+                Name = "For Delivery"
+            }
+        };
         return Success(result);
     }
     [HttpGet("PaymentType")]

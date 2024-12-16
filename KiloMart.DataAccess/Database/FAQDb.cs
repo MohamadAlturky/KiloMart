@@ -123,7 +123,7 @@ public static partial class Db
                             [Language],
                             [Type]
                             FROM [dbo].[FAQ]
-                            WHERE [Language] = @Language AND [Type] = @Type";
+                            WHERE [Language] = @Language AND ([Type] = @Type OR [Type] = 0) ";
             return await connection.QueryAsync<FAQ>(query, new { Language = language, Type = type });
 
     }

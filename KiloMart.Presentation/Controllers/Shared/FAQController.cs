@@ -41,8 +41,7 @@ public class FAQController : AppController
 
         return Success(new
         {
-            faqs = faqs,
-            TotalCount = faqs.Count()
+            faqs = faqs
         });
     }
 

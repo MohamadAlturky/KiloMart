@@ -39,9 +39,9 @@ public class CompleteOrderService
         try
         {
             // Fetch the existing order based on OrderId
-            var whereClause = "WHERE [Id] = id";
+            var whereClause = "WHERE o.Id = @id";
             var parameters = new { id = model.OrderId };
-            OrderDetailsDto? order = await OrderRepository.GetOrderDetailsFirstOrDefaultAsync(connection, whereClause, parameters);
+            OrderDetailsDto? order = await OrderRepository.GetOrderDetailsFirstOrDefaultAsync(readConnection, whereClause, parameters);
 
             if (order is null)
             {
@@ -54,7 +54,7 @@ public class CompleteOrderService
                 return Result<CompleteOrderResponseModel>.Fail(["Cannot complete an order that is not SHIPPED"]);
             }
 
-            if (!order.IsPaid)
+            if (!order.IsPaid && (order.PaymentType == (byte)PaymentType.Elcetronic))
             {
                 return Result<CompleteOrderResponseModel>.Fail(["the order is not paid"]);
             }
@@ -63,7 +63,7 @@ public class CompleteOrderService
             decimal value = 0;
             if (order.PaymentType == ((byte)PaymentType.Cash))
             {
-                value = systemSettings.DeliveryOrderFee;
+                value = order.DeliveryFee;
             }
             else
             {

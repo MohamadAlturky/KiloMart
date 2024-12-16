@@ -17,7 +17,7 @@ public class OrderCancelService
     {
         using var readConnection = dbFactory.CreateDbConnection();
         readConnection.Open();
-        var whereClause = "WHERE Id = @orderId";
+        var whereClause = "WHERE o.Id = @orderId";
         OrderDetailsDto? order = await OrderRepository.GetOrderDetailsFirstOrDefaultAsync(readConnection,
         whereClause,
         new
@@ -182,7 +182,7 @@ public class OrderCancelService
     {
         using var readConnection = dbFactory.CreateDbConnection();
         readConnection.Open();
-        var whereClause = "WHERE Id = @orderId";
+        var whereClause = "WHERE o.Id = @orderId";
         OrderDetailsDto? order = await OrderRepository.GetOrderDetailsFirstOrDefaultAsync(readConnection,
         whereClause,
         new

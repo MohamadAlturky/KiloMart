@@ -1,71 +1,71 @@
-using Microsoft.AspNetCore.Mvc;
-using KiloMart.DataAccess.Database;
-using KiloMart.Core.Contracts;
-using KiloMart.Core.Authentication;
-using KiloMart.Presentation.Authorization;
-using KiloMart.Domain.Register.Utils;
+// using Microsoft.AspNetCore.Mvc;
+// using KiloMart.DataAccess.Database;
+// using KiloMart.Core.Contracts;
+// using KiloMart.Core.Authentication;
+// using KiloMart.Presentation.Authorization;
+// using KiloMart.Domain.Register.Utils;
 
-namespace KiloMart.Presentation.Controllers.Shared;
-[ApiController]
-[Route("api/admin/system-activity")]
-public class SystemActivityAdminController : AppController
-{
-    public SystemActivityAdminController(IDbFactory dbFactory, IUserContext userContext)
-        : base(dbFactory, userContext) { }
-
-
-    [HttpGet("{id}")]
-    [Guard([Roles.Admin])]
-    public async Task<IActionResult> GetById(long id)
-    {
-        using var connection = _dbFactory.CreateDbConnection();
-        connection.Open();
-
-        var activity = await Db.GetSystemActivityByIdAsync(id, connection);
-        if (activity is null)
-        {
-            return NotFound();
-        }
-
-        return Ok(activity);
-    }
-
-    [HttpGet("list")]
-    [Guard([Roles.Admin])]
-    public async Task<IActionResult> List([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
-    {
-        using var connection = _dbFactory.CreateDbConnection();
-        connection.Open();
-
-        var activities = await Db.GetAllSystemActivitiesAsync(connection);
+// namespace KiloMart.Presentation.Controllers.Shared;
+// [ApiController]
+// [Route("api/admin/system-activity")]
+// public class SystemActivityAdminController : AppController
+// {
+//     public SystemActivityAdminController(IDbFactory dbFactory, IUserContext userContext)
+//         : base(dbFactory, userContext) { }
 
 
-        return Ok(new
-        {
-            Data = activities,
-            TotalCount = activities.Count()
-        });
-    }
+//     [HttpGet("{id}")]
+//     [Guard([Roles.Admin])]
+//     public async Task<IActionResult> GetById(long id)
+//     {
+//         using var connection = _dbFactory.CreateDbConnection();
+//         connection.Open();
 
-    [Guard([Roles.Admin])]
-    [HttpGet("sum")]
-    public async Task<IActionResult> GetSum([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
-    {
-        using var connection = _dbFactory.CreateDbConnection();
-        connection.Open();
+//         var activity = await Db.GetSystemActivityByIdAsync(id, connection);
+//         if (activity is null)
+//         {
+//             return NotFound();
+//         }
 
-        float totalValue = await Db.GetSumOfActivityValuesBetweenDatesAsync(startDate, endDate, connection);
+//         return Ok(activity);
+//     }
 
-        return Ok(new
-        {
-            TotalValue = totalValue
-        });
-    }
-}
+//     [HttpGet("list")]
+//     [Guard([Roles.Admin])]
+//     public async Task<IActionResult> List([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+//     {
+//         using var connection = _dbFactory.CreateDbConnection();
+//         connection.Open();
 
-public class SystemActivityDto
-{
-    public DateTime Date { get; set; }
-    public float Value { get; set; }
-    public long Order { get; set; }
-}
+//         var activities = await Db.GetAllSystemActivitiesAsync(connection);
+
+
+//         return Ok(new
+//         {
+//             Data = activities,
+//             TotalCount = activities.Count()
+//         });
+//     }
+
+//     [Guard([Roles.Admin])]
+//     [HttpGet("sum")]
+//     public async Task<IActionResult> GetSum([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+//     {
+//         using var connection = _dbFactory.CreateDbConnection();
+//         connection.Open();
+
+//         float totalValue = await Db.GetSumOfActivityValuesBetweenDatesAsync(startDate, endDate, connection);
+
+//         return Ok(new
+//         {
+//             TotalValue = totalValue
+//         });
+//     }
+// }
+
+// public class SystemActivityDto
+// {
+//     public DateTime Date { get; set; }
+//     public float Value { get; set; }
+//     public long Order { get; set; }
+// }

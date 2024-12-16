@@ -18,18 +18,20 @@ public static partial class Db
         string question,
         string answer,
         byte language,
+        byte type,
         IDbTransaction? transaction = null)
     {
         const string query = @"INSERT INTO [dbo].[FAQ]
-                            ([Question], [Answer], [Language])
-                            VALUES (@Question, @Answer, @Language)
+                            ([Question], [Answer], [Language], [Type])
+                            VALUES (@Question, @Answer, @Language, @Type)
                             SELECT CAST(SCOPE_IDENTITY() AS INT)";
 
         return await connection.ExecuteScalarAsync<int>(query, new
         {
             Question = question,
             Answer = answer,
-            Language = language
+            Language = language,
+            Type = type
         }, transaction);
     }
 
@@ -38,12 +40,14 @@ public static partial class Db
         string question,
         string answer,
         byte language,
+        byte type,
         IDbTransaction? transaction = null)
     {
         const string query = @"UPDATE [dbo].[FAQ]
                                 SET 
                                 [Question] = @Question,
                                 [Answer] = @Answer,
+                                [Type] = @Type,
                                 [Language] = @Language
                                 WHERE [Id] = @Id";
 
@@ -52,7 +56,8 @@ public static partial class Db
             Id = id,
             Question = question,
             Answer = answer,
-            Language = language
+            Language = language,
+            Type = type
         }, transaction);
 
         return updatedRowsCount > 0;
@@ -77,7 +82,8 @@ public static partial class Db
                             [Id], 
                             [Question], 
                             [Answer], 
-                            [Language]
+                            [Language],
+                            [Type]
                             FROM [dbo].[FAQ]
                             WHERE [Id] = @Id";
 
@@ -93,7 +99,8 @@ public static partial class Db
                             [Id], 
                             [Question], 
                             [Answer], 
-                            [Language]
+                            [Language],
+                            [Type]
                             FROM [dbo].[FAQ]";
 
         if (language.HasValue)
@@ -104,6 +111,22 @@ public static partial class Db
 
         return await connection.QueryAsync<FAQ>(query);
     }
+    public static async Task<IEnumerable<FAQ>> GetAllFAQsByTypeAsync(
+        IDbConnection connection,
+        byte type,
+        byte language)
+    {
+        string query = @"SELECT 
+                            [Id], 
+                            [Question], 
+                            [Answer], 
+                            [Language],
+                            [Type]
+                            FROM [dbo].[FAQ]
+                            WHERE [Language] = @Language AND [Type] = @Type";
+            return await connection.QueryAsync<FAQ>(query, new { Language = language, Type = type });
+
+    }
 }
 
 public class FAQ
@@ -112,4 +135,5 @@ public class FAQ
     public string Question { get; set; } = null!;
     public string Answer { get; set; } = null!;
     public byte Language { get; set; }
+    public byte Type { get; set; }
 }

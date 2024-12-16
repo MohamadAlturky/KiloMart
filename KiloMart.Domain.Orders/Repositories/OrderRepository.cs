@@ -144,7 +144,7 @@ public class OrderDetailsDto
 #region Orders Activity
 public static partial class OrderRepository
 {
-    public static async Task<IEnumerable<OrderActivityDetailsDto>> GetOrderActivitiesAsync(IDbConnection connection, int orderId)
+    public static async Task<IEnumerable<OrderActivityDetailsDto>> GetOrderActivitiesAsync(IDbConnection connection, long orderId)
     {
         var sql = @"
                 SELECT 

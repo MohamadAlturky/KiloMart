@@ -158,6 +158,22 @@ public static partial class OrdersDb
             Id = id
         });
     }
+    public static async Task<IEnumerable<OrderActivity>> GetOrderActivityByOrderIdAsync(long id, IDbConnection connection)
+    {
+        const string query = @"SELECT 
+                            [Id], 
+                            [Order], 
+                            [Date], 
+                            [OrderActivityType], 
+                            [OperatedBy]
+                            FROM [dbo].[OrderActivity]
+                            WHERE [Order] = @Id";
+
+        return await connection.QueryAsync<OrderActivity>(query, new
+        {
+            Id = id
+        });
+    }
 }
 
 public class OrderActivity

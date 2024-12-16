@@ -15,6 +15,7 @@ namespace KiloMart.Presentation.Controllers;
 public class VehicleAdminController(IDbFactory dbFactory, IUserContext userContext) : AppController(dbFactory, userContext)
 {
     [HttpGet("list")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> List([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
         using var connection = _dbFactory.CreateDbConnection();

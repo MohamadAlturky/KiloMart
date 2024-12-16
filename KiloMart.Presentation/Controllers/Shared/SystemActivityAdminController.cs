@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using KiloMart.DataAccess.Database;
 using KiloMart.Core.Contracts;
 using KiloMart.Core.Authentication;
+using KiloMart.Presentation.Authorization;
+using KiloMart.Domain.Register.Utils;
 
 namespace KiloMart.Presentation.Controllers.Shared;
 [ApiController]
@@ -13,6 +15,7 @@ public class SystemActivityAdminController : AppController
 
 
     [HttpGet("{id}")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetById(long id)
     {
         using var connection = _dbFactory.CreateDbConnection();
@@ -28,6 +31,7 @@ public class SystemActivityAdminController : AppController
     }
 
     [HttpGet("list")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> List([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
         using var connection = _dbFactory.CreateDbConnection();
@@ -43,6 +47,7 @@ public class SystemActivityAdminController : AppController
         });
     }
 
+    [Guard([Roles.Admin])]
     [HttpGet("sum")]
     public async Task<IActionResult> GetSum([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
     {

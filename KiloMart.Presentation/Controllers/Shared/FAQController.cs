@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using KiloMart.DataAccess.Database;
 using KiloMart.Core.Contracts;
 using KiloMart.Core.Authentication;
+using KiloMart.Domain.Register.Utils;
+using KiloMart.Presentation.Authorization;
 
 namespace KiloMart.Presentation.Controllers.Shared;
 
@@ -43,6 +45,7 @@ public class FAQController : AppController
     }
 
     [HttpPost]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> Create([FromBody] FAQDto faqDto)
     {
         using var connection = _dbFactory.CreateDbConnection();
@@ -54,6 +57,7 @@ public class FAQController : AppController
     }
 
     [HttpPut("{id}")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> Update(int id, [FromBody] FAQDto faqDto)
     {
         using var connection = _dbFactory.CreateDbConnection();
@@ -70,6 +74,7 @@ public class FAQController : AppController
     }
 
     [HttpDelete("{id}")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> Delete(int id)
     {
         using var connection = _dbFactory.CreateDbConnection();

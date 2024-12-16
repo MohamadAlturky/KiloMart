@@ -4,6 +4,8 @@ using KiloMart.Core.Contracts;
 using KiloMart.Domain.Languages.Models;
 using KiloMart.Domain.Products.Add.Models;
 using KiloMart.Domain.Products.Add.Services;
+using KiloMart.Domain.Register.Utils;
+using KiloMart.Presentation.Authorization;
 using KiloMart.Presentation.Models.Commands.Products;
 using KiloMart.Presentation.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -22,6 +24,7 @@ public class ProductController(
 
     #region Insert
     [HttpPost]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> Insert([FromForm] CreateProductRequest product)
     {
         var (success, errors) = product.Validate();
@@ -66,6 +69,7 @@ public class ProductController(
 
 
     [HttpGet("admin/paginated")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetAllLocalizedPaginatedForAdmin(
         [FromQuery] byte language = 1,
         [FromQuery] int page = 1,
@@ -134,6 +138,7 @@ public class ProductController(
 
 
     [HttpGet("admin/paginated-by-category")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetAllLocalizedPaginatedByCategoryForAdmin(
         [FromQuery] int category,
         [FromQuery] byte language = 1,
@@ -298,6 +303,7 @@ public class ProductController(
 
 
     [HttpGet("admin/paginated-with-offer")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetProductsWithOfferPaginatedForAdmin(
         [FromQuery] byte language = 1,
         [FromQuery] int page = 1,
@@ -564,6 +570,7 @@ public class ProductController(
 
     #region new
     [HttpGet("admin/paginated-with-offer-by-category")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetProductsWithOfferPaginatedForAdminWithCategory(
         [FromQuery] int category,
         [FromQuery] byte language = 1,

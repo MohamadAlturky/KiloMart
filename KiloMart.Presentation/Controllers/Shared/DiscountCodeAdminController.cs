@@ -3,6 +3,8 @@ using KiloMart.Commands.Services;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Database;
+using KiloMart.Domain.Register.Utils;
+using KiloMart.Presentation.Authorization;
 using KiloMart.Requests.Queries;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,6 +15,7 @@ namespace KiloMart.Presentation.Controllers;
 public class DiscountCodeAdminController(IDbFactory dbFactory, IUserContext userContext) : AppController(dbFactory, userContext)
 {
     [HttpPost]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> Insert(DiscountCodeInsertModel model)
     {
         var result = await DiscountCodeService.Insert(_dbFactory, _userContext.Get(), model);
@@ -28,6 +31,7 @@ public class DiscountCodeAdminController(IDbFactory dbFactory, IUserContext user
     }
 
     [HttpPut("{id}")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> Update(int id, DiscountCodeUpdateModel model)
     {
         model.Id = id;
@@ -51,6 +55,7 @@ public class DiscountCodeAdminController(IDbFactory dbFactory, IUserContext user
         }
     }
     [HttpPut("deactivate/{id}")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> Deactivate(int id)
     {
 
@@ -74,6 +79,7 @@ public class DiscountCodeAdminController(IDbFactory dbFactory, IUserContext user
         }
     }
     [HttpPut("activate/{id}")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> Activate(int id)
     {
 
@@ -98,6 +104,7 @@ public class DiscountCodeAdminController(IDbFactory dbFactory, IUserContext user
     }
 
     [HttpGet("list")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> List([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
         using var connection = _dbFactory.CreateDbConnection();
@@ -115,6 +122,7 @@ public class DiscountCodeAdminController(IDbFactory dbFactory, IUserContext user
         });
     }
     [HttpGet("by-product-id")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> List([FromQuery] int id)
     {
         using var connection = _dbFactory.CreateDbConnection();
@@ -132,6 +140,7 @@ public class DiscountCodeAdminController(IDbFactory dbFactory, IUserContext user
     }
 
     [HttpPost("link-product-with-discount-code")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> InsertProductDiscount([FromBody] InsertProductDiscountRequest request)
     {
         if (request == null || request.Product <= 0 || request.DiscountCode <= 0)

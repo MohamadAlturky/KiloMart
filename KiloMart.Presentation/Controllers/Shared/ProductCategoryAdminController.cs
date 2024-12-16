@@ -2,6 +2,8 @@ using Dapper;
 using KiloMart.Commands.Services;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
+using KiloMart.Domain.Register.Utils;
+using KiloMart.Presentation.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KiloMart.Presentation.Controllers;
@@ -13,6 +15,7 @@ public class ProductCategoryAdminController(IDbFactory dbFactory,
     : AppController(dbFactory, userContext)
 {
     [HttpPost("add")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> Insert(ProductCategoryLocalizedRequest model)
     {
         var result = await ProductCategoryService.InsertProductWithLocalization(

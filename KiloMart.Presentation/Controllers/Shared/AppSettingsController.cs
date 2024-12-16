@@ -5,6 +5,8 @@ using KiloMart.Presentation.RealTime;
 using KiloMart.Core.Contracts;
 using KiloMart.Core.Authentication;
 using KiloMart.DataAccess.Database;
+using KiloMart.Presentation.Authorization;
+using KiloMart.Domain.Register.Utils;
 
 namespace KiloMart.Presentation.Controllers;
 
@@ -115,6 +117,7 @@ public class AppSettingsController : AppController
     }
 
     [HttpPut("system-settings")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> UpdateSystemSettings([FromBody] SystemSettingsUpdateRequest request)
     {
         if (request == null)

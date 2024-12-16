@@ -12,7 +12,7 @@ namespace KiloMart.Presentation.Controllers.Shared;
 public class NotificationsController(IDbFactory dbFactory, IUserContext userContext) : AppController(dbFactory, userContext)
 {
     [HttpGet("paged")]
-    [Guard([Roles.Admin, Roles.Delivery, Roles.Provider, Roles.Customer])]
+    [Guard([Roles.Admin, Roles.Delivery, Roles.Provider, Roles.Customer, Roles.Admin])]
     public async Task<IActionResult> GetPagedNotifications([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
     {
         int party = _userContext.Get().Party;
@@ -44,7 +44,7 @@ public class NotificationsController(IDbFactory dbFactory, IUserContext userCont
     }
 
     [HttpGet("top-unread")]
-    [Guard([Roles.Admin, Roles.Delivery, Roles.Provider, Roles.Customer])]
+    [Guard([Roles.Admin, Roles.Delivery, Roles.Provider, Roles.Customer, Roles.Admin])]
     public async Task<IActionResult> GetTopUnreadNotifications([FromQuery] int topCount = 10)
     {
         int party = _userContext.Get().Party;
@@ -69,7 +69,7 @@ public class NotificationsController(IDbFactory dbFactory, IUserContext userCont
     }
 
     [HttpPost("mark-as-read")]
-    [Guard([Roles.Admin, Roles.Delivery, Roles.Provider, Roles.Customer])]
+    [Guard([Roles.Admin, Roles.Delivery, Roles.Provider, Roles.Customer, Roles.Admin])]
     public async Task<IActionResult> MarkNotificationsAsRead([FromBody] List<long> notificationIds)
     {
         int party = _userContext.Get().Party;

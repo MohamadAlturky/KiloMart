@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using KiloMart.DataAccess.Database;
 using KiloMart.Core.Contracts;
 using KiloMart.Core.Authentication;
+using KiloMart.Domain.Register.Utils;
+using KiloMart.Presentation.Authorization;
 
 namespace KiloMart.Presentation.Controllers.Shared;
 
@@ -43,6 +45,7 @@ public class ConfigController : AppController
     }
 
     [HttpPost("create")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> Create([FromBody] ConfigDto configDto)
     {
         using var connection = _dbFactory.CreateDbConnection();
@@ -52,13 +55,14 @@ public class ConfigController : AppController
 
         if (result)
         {
-            return Success(new {  Created = configDto });
+            return Success(new { Created = configDto });
         }
 
         return Fail("Failed to create config");
     }
 
     [HttpPut("edit/{key}")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> Update(string key, [FromBody] ConfigDto configDto)
     {
         using var connection = _dbFactory.CreateDbConnection();
@@ -75,6 +79,7 @@ public class ConfigController : AppController
     }
 
     [HttpDelete("{key}")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> Delete(string key)
     {
         using var connection = _dbFactory.CreateDbConnection();

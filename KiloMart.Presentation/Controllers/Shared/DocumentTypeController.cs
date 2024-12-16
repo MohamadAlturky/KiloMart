@@ -12,7 +12,8 @@ public class DocumentTypeController(IDbFactory dbFactory, IUserContext userConte
     : AppController(dbFactory, userContext)
 {
     [HttpPost("insert")]
-    //[Guard([Roles.Admin])] // Assuming only Admins can add document types
+    [Guard([Roles.Admin])]
+
     public async Task<IActionResult> Insert([FromBody] DocumentTypeModel request)
     {
         (bool success, string[] errors) = request.Validate();

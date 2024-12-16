@@ -1,6 +1,8 @@
 using Dapper;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
+using KiloMart.Domain.Register.Utils;
+using KiloMart.Presentation.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KiloMart.Presentation.Controllers;
@@ -15,6 +17,8 @@ public class PhoneNumberAdminController : AppController
     }
 
     [HttpGet("list")]
+    [Guard([Roles.Admin])]
+
     public async Task<IActionResult> GetPhoneNumbers(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10)

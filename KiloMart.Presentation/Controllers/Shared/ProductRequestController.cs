@@ -56,6 +56,7 @@ public class ProductRequestController
     // }
 
     [HttpPost("provider/product-request/accept")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> Accept([FromQuery] int id)
     {
         var result = await AcceptProductRequestService.Accept(_dbFactory, id);

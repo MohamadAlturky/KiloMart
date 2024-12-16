@@ -1,5 +1,7 @@
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
+using KiloMart.Domain.Register.Utils;
+using KiloMart.Presentation.Authorization;
 using KiloMart.Requests.Queries;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,6 +12,7 @@ namespace KiloMart.Presentation.Controllers;
 public class LocationAdminController(IDbFactory dbFactory, IUserContext userContext) : AppController(dbFactory, userContext)
 {
     [HttpGet("list")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> List([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
         using var connection = _dbFactory.CreateDbConnection();
@@ -27,6 +30,7 @@ public class LocationAdminController(IDbFactory dbFactory, IUserContext userCont
         });
     }
     [HttpGet("list/filter-by-is-deleted")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> ListFiltered([FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
         [FromQuery] bool isActive = true)

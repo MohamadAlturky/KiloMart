@@ -42,7 +42,12 @@ public static class AcceptOrderService
         {
             return Result<AcceptOrderResponseModel>.Fail(["Location is not for this provider"]);
         }
-
+        var orderDicountCode = await Db.GetOrderDiscountCodeByOrderIdAsync(orderId, readConnection);
+        DiscountCode? discountCode = null;
+        if(orderDicountCode is not null)
+        {
+            discountCode = await Db.GetDiscountCodeByIdAsync(orderDicountCode.DiscountCode, readConnection);
+        }
         using var connection = dbFactory.CreateDbConnection();
         connection.Open();
         using var transaction = connection.BeginTransaction();
@@ -120,6 +125,10 @@ public static class AcceptOrderService
                 return Result<AcceptOrderResponseModel>.Fail(["Total Price is less than the MinOrderValue that is configured by the admin"]);
             }
 
+            if(discountCode is not null)
+            {
+                totalPrice *= discountCode.Value;
+            }
 
             await Db.InsertSystemActivityAsync(
                 connection,

@@ -12,53 +12,66 @@ namespace KiloMart.DataAccess.Database;
 
 public static partial class Db
 {
-   public static async Task<bool> CreateOrderDiscountCodeAsync(IDbConnection connection,
-       long orderId,
-       int discountCodeId,
-       IDbTransaction? transaction = null)
-   {
-       const string query = @"INSERT INTO [dbo].[OrderDiscountCode]
+    public static async Task<bool> CreateOrderDiscountCodeAsync(IDbConnection connection,
+        long orderId,
+        int discountCodeId,
+        IDbTransaction? transaction = null)
+    {
+        const string query = @"INSERT INTO [dbo].[OrderDiscountCode]
                            ([Order], [DiscountCode])
                            VALUES (@OrderId, @DiscountCodeId)";
 
-       var insertedRowsCount = await connection.ExecuteAsync(query, new
-       {
-           OrderId = orderId,
-           DiscountCodeId = discountCodeId
-       }, transaction);
+        var insertedRowsCount = await connection.ExecuteAsync(query, new
+        {
+            OrderId = orderId,
+            DiscountCodeId = discountCodeId
+        }, transaction);
 
-       return insertedRowsCount > 0;
-   }
+        return insertedRowsCount > 0;
+    }
 
-   public static async Task<bool> HasOrderDiscountCodeAsync(long orderId, IDbConnection connection)
-   {
-       const string query = @"SELECT 1 FROM [dbo].[OrderDiscountCode]
+    public static async Task<bool> HasOrderDiscountCodeAsync(long orderId, IDbConnection connection)
+    {
+        const string query = @"SELECT 1 FROM [dbo].[OrderDiscountCode]
                                WHERE [Order] = @OrderId";
 
-       var result = await connection.ExecuteScalarAsync<int?>(query, new
-       {
-           OrderId = orderId
-       });
+        var result = await connection.ExecuteScalarAsync<int?>(query, new
+        {
+            OrderId = orderId
+        });
 
-       return result.HasValue;
-   }
+        return result.HasValue;
+    }
+    public static async Task<OrderDiscountCode?> GetOrderDiscountCodeByOrderIdAsync(long orderId, IDbConnection connection)
+    {
+        const string query = @"SELECT [Order], [DiscountCode] 
+                           FROM [dbo].[OrderDiscountCode]
+                           WHERE [Order] = @OrderId";
 
-   public static async Task<bool> DeleteOrderDiscountCodeAsync(long orderId, IDbConnection connection, IDbTransaction? transaction = null)
-   {
-       const string query = @"DELETE FROM [dbo].[OrderDiscountCode]
+        var result = await connection.QueryFirstOrDefaultAsync<OrderDiscountCode>(query, new
+        {
+            OrderId = orderId
+        });
+
+        return result;
+    }
+
+    public static async Task<bool> DeleteOrderDiscountCodeAsync(long orderId, IDbConnection connection, IDbTransaction? transaction = null)
+    {
+        const string query = @"DELETE FROM [dbo].[OrderDiscountCode]
                                WHERE [Order] = @OrderId";
 
-       var deletedRowsCount = await connection.ExecuteAsync(query, new
-       {
-           OrderId = orderId
-       }, transaction);
+        var deletedRowsCount = await connection.ExecuteAsync(query, new
+        {
+            OrderId = orderId
+        }, transaction);
 
-       return deletedRowsCount > 0;
-   }
+        return deletedRowsCount > 0;
+    }
 }
 
 public class OrderDiscountCode
 {
-   public long Order { get; set; }
-   public int DiscountCode { get; set; }
+    public long Order { get; set; }
+    public int DiscountCode { get; set; }
 }

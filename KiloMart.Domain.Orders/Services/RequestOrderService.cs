@@ -66,22 +66,44 @@ public class RequestOrderService
                 response.Order.IsPaid,
                 response.Order.PaymentType,
                 transaction);
-
-            foreach (var code in model.DiscountCodes)
+            if (model.DiscountCode is not null)
             {
-                var discountCode = await Db.GetDiscountCodeByCodeAsync(code, readConnection);
+                var discountCode = await Db.GetDiscountCodeByCodeAsync(
+                    model.DiscountCode,
+                    readConnection);
+
                 if (discountCode is not null)
                 {
                     if (discountCode.IsActive)
                     {
-                        await Db.CreateOrderDiscountCodeAsync(connection,
+                        var now = DateTime.Now;
+                        if (discountCode.EndDate is not null)
+                        {
+                            if (now >= discountCode.StartDate
+                                && now <= discountCode.EndDate)
+                            {
+                                await Db.CreateOrderDiscountCodeAsync(connection,
                                         response.Order.Id,
                                         discountCode.Id,
                                         transaction);
-                        response.DiscountCodes.Add(discountCode);
+                                response.DiscountCodes.Add(discountCode);
+                            }
+                        }
+                        else
+                        {
+                            if (now >= discountCode.StartDate)
+                            {
+                                await Db.CreateOrderDiscountCodeAsync(connection,
+                                                                    response.Order.Id,
+                                                                    discountCode.Id,
+                                                                    transaction);
+                                response.DiscountCodes.Add(discountCode);
+                            }
+                        }
                     }
                 }
             }
+
 
             response.CustomerInformation = new()
             {
@@ -147,7 +169,7 @@ public class RequestOrderService
 public class CreateOrderRequestModel
 {
     public List<RequestedProduct> RequestedProducts { get; set; } = null!;
-    public List<string> DiscountCodes { get; set; } = null!;
+    public string? DiscountCode { get; set; }
     public int LocationId { get; set; }
     public byte PaymentType { get; set; }
     public (bool Success, string[] Errors) Validate()
@@ -158,7 +180,7 @@ public class CreateOrderRequestModel
         {
             errors.Add("No Requested Products");
         }
-        if (DiscountCodes is null)
+        if (DiscountCode is null)
         {
             errors.Add("DiscountCodes shouldn't be null, you can send it as an empty array");
         }

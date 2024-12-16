@@ -109,14 +109,17 @@ public static class AcceptOrderService
                     response.OrderOffers.Add(orderOffer);
                 }
             }
-            decimal totalPrice = response.OrderOffers.Sum(o => o.UnitPrice * o.Quantity);
+            decimal itemsPrice = response.OrderOffers.Sum(o => o.UnitPrice * o.Quantity);
+            decimal systemFee = systemSettings.SystemOrderFee;
+            decimal deliveryFee = systemSettings.DeliveryOrderFee;
+            decimal totalPrice = systemFee + deliveryFee + itemsPrice;
 
             if (totalPrice < systemSettings.MinOrderValue)
             {
                 transaction.Rollback();
                 return Result<AcceptOrderResponseModel>.Fail(["Total Price is less than the MinOrderValue that is configured by the admin"]);
             }
-            totalPrice += systemSettings.SystemOrderFee + systemSettings.DeliveryOrderFee;
+
 
             await Db.InsertSystemActivityAsync(
                 connection,
@@ -129,6 +132,9 @@ public static class AcceptOrderService
                 order.Id,
                 (byte)OrderStatus.PREPARING,
                 totalPrice,
+                itemsPrice,
+                systemFee,
+                deliveryFee,
                 order.TransactionId,
                 order.Date,
                 order.PaymentType,
@@ -177,11 +183,11 @@ public static class AcceptOrderService
         using var transaction = connection.BeginTransaction();
         try
         {
-            var whereClause = "WHERE [Id] = id";
+            var whereClause = "WHERE o.Id = @id";
             var parameters = new { id = orderId };
 
             // Get the orders
-            OrderDetailsDto? order = await OrderRepository.GetOrderDetailsFirstOrDefaultAsync(connection, whereClause, parameters);
+            OrderDetailsDto? order = await OrderRepository.GetOrderDetailsFirstOrDefaultAsync(readConnection, whereClause, parameters);
 
             if (order is null)
             {
@@ -217,17 +223,18 @@ public static class AcceptOrderService
                 transaction);
 
 
-            
-            
-            
-            // await OrdersDb.UpdateOrderAsync(connection,
-            //     order.Id,
-            //     order.OrderStatus,
-            //     order.TotalPrice + systemSettings.DeliveryOrderFee,
-            //     order.TransactionId,
-            //     order.Date,
-            //     order.PaymentType,
-            //     transaction);
+            await OrdersDb.UpdateOrderAsync(connection,
+                order.Id,
+                (byte)OrderStatus.SHIPPED,
+                order.TotalPrice,
+                order.ItemsPrice,
+                order.SystemFee,
+                order.DeliveryFee,
+                order.TransactionId,
+                order.Date,
+                order.PaymentType,
+                order.IsPaid,
+                transaction);
 
             transaction.Commit();
             return Result<AcceptOrderResponseModel>.Ok(response);

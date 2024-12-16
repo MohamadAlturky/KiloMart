@@ -2,6 +2,7 @@ using System.Data;
 using Dapper;
 using KiloMart.Core.Contracts;
 using KiloMart.Core.Models;
+using KiloMart.Domain.Orders.Common;
 
 namespace KiloMart.Domain.Orders.Services
 {
@@ -96,7 +97,7 @@ namespace KiloMart.Domain.Orders.Services
                     dbo.[Location] pl ON pl.Id = opi.[Location]
                 INNER JOIN dbo.[OrderActivity] oa ON oa.[Order] = o.Id AND oa.OrderActivityType = 5
             ) p
-            WHERE ProviderDistanceInKilometers <= @Raduis +
+            WHERE OrderStatus = @status AND ProviderDistanceInKilometers <= @Raduis +
             CASE
                 WHEN FLOOR(p.DifferenceInMinutes / @TimeToMakeTheRaduisBigger) * @DistanceToAdd < @MaxDistanceToAdd
                 THEN FLOOR(p.DifferenceInMinutes / @TimeToMakeTheRaduisBigger) * @DistanceToAdd
@@ -113,7 +114,8 @@ namespace KiloMart.Domain.Orders.Services
                 TimeToMakeTheRaduisBigger = timeToMakeTheRaduisBigger,
                 DistanceToAdd = distanceToAdd,
                 MaxDistanceToAdd = maxDistanceToAdd,
-                Raduis = raduis
+                Raduis = raduis,
+                status = OrderStatus.PREPARING
             };
 
             IEnumerable<ReadyToDeliverOrder> orders = await connection.QueryAsync<ReadyToDeliverOrder>(sql, parameters);
@@ -125,7 +127,7 @@ namespace KiloMart.Domain.Orders.Services
 public class ReadyToDeliverOrder
 {
     public int Id { get; set; }
-    public string OrderStatus { get; set; }
+    public byte OrderStatus { get; set; }
     public decimal TotalPrice { get; set; }
     public string TransactionId { get; set; }
     public DateTime Date { get; set; }

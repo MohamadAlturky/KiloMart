@@ -145,6 +145,18 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory,
     #endregion
 
     #region orders actions
+    
+    [HttpGet("orders/shipping")]
+    [Guard([Roles.Delivery])]
+    public async Task<IActionResult> GetShippingOrders([FromQuery] byte language)
+    {
+        var result = await ReadOrderService.GetShippingOrders(
+            language,
+            _userContext.Get().Party,
+            _dbFactory);
+
+        return result.Success ? Success(result.Data) : Fail(result.Errors);
+    }
     [HttpPost("orders/accept")]
     [Guard([Roles.Delivery])]
     public async Task<IActionResult> AcceptOrder([FromBody] long orderId)

@@ -140,7 +140,7 @@ public class ProviderActivitiesContoller : AppController
         return result.Success ? Success(result.Data) : Fail(result.Errors);
     }
     [HttpGet("orders/preparing")]
-    // [Guard([Roles.Customer])]
+    [Guard([Roles.Provider])]
     public async Task<IActionResult> GetPreparingOrders([FromQuery] byte language)
     {
         var result = await ReadOrderService.GetPreparingOrders(

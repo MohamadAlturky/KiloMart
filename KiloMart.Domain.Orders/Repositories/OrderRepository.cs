@@ -19,6 +19,9 @@ public static partial class OrderRepository
                 o.Date,
                 o.PaymentType,
                 o.IsPaid,
+                o.ItemsPrice,
+                o.SystemFee,
+                o.DeliveryFee,
                 oci.Customer,
                 oci.Location AS CustomerLocation,
                 oci.Id AS CustomerInformationId,
@@ -67,6 +70,9 @@ public static partial class OrderRepository
                 o.Date,
                 o.PaymentType,
                 o.IsPaid,
+                o.ItemsPrice,
+                o.SystemFee,
+                o.DeliveryFee,
                 oci.Customer,
                 oci.Location AS CustomerLocation,
                 oci.Id AS CustomerInformationId,
@@ -112,7 +118,9 @@ public class OrderDetailsDto
     public DateTime Date { get; set; }
     public byte PaymentType { get; set; }
     public bool IsPaid { get; set; }
-
+    public decimal ItemsPrice { get; set; }
+    public decimal SystemFee { get; set; }
+    public decimal DeliveryFee { get; set; }
     public int? Customer { get; set; }
     public int? CustomerLocation { get; set; }
     public int? CustomerInformationId { get; set; }
@@ -370,6 +378,9 @@ public static partial class OrderRepository
             o.Date,
             o.PaymentType,
             o.IsPaid,
+            o.ItemsPrice,
+            o.SystemFee,
+            o.DeliveryFee,
             oci.Customer,
             oci.Location AS CustomerLocation,
             oci.Id AS CustomerInformationId,
@@ -427,6 +438,9 @@ public class OrderDetailsForDeliveryDto
     public DateTime Date { get; set; }
     public byte PaymentType { get; set; }
     public bool IsPaid { get; set; }
+    public decimal ItemsPrice { get; set; }
+    public decimal SystemFee { get; set; }
+    public decimal DeliveryFee { get; set; }
     public int? Customer { get; set; }
     public int? CustomerLocation { get; set; }
     public int? CustomerInformationId { get; set; }

@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using KiloMart.Domain.Orders.Common;
 using System.Data;
 
 namespace KiloMart.Domain.Orders.DataAccess;
@@ -14,6 +15,71 @@ namespace KiloMart.Domain.Orders.DataAccess;
 /// </summary>
 public static partial class OrdersDb
 {
+    public static async Task<IEnumerable<OrderSummaryDto>> GetOrderSummaryAsync(
+    IDbConnection connection,
+    int provider,
+    int startYear,
+    int startMonth,
+    int endYear,
+    int endMonth)
+    {
+        const string query = @"
+    SELECT SUM(o.ItemsPrice) AS Sales, YEAR(o.[Date]) AS Year, MONTH(o.[Date]) AS Month 
+    FROM dbo.[Order] o 
+    INNER JOIN dbo.[OrderProviderInformation] opi 
+    ON opi.[Order] = o.[Id] 
+    WHERE o.OrderStatus = @status 
+      AND opi.[Provider] = @provider
+      AND (YEAR(o.[Date]) > @startYear OR (YEAR(o.[Date]) = @startYear AND MONTH(o.[Date]) >= @startMonth))
+      AND (YEAR(o.[Date]) < @endYear OR (YEAR(o.[Date]) = @endYear AND MONTH(o.[Date]) <= @endMonth))
+    GROUP BY YEAR(o.[Date]), MONTH(o.[Date])";
+
+        return await connection.QueryAsync<OrderSummaryDto>(query, new
+        {
+            provider,
+            status = (byte)OrderStatus.COMPLETED,
+            startYear,
+            startMonth,
+            endYear,
+            endMonth
+        });
+    }
+
+    public static async Task<IEnumerable<OrderSummaryDto>> GetOrderSummaryAsync(
+        IDbConnection connection,
+        int provider)
+    {
+        const string query = @"
+        SELECT SUM(o.ItemsPrice) AS Sales, YEAR(o.[Date]) AS Year, MONTH(o.[Date]) AS Month 
+        FROM dbo.[Order] o 
+        INNER JOIN dbo.[OrderProviderInformation] opi 
+        ON opi.[Order] = o.[Id] 
+        WHERE o.OrderStatus = @status AND opi.[Provider] = @provider
+        GROUP BY YEAR(o.[Date]), MONTH(o.[Date])";
+
+        return await connection.QueryAsync<OrderSummaryDto>(query, new
+        {
+            provider,
+            status = (byte)OrderStatus.COMPLETED
+        });
+    }
+    public static async Task<TotalSalesDto?> GetTotalSalesAsync(
+        IDbConnection connection,
+        int provider)
+    {
+        const string query = @"
+        SELECT SUM(o.ItemsPrice) AS Amount 
+            FROM dbo.[Order] o 
+            INNER JOIN dbo.[OrderProviderInformation] opi 
+                ON opi.[Order] = o.[Id] 
+            WHERE o.OrderStatus = @status AND opi.[Provider] = @provider";
+
+        return await connection.QueryFirstOrDefaultAsync<TotalSalesDto>(query, new
+        {
+            provider,
+            status = (byte)OrderStatus.COMPLETED
+        });
+    }
     public static async Task<long> InsertOrderActivityAsync(IDbConnection connection,
         long orderId,
         DateTime date,
@@ -101,4 +167,14 @@ public class OrderActivity
     public DateTime Date { get; set; }
     public byte OrderActivityType { get; set; }
     public int OperatedBy { get; set; }
+}
+public class OrderSummaryDto
+{
+    public decimal Sales { get; set; }
+    public int Year { get; set; }
+    public int Month { get; set; }
+}
+public class TotalSalesDto
+{
+    public decimal Amount { get; set; }
 }

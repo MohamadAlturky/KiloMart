@@ -1,6 +1,7 @@
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Database;
+using KiloMart.Domain.Orders.DataAccess;
 using KiloMart.Domain.Orders.Services;
 using KiloMart.Domain.ProductRequests.Add;
 using KiloMart.Domain.Register.Utils;
@@ -181,44 +182,84 @@ public class ProviderActivitiesContoller : AppController
 
     #region Activities
 
-    [HttpGet("activities/by-date-range")]
+    // [HttpGet("activities/by-date-range")]
+    // [Guard([Roles.Provider])]
+    // public async Task<IActionResult> GetByDateRange(
+    //         [FromQuery] DateTime startDate,
+    //         [FromQuery] DateTime endDate)
+    // {
+    //     int ProviderId = _userContext.Get().Party;
+    //     using var connection = _dbFactory.CreateDbConnection();
+    //     connection.Open();
+
+    //     var activities = await Db.GetProviderActivitiesByDateBetweenAndProviderAsync(startDate, endDate, ProviderId, connection);
+    //     return Success(activities);
+    // }
+
+    // [HttpGet("activities/by-date-bigger")]
+    // [Guard([Roles.Provider])]
+    // public async Task<IActionResult> GetByDateBigger(
+    //     [FromQuery] DateTime date)
+    // {
+    //     int ProviderId = _userContext.Get().Party;
+    //     using var connection = _dbFactory.CreateDbConnection();
+    //     connection.Open();
+
+    //     var activities = await Db.GetProviderActivitiesByDateBiggerAndProviderAsync(date, ProviderId, connection);
+    //     return Success(activities);
+    // }
+    // [HttpGet("activities/all")]
+    // [Guard([Roles.Provider])]
+    // public async Task<IActionResult> GetMine()
+    // {
+    //     int ProviderId = _userContext.Get().Party;
+    //     using var connection = _dbFactory.CreateDbConnection();
+    //     connection.Open();
+
+    //     var activities = await Db.GetProviderActivitiesByProviderIdAsync(ProviderId, connection);
+    //     return Success(activities);
+    // }
+    [HttpGet("sales-by-range")]
     [Guard([Roles.Provider])]
     public async Task<IActionResult> GetByDateRange(
-            [FromQuery] DateTime startDate,
-            [FromQuery] DateTime endDate)
+       [FromQuery] int startYear,
+       [FromQuery] int startMonth, 
+       [FromQuery] int endYear, 
+       [FromQuery] int endMonth)
     {
-        int ProviderId = _userContext.Get().Party;
+        int providerId = _userContext.Get().Party;
+
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
 
-        var activities = await Db.GetProviderActivitiesByDateBetweenAndProviderAsync(startDate, endDate, ProviderId, connection);
-        return Success(activities);
+        var sales = await OrdersDb.GetOrderSummaryAsync(connection, providerId, startYear, startMonth, endYear, endMonth);
+
+        return Success(sales);
     }
 
-    [HttpGet("activities/by-date-bigger")]
+    [HttpGet("sales")]
     [Guard([Roles.Provider])]
-    public async Task<IActionResult> GetByDateBigger(
-        [FromQuery] DateTime date)
+    public async Task<IActionResult> GetByDateRange()
     {
-        int ProviderId = _userContext.Get().Party;
+        int providerId = _userContext.Get().Party;
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
 
-        var activities = await Db.GetProviderActivitiesByDateBiggerAndProviderAsync(date, ProviderId, connection);
-        return Success(activities);
+        var sales = await OrdersDb.GetOrderSummaryAsync(connection, providerId);
+        return Success(sales);
     }
-    [HttpGet("activities/all")]
+
+    [HttpGet("total-sales")]
     [Guard([Roles.Provider])]
-    public async Task<IActionResult> GetMine()
+    public async Task<IActionResult> GetTotalSales()
     {
-        int ProviderId = _userContext.Get().Party;
+        int providerId = _userContext.Get().Party;
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
 
-        var activities = await Db.GetProviderActivitiesByProviderIdAsync(ProviderId, connection);
-        return Success(activities);
+        var sales = await OrdersDb.GetTotalSalesAsync(connection, providerId);
+        return Success(sales);
     }
-
     #endregion
 
     #region Wallets

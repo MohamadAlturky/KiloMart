@@ -54,6 +54,7 @@ public static class AcceptOrderService
         try
         {
             Order? order = await OrdersDb.GetOrderByIdAsync(orderId, readConnection);
+            DriverFreeFee? driverFreeFee  = await Db.GetActiveDriverFreeFeesAsync(readConnection);
 
             if (order is null)
             {
@@ -118,7 +119,11 @@ public static class AcceptOrderService
             decimal systemFee = systemSettings.SystemOrderFee;
             decimal deliveryFee = systemSettings.DeliveryOrderFee;
             decimal totalPrice = systemFee + deliveryFee + itemsPrice;
-
+            
+            if(driverFreeFee is not null)
+            {
+                totalPrice -= deliveryFee;
+            }
             if (totalPrice < systemSettings.MinOrderValue)
             {
                 transaction.Rollback();

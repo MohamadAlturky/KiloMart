@@ -33,11 +33,11 @@ public static class OrderAggregator
         }
 
         // Add OrderProductDetails to the corresponding aggregated orders
-        foreach (var productDetail in orderProductDetails)
+        foreach (OrderProductDetailsDto productDetail in orderProductDetails)
         {
-            if (aggregatedOrders.ContainsKey(productDetail.Order))
+            if (aggregatedOrders.ContainsKey(productDetail.ItemOrder))
             {
-                aggregatedOrders[productDetail.Order].OrderProductDetails.Add(productDetail);
+                aggregatedOrders[productDetail.ItemOrder].OrderProductDetails.Add(productDetail);
             }
         }
 

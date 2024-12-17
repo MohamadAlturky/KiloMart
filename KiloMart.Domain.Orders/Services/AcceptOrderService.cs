@@ -87,6 +87,7 @@ public static class AcceptOrderService
                 ProductId = e.Product,
                 RequestedQuantity = e.Quantity
             }), providerId);
+            decimal itemsPriceAfterOffPercentage = 0;
 
             foreach (var item in offers)
             {
@@ -113,12 +114,16 @@ public static class AcceptOrderService
                         transaction);
 
                     response.OrderOffers.Add(orderOffer);
+                    itemsPriceAfterOffPercentage += 
+                    orderOffer.UnitPrice 
+                    * orderOffer.Quantity 
+                    * item.DealOffPercentage??1;
                 }
             }
             decimal itemsPrice = response.OrderOffers.Sum(o => o.UnitPrice * o.Quantity);
             decimal systemFee = systemSettings.SystemOrderFee;
             decimal deliveryFee = systemSettings.DeliveryOrderFee;
-            decimal totalPrice = systemFee + deliveryFee + itemsPrice;
+            decimal totalPrice = systemFee + deliveryFee + itemsPriceAfterOffPercentage;
             
             if(driverFreeFee is not null)
             {

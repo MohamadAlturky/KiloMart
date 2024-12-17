@@ -1,13 +1,6 @@
-﻿using KiloMart.Commands.Services;
-using KiloMart.Core.Authentication;
+﻿using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
-using KiloMart.Domain.Orders.DataAccess;
-using KiloMart.Domain.Orders.Queries;
 using KiloMart.Domain.Orders.Repositories;
-using KiloMart.Domain.Orders.Services;
-using KiloMart.Domain.Register.Utils;
-using KiloMart.Presentation.Authorization;
-using KiloMart.Requests.Queries;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KiloMart.Presentation.Controllers;

@@ -9,6 +9,61 @@ namespace KiloMart.DataAccess.Database;
 /// </summary>
 public static partial class Db
 {
+    public static async Task<List<ProductDetailWithPricing>> GetBestDeals(
+        byte language,
+        int totalCount,
+        IDbConnection connection)
+    {
+        const string query = @"
+        SELECT TOP(@TotalCount)
+            pd.[ProductId],
+            pd.[ProductImageUrl],
+            pd.[ProductIsActive],
+            pd.[ProductMeasurementUnit],
+            pd.[ProductDescription],
+            pd.[ProductName],
+            pd.[ProductCategoryId],
+            pd.[ProductCategoryIsActive],
+            pd.[ProductCategoryName],
+            pd.[DealId],
+            pd.[DealEndDate],
+            pd.[DealStartDate],
+            pd.[DealIsActive],
+            pd.[DealOffPercentage],
+            po.MaxPrice, 
+            po.MinPrice,
+            ROW_NUMBER() OVER (ORDER BY pd.[ProductId]) AS RowNum
+        FROM 
+            dbo.GetProductDetailsFN(@Language) pd
+        INNER JOIN (
+            SELECT 
+                [Product], 
+                MAX([Price]) AS MaxPrice, 
+                MIN([Price]) AS MinPrice,
+                SUM(Quantity) AS Quantity
+            FROM 
+                [ProductOffer]
+            WHERE 
+                [IsActive] = 1
+            GROUP BY 
+                [Product]
+        ) po ON pd.[ProductId] = po.[Product]
+        WHERE 
+            pd.[ProductIsActive] = 1 
+            AND po.Quantity > 0 
+            AND pd.[DealOffPercentage] IS NOT NULL
+        ORDER BY 
+            [DealOffPercentage];";
+
+        var result = await connection.QueryAsync<ProductDetailWithPricing>(query, new
+        {
+            Language = language,
+            TotalCount = totalCount
+        });
+
+        return result.ToList();
+    }
+
     public static async Task<IEnumerable<ProductDetail>> GetProductDetailsAsync(byte language, IDbConnection connection)
     {
         const string query = @"
@@ -35,56 +90,13 @@ public static partial class Db
         });
     }
 
-    public static async Task<IEnumerable<ProductDetailWithPricing>> GetProductDetailsWithPricingAsync(byte language, IDbConnection connection)
-    {
-        const string query = @"
-        SELECT 
-            [ProductId],
-            [ProductImageUrl],
-            [ProductIsActive],
-            [ProductMeasurementUnit],
-            [ProductDescription],
-            [ProductName],
-            [ProductCategoryId],
-            [ProductCategoryIsActive],
-            [ProductCategoryName],
-            [DealId],
-            [DealEndDate],
-            [DealStartDate],
-            [DealIsActive],
-            [DealOffPercentage],
-            [po].[MaxPrice] AS MaxPrice, 
-            [po].[MinPrice] AS MinPrice
-        FROM 
-            dbo.[GetProductDetailsFN](@Language) pd
-        INNER JOIN (
-            SELECT 
-                [Product], 
-                MAX([Price]) AS MaxPrice, 
-                MIN([Price]) AS MinPrice
-            FROM 
-                [ProductOffer]
-            WHERE 
-                [IsActive] = 1
-            GROUP BY 
-                [Product]
-        ) po ON pd.[ProductId] = po.[Product]
-        WHERE pd.[ProductIsActive] = 1
-        ORDER BY pd.[ProductId];";
-
-        return await connection.QueryAsync<ProductDetailWithPricing>(query, new
-        {
-            Language = language
-        });
-    }
-
     public static async Task<PaginatedResult<ProductDetailWithPricing>> GetProductDetailsWithPricingAsync(
     byte language,
     int pageNumber,
     int pageSize,
     IDbConnection connection)
-{
-    const string query = @"
+    {
+        const string query = @"
     SELECT * FROM (
         SELECT 
             pd.[ProductId],
@@ -110,7 +122,8 @@ public static partial class Db
             SELECT 
                 [Product], 
                 MAX([Price]) AS MaxPrice, 
-                MIN([Price]) AS MinPrice
+                MIN([Price]) AS MinPrice,
+			    SUM(Quantity) AS Quantity
             FROM 
                 [ProductOffer]
             WHERE 
@@ -118,7 +131,7 @@ public static partial class Db
             GROUP BY 
                 [Product]
         ) po ON pd.[ProductId] = po.[Product]
-        WHERE pd.[ProductIsActive] = 1
+        WHERE pd.[ProductIsActive] = 1 AND po.Quantity > 0
     ) AS ProductDetails
     WHERE RowNum BETWEEN @StartRow AND @EndRow;
 
@@ -131,39 +144,40 @@ public static partial class Db
             SELECT 
                 [Product], 
                 MAX([Price]) AS MaxPrice, 
-                MIN([Price]) AS MinPrice
+                MIN([Price]) AS MinPrice,
+			    SUM(Quantity) AS Quantity
             FROM 
                 [ProductOffer]
             WHERE 
                 [IsActive] = 1
             GROUP BY 
                 [Product]
-        ) po ON pd.[ProductId] = po.[Product]
-        WHERE pd.[ProductIsActive] = 1
+        ) po ON pd.[ProductId] = po.[Product] 
+        WHERE pd.[ProductIsActive] = 1 AND po.Quantity > 0
     ) AS ProductCount;";
 
-    var startRow = (pageNumber - 1) * pageSize + 1;
-    var endRow = startRow + pageSize - 1;
+        var startRow = (pageNumber - 1) * pageSize + 1;
+        var endRow = startRow + pageSize - 1;
 
-    using (var multi = await connection.QueryMultipleAsync(query, new
-    {
-        Language = language,
-        StartRow = startRow,
-        EndRow = endRow
-    }))
-    {
-        var items = multi.Read<ProductDetailWithPricing>().ToList();
-        var totalCount = await multi.ReadSingleAsync<int>();
-
-        return new PaginatedResult<ProductDetailWithPricing>
+        using (var multi = await connection.QueryMultipleAsync(query, new
         {
-            Items = [..items],
-            TotalCount = totalCount,
-            PageNumber = pageNumber,
-            PageSize = pageSize
-        };
+            Language = language,
+            StartRow = startRow,
+            EndRow = endRow
+        }))
+        {
+            var items = multi.Read<ProductDetailWithPricing>().ToList();
+            var totalCount = await multi.ReadSingleAsync<int>();
+
+            return new PaginatedResult<ProductDetailWithPricing>
+            {
+                Items = [.. items],
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+        }
     }
-}
 
 
 }

@@ -39,7 +39,7 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
     public async Task<IActionResult> GetBestDeals([FromQuery] byte language = 1, [FromQuery] int numberOfReturnedRecords = 5)
     {
         using var connection = _dbFactory.CreateDbConnection();
-        var result = await ProductQuery.GetProductsBestDeals(connection, language, numberOfReturnedRecords);
+        var result = await Db.GetBestDeals(language, numberOfReturnedRecords, connection);
         return Success(new { deals = result });
     }
 

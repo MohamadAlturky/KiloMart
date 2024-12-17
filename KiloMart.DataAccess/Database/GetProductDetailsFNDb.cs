@@ -192,9 +192,9 @@ public class ProductDetail
     public int ProductCategoryId { get; set; }
     public bool ProductCategoryIsActive { get; set; }
     public string ProductCategoryName { get; set; } = null!;
-    public int? DealId { get; set; } // Assuming DealId can be null
-    public DateTime? DealEndDate { get; set; } // Assuming DealEndDate can be null
-    public DateTime? DealStartDate { get; set; } // Assuming DealStartDate can be null
+    public int? DealId { get; set; } 
+    public DateTime? DealEndDate { get; set; } 
+    public DateTime? DealStartDate { get; set; } 
     public bool? DealIsActive { get; set; }
     public decimal? DealOffPercentage { get; set; }
 }

@@ -103,18 +103,25 @@ public static partial class OrdersQuery
      long orderId, byte language)
     {
         const string sql = @"
-        SELECT 
+            SELECT 
             op.Id AS ItemId,
             op.[Order] AS ItemOrder,
             op.Quantity AS ItemQuantity,
-            pd.ProductId,
-            pd.ProductImageUrl,
-            pd.ProductProductCategory,
-            pd.ProductIsActive,
-            pd.ProductMeasurementUnit,
-            pd.ProductDescription,
-            pd.ProductName
-        FROM GetProductDetailsByLanguageFN(@language) pd
+            [ProductId],
+            [ProductImageUrl],
+            [ProductIsActive],
+            [ProductMeasurementUnit],
+            [ProductDescription],
+            [ProductName],
+            [ProductCategoryId],
+            [ProductCategoryIsActive],
+            [ProductCategoryName],
+            [DealId],
+            [DealEndDate],
+            [DealStartDate],
+            [DealIsActive],
+            [DealOffPercentage]
+        FROM dbo.GetProductDetailsFN(@Language) pd
         INNER JOIN OrderProduct op ON op.Product = pd.ProductId
         WHERE [Order] = @orderId";
 
@@ -130,13 +137,22 @@ public class OrderProductDetail
     public int ItemId { get; set; }
     public long ItemOrder { get; set; }
     public int ItemQuantity { get; set; }
+    
+    
     public int ProductId { get; set; }
     public string ProductImageUrl { get; set; } = null!;
-    public int ProductProductCategory { get; set; }
     public bool ProductIsActive { get; set; }
     public string ProductMeasurementUnit { get; set; } = null!;
     public string ProductDescription { get; set; } = null!;
     public string ProductName { get; set; } = null!;
+    public int ProductCategoryId { get; set; }
+    public bool ProductCategoryIsActive { get; set; }
+    public string ProductCategoryName { get; set; } = null!;
+    public int? DealId { get; set; } 
+    public DateTime? DealEndDate { get; set; } 
+    public DateTime? DealStartDate { get; set; } 
+    public bool? DealIsActive { get; set; }
+    public decimal? DealOffPercentage { get; set; }
 }
 public class OrderMinPrice
 {

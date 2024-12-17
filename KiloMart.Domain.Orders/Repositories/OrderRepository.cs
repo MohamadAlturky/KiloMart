@@ -185,16 +185,25 @@ public class OrderActivityDetailsDto
 #region Orders Products
 public class OrderProductDetailsDto
 {
-    public long Id { get; set; }
-    public long Order { get; set; }
-    public int Product { get; set; }
-    public decimal Quantity { get; set; }
-    public string ProductDescription { get; set; } = null!;
+    public int ItemId { get; set; }
+    public long ItemOrder { get; set; }
+    public int ItemQuantity { get; set; }
+    
+    
+    public int ProductId { get; set; }
     public string ProductImageUrl { get; set; } = null!;
-    public int ProductProductCategory { get; set; }
+    public bool ProductIsActive { get; set; }
     public string ProductMeasurementUnit { get; set; } = null!;
+    public string ProductDescription { get; set; } = null!;
     public string ProductName { get; set; } = null!;
+    public int ProductCategoryId { get; set; }
+    public bool ProductCategoryIsActive { get; set; }
     public string ProductCategoryName { get; set; } = null!;
+    public int? DealId { get; set; } 
+    public DateTime? DealEndDate { get; set; } 
+    public DateTime? DealStartDate { get; set; } 
+    public bool? DealIsActive { get; set; }
+    public decimal? DealOffPercentage { get; set; }
 }
 public static partial class OrderRepository
 {
@@ -204,26 +213,28 @@ public static partial class OrderRepository
     {
         var sql = @"
                 SELECT 
-                    op.[Id],
-                    op.[Order],
-                    op.[Product], 
-                    op.[Quantity],
-                    pd.ProductDescription,
-                    pd.ProductImageUrl,
-                    pd.ProductProductCategory,
-                    pd.ProductMeasurementUnit,
-                    pd.ProductName,
-                    cd.ProductCategoryName
-                FROM 
-                    OrderProduct op
-                INNER JOIN 
-                    GetProductDetailsByLanguageFN(@language) pd ON op.Product = pd.ProductId
-                INNER JOIN 
-                    GetProductCategoryDetailsByLanguageFN(@language) cd ON cd.ProductCategoryId = pd.ProductProductCategory
-                WHERE 
-                    op.[Order] = @OrderId;";
+                op.Id AS ItemId,
+                op.[Order] AS ItemOrder,
+                op.Quantity AS ItemQuantity,
+                [ProductId],
+                [ProductImageUrl],
+                [ProductIsActive],
+                [ProductMeasurementUnit],
+                [ProductDescription],
+                [ProductName],
+                [ProductCategoryId],
+                [ProductCategoryIsActive],
+                [ProductCategoryName],
+                [DealId],
+                [DealEndDate],
+                [DealStartDate],
+                [DealIsActive],
+                [DealOffPercentage]
+            FROM dbo.GetProductDetailsFN(@Language) pd
+            INNER JOIN OrderProduct op ON op.Product = pd.ProductId
+            WHERE [Order] = @OrderId";
 
-        var parameters = new { OrderId = orderId, language };
+        var parameters = new { OrderId = orderId, Language = language };
 
         return await connection.QueryAsync<OrderProductDetailsDto>(sql, parameters);
     }
@@ -239,27 +250,30 @@ public static partial class OrderRepository
     {
         var sql = @"
                 SELECT 
-                    op.[Id],
-                    op.[Order],
-                    op.[Product], 
-                    op.[Quantity],
-                    pd.ProductDescription,
-                    pd.ProductImageUrl,
-                    pd.ProductProductCategory,
-                    pd.ProductMeasurementUnit,
-                    pd.ProductName,
-                    cd.ProductCategoryName
-                FROM 
-                    OrderProduct op
-                INNER JOIN 
-                    GetProductDetailsByLanguageFN(@language) pd ON op.Product = pd.ProductId
-                INNER JOIN 
-                    GetProductCategoryDetailsByLanguageFN(@language) cd ON cd.ProductCategoryId = pd.ProductProductCategory
+                    op.Id AS ItemId,
+                    op.[Order] AS ItemOrder,
+                    op.Quantity AS ItemQuantity,
+                    [ProductId],
+                    [ProductImageUrl],
+                    [ProductIsActive],
+                    [ProductMeasurementUnit],
+                    [ProductDescription],
+                    [ProductName],
+                    [ProductCategoryId],
+                    [ProductCategoryIsActive],
+                    [ProductCategoryName],
+                    [DealId],
+                    [DealEndDate],
+                    [DealStartDate],
+                    [DealIsActive],
+                    [DealOffPercentage]
+            FROM dbo.GetProductDetailsFN(@Language) pd
+            INNER JOIN OrderProduct op ON op.Product = pd.ProductId
                 WHERE 
                     op.[Order] IN @OrderIds;";
 
         var parameters = new DynamicParameters();
-        parameters.Add("language", language);
+        parameters.Add("Language", language);
         parameters.Add("OrderIds", orderIds.ToArray());
 
         return await connection.QueryAsync<OrderProductDetailsDto>(sql, parameters);
@@ -276,27 +290,56 @@ public static partial class OrderRepository
     {
         var sql = @"
                 SELECT 
-                    op.[Id],
-                    op.[Order],
-                    op.[ProductOffer], 
-                    op.[Quantity],
-                    op.UnitPrice,
-                    pd.ProductDescription,
-                    pd.ProductImageUrl,
-                    pd.ProductProductCategory,
-                    pd.ProductMeasurementUnit,
-                    pd.ProductName,
-                    cd.ProductCategoryName
-                FROM 
-                    OrderProductOffer op
-                INNER JOIN 
-                    ProductOffer po ON po.Id = op.ProductOffer 
-                INNER JOIN 
-                    GetProductDetailsByLanguageFN(@language) pd ON po.Product = pd.ProductId
-                INNER JOIN 
-                    GetProductCategoryDetailsByLanguageFN(@language) cd ON cd.ProductCategoryId = pd.ProductProductCategory
-                WHERE 
-                    op.[Order] = @OrderId;";
+                op.[Id],
+                op.[Order],
+                op.[ProductOffer], 
+                op.[Quantity],
+                op.UnitPrice,
+                [ProductId],
+                [ProductImageUrl],
+                [ProductIsActive],
+                [ProductMeasurementUnit],
+                [ProductDescription],
+                [ProductName],
+                [ProductCategoryId],
+                [ProductCategoryIsActive],
+                [ProductCategoryName],
+                [DealId],
+                [DealEndDate],
+                [DealStartDate],
+                [DealIsActive],
+                [DealOffPercentage]
+            FROM 
+                OrderProductOffer op
+            INNER JOIN 
+                ProductOffer po ON po.Id = op.ProductOffer 
+            INNER JOIN 
+                dbo.GetProductDetailsFN(@language) pd ON po.Product = pd.ProductId
+            WHERE 
+                op.[Order] = @OrderId;";
+// var sql = @"
+// SELECT 
+// op.[Id],
+// op.[Order],
+// op.[ProductOffer], 
+// op.[Quantity],
+// op.UnitPrice,
+// pd.ProductDescription,
+// pd.ProductImageUrl,
+// pd.ProductProductCategory,
+// pd.ProductMeasurementUnit,
+// pd.ProductName,
+// cd.ProductCategoryName
+// FROM 
+// OrderProductOffer op
+// INNER JOIN 
+// ProductOffer po ON po.Id = op.ProductOffer 
+// INNER JOIN 
+// GetProductDetailsByLanguageFN(@language) pd ON po.Product = pd.ProductId
+// INNER JOIN 
+// GetProductCategoryDetailsByLanguageFN(@language) cd ON cd.ProductCategoryId = pd.ProductProductCategory
+// WHERE 
+// op.[Order] = @OrderId;";
 
         var parameters = new { OrderId = orderId, Language = language };
 
@@ -310,12 +353,26 @@ public class OrderProductOfferDetailsDto
     public int ProductOffer { get; set; }
     public decimal Quantity { get; set; }
     public decimal UnitPrice { get; set; }
-    public string ProductDescription { get; set; } = null!;
+    // public string ProductDescription { get; set; } = null!;
+    // public string ProductImageUrl { get; set; } = null!;
+    // public int ProductProductCategory { get; set; }
+    // public string ProductMeasurementUnit { get; set; } = null!;
+    // public string ProductName { get; set; } = null!;
+    // public string ProductCategoryName { get; set; } = null!;
+    public int ProductId { get; set; }
     public string ProductImageUrl { get; set; } = null!;
-    public int ProductProductCategory { get; set; }
+    public bool ProductIsActive { get; set; }
     public string ProductMeasurementUnit { get; set; } = null!;
+    public string ProductDescription { get; set; } = null!;
     public string ProductName { get; set; } = null!;
+    public int ProductCategoryId { get; set; }
+    public bool ProductCategoryIsActive { get; set; }
     public string ProductCategoryName { get; set; } = null!;
+    public int? DealId { get; set; } 
+    public DateTime? DealEndDate { get; set; } 
+    public DateTime? DealStartDate { get; set; } 
+    public bool? DealIsActive { get; set; }
+    public decimal? DealOffPercentage { get; set; }
 }
 #endregion
 
@@ -328,25 +385,31 @@ public static partial class OrderRepository
     {
         var sql = @"
                 SELECT 
-                    op.[Id],
-                    op.[Order],
-                    op.[ProductOffer], 
-                    op.[Quantity],
-                    op.UnitPrice,
-                    pd.ProductDescription,
-                    pd.ProductImageUrl,
-                    pd.ProductProductCategory,
-                    pd.ProductMeasurementUnit,
-                    pd.ProductName,
-                    cd.ProductCategoryName
-                FROM 
-                    OrderProductOffer op
-                INNER JOIN 
-                    ProductOffer po ON po.Id = op.ProductOffer 
-                INNER JOIN 
-                    GetProductDetailsByLanguageFN(@language) pd ON po.Product = pd.ProductId
-                INNER JOIN 
-                    GetProductCategoryDetailsByLanguageFN(@language) cd ON cd.ProductCategoryId = pd.ProductProductCategory
+                op.[Id],
+                op.[Order],
+                op.[ProductOffer], 
+                op.[Quantity],
+                op.UnitPrice,
+                [ProductId],
+                [ProductImageUrl],
+                [ProductIsActive],
+                [ProductMeasurementUnit],
+                [ProductDescription],
+                [ProductName],
+                [ProductCategoryId],
+                [ProductCategoryIsActive],
+                [ProductCategoryName],
+                [DealId],
+                [DealEndDate],
+                [DealStartDate],
+                [DealIsActive],
+                [DealOffPercentage]
+            FROM 
+                OrderProductOffer op
+            INNER JOIN 
+                ProductOffer po ON po.Id = op.ProductOffer 
+            INNER JOIN 
+                dbo.GetProductDetailsFN(@language) pd ON po.Product = pd.ProductId
                 WHERE 
                     op.[Order] IN @OrderIds;";
 

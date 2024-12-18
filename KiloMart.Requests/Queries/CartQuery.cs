@@ -31,13 +31,15 @@ public partial class Query
     {
         var query = @"
                 SELECT 
-                    Product,
-                    MIN(Price) AS MinPrice,
-                    MAX(Price) AS MaxPrice 
-                FROM ProductOffer 
-                WHERE IsActive = 1 
-                AND Product IN (SELECT Product FROM Cart WHERE Customer = @customer)
-                GROUP BY Product;";
+                po.Product,
+                d.OffPercentage OffPercentage,
+                MIN(po.Price) AS MinPrice,
+                MAX(po.Price) AS MaxPrice
+            FROM dbo.[ProductOffer] po
+            INNER JOIN dbo.[Deal] d ON po.Product = d.Product
+            WHERE po.IsActive = 1 
+            AND po.Product IN (SELECT Product FROM Cart WHERE Customer = @customer)
+            GROUP BY po.Product, d.OffPercentage;";
 
         var priceInfo = await connection.QueryAsync<ProductPriceInfo>(
             query,
@@ -50,6 +52,7 @@ public partial class Query
 public class ProductPriceInfo
 {
     public int Product { get; set; }
+    public decimal OffPercentage { get; set; }
     public decimal MinPrice { get; set; }
     public decimal MaxPrice { get; set; }
 }

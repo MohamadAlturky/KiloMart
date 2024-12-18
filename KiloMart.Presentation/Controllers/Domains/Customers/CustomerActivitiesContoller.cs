@@ -68,44 +68,64 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
     #endregion
 
     #region products
+    // [HttpGet("products-paginated-with-offer")]
+    // public async Task<IActionResult> GetProductsWithOfferPaginatedForCustomer(
+    // [FromQuery] int category,
+    // [FromQuery] byte language = 1,
+    // [FromQuery] int page = 1,
+    // [FromQuery] int pageSize = 10)
+    // {
+    //     using var connection = _dbFactory.CreateDbConnection();
+    //     var (Products, TotalCount) = await ProductQuery.GetProductsWithOfferPaginated(connection, category, language, page, pageSize);
+    //     return Success(new { Products, TotalCount });
+    // }
     [HttpGet("products-paginated-with-offer")]
-    public async Task<IActionResult> GetProductsWithOfferPaginatedForCustomer(
-    [FromQuery] int category,
-    [FromQuery] byte language = 1,
-    [FromQuery] int page = 1,
-    [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> GetProductDetailsWithPricingAsync(
+       [FromQuery] byte language,
+       [FromQuery] int pageNumber,
+       [FromQuery] int category,
+       [FromQuery] int pageSize)
     {
         using var connection = _dbFactory.CreateDbConnection();
-        var (Products, TotalCount) = await ProductQuery.GetProductsWithOfferPaginated(connection, category, language, page, pageSize);
-        return Success(new { Products, TotalCount });
-    }
+        connection.Open();
 
-    [HttpGet("get-all-products")]
-    [Guard([Roles.Customer])]
-    public async Task<IActionResult> GetByIsActiveProductDetailsAsync([FromQuery] byte language)
-    {
-        using var connection = _dbFactory.CreateDbConnection();
-        var result = await ProductQuery.GetByIsActiveProductDetailsAsync(connection, language, true);
-        return Success(result);
+        var result = await Db.GetProductDetailsWithPricingByCategoryAsync(language, pageNumber, pageSize, category, connection);
+
+        return Success(new
+        {
+            Items = result.Items,
+            result.TotalPages,
+            result.TotalCount,
+            result.PageSize,
+            result.PageNumber
+        });
     }
-    [HttpGet("get-all-products-with-categories")]
-    [Guard([Roles.Customer])]
-    public async Task<IActionResult> GetByIsActiveProductDetailsWithCategoryAsync([FromQuery] byte language)
-    {
-        using var connection = _dbFactory.CreateDbConnection();
-        var result = await ProductQuery.GetByIsActiveProductDetailsWithCategoryAsync(connection, language, true);
-        return Success(result);
-    }
-    [HttpGet("get-all-products-by-category")]
-    [Guard([Roles.Customer])]
-    public async Task<IActionResult> GetAllProductsByCategory([FromQuery] int category,
-    [FromQuery] byte language, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
-    {
-        using var connection = _dbFactory.CreateDbConnection();
-        var result = await Query.GetProductsPaginatedByCategory(connection,
-        category, language, page, pageSize);
-        return Success(result);
-    }
+    // [HttpGet("get-all-products")]
+    // [Guard([Roles.Customer])]
+    // public async Task<IActionResult> GetByIsActiveProductDetailsAsync([FromQuery] byte language)
+    // {
+    //     using var connection = _dbFactory.CreateDbConnection();
+    //     var result = await ProductQuery.GetByIsActiveProductDetailsAsync(connection, language, true);
+    //     return Success(result);
+    // }
+    // [HttpGet("get-all-products-with-categories")]
+    // [Guard([Roles.Customer])]
+    // public async Task<IActionResult> GetByIsActiveProductDetailsWithCategoryAsync([FromQuery] byte language)
+    // {
+    //     using var connection = _dbFactory.CreateDbConnection();
+    //     var result = await ProductQuery.GetByIsActiveProductDetailsWithCategoryAsync(connection, language, true);
+    //     return Success(result);
+    // }
+    // [HttpGet("get-all-products-by-category")]
+    // [Guard([Roles.Customer])]
+    // public async Task<IActionResult> GetAllProductsByCategory([FromQuery] int category,
+    // [FromQuery] byte language, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    // {
+    //     using var connection = _dbFactory.CreateDbConnection();
+    //     var result = await Query.GetProductsPaginatedByCategory(connection,
+    //     category, language, page, pageSize);
+    //     return Success(result);
+    // }
 
     [HttpGet("get-price-ranges-for-cart-products")]
     [Guard([Roles.Customer])]

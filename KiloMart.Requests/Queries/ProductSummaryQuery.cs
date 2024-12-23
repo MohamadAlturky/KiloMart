@@ -36,7 +36,7 @@ public partial class Query
                             YEAR([FromDate]) AS StartDateYear,
                             MONTH(COALESCE([ToDate], GETDATE())) AS EndDate,
                             YEAR(COALESCE([ToDate], GETDATE())) AS EndDateYear
-                        FROM [KiloMartMasterDb].[dbo].[ProductOffer]
+                        FROM [dbo].[ProductOffer]
                         WHERE Product = @product AND YEAR([FromDate]) = YEAR(GETDATE())
                     ) dates
                     INNER JOIN #Months m ON dates.StartDate <= m.Month AND dates.EndDate >= m.Month AND m.Year = dates.StartDateYear

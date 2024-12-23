@@ -117,7 +117,7 @@ public static class AcceptOrderService
                     itemsPriceAfterOffPercentage += 
                     orderOffer.UnitPrice 
                     * orderOffer.Quantity 
-                    * item.DealOffPercentage??1;
+                    * (item.DealOffPercentage??100)/100;
                 }
             }
             decimal itemsPrice = response.OrderOffers.Sum(o => o.UnitPrice * o.Quantity);

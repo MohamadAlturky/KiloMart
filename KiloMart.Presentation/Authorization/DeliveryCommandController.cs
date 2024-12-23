@@ -41,10 +41,18 @@ public class DeliveryCommandController : AppController
             dto.Password,
             dto.DisplayName,
             dto.Language);
-        return Success(result);
+            
+        return result.IsSuccess
+            ? Success(new
+            {
+                CustomerId = result.PartyId,
+                result.UserId,
+                result.VerificationToken
+            }) : Fail(new string[] { result.ErrorMessage });
     }
 
     [HttpPost("profile/add")]
+    [Guard([Roles.Delivery])]
     public async Task<IActionResult> CreateProfile(CreateDeliveryProfileApiRequest request)
     {
         var (success, errors) = request.Validate();

@@ -180,10 +180,7 @@ public class CreateOrderRequestModel
         {
             errors.Add("No Requested Products");
         }
-        if (DiscountCode is null)
-        {
-            errors.Add("DiscountCodes shouldn't be null, you can send it as an empty array");
-        }
+
         if (LocationId == 0)
         {
             errors.Add("LocationId required");

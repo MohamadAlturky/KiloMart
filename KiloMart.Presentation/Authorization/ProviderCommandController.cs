@@ -36,10 +36,17 @@ public class ProviderCommandController(IConfiguration configuration,
             dto.Password,
             dto.DisplayName,
             dto.Language);
-        return Success(result);
+        return result.IsSuccess
+            ? Success(new
+            {
+                CustomerId = result.PartyId,
+                result.UserId,
+                result.VerificationToken
+            }) : Fail(new string[] { result.ErrorMessage });
     }
 
     [HttpPost("profile/create")]
+    [Guard([Roles.Provider])]
     public async Task<IActionResult> CreateProfile(CreateProviderProfileApiRequest request)
     {
         var (success, errors) = request.Validate();
@@ -118,9 +125,9 @@ public class ProviderCommandController(IConfiguration configuration,
         }
         return Success(
             new
-        {
-            Data = result.Profiles,
-            TotalCount = result.TotalCount
-        });
+            {
+                Data = result.Profiles,
+                TotalCount = result.TotalCount
+            });
     }
 }

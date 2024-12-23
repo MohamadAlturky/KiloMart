@@ -130,7 +130,7 @@ public class UserCommandController : AppController
 
             // Prepare and execute the SQL query using Dapper
             var languageDto = await connection.QuerySingleOrDefaultAsync<LanguageDto>(
-               "SELECT Language FROM [KiloMartMasterDb].[dbo].[MembershipUser] WHERE Id = @Id",
+               "SELECT Language FROM [dbo].[MembershipUser] WHERE Id = @Id",
                new { Id = membershipUserId }
            );
 

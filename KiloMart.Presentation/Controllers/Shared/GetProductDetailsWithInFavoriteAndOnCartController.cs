@@ -26,6 +26,25 @@ public class GetProductDetailsWithInFavoriteAndOnCartController(IDbFactory dbFac
 
         return Success(result);
     }
+    [HttpGet("most-ordered")]
+    public async Task<IActionResult> GetTopSellingProductDetailsAsync(
+        [FromQuery] byte language,
+        [FromQuery] int count
+
+    )
+    {
+        var customer = _userContext.Get().Party;
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        var result = await Db.GetTopSellingProductDetailsAsync(
+            language,
+            customer,
+            count,
+            connection);
+
+        return Success(result);
+    }
 
     [HttpGet("with-pricing/list/paginated")]
     public async Task<IActionResult> GetPaginatedProductDetailsWithPricing(

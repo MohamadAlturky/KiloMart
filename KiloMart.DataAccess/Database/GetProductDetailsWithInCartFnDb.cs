@@ -96,6 +96,40 @@ public static partial class Db
             Customer = customer
         });
     }
+    public static async Task<IEnumerable<ProductDetailWithInFavoriteAndOnCart>> GetTopSellingProductDetailsAsync(byte language, int customer, int count, IDbConnection connection)
+    {
+        const string query = @"
+        SELECT 
+            [ProductId],
+            [ProductImageUrl],
+            [ProductIsActive],
+            [ProductMeasurementUnit],
+            [ProductDescription],
+            [ProductName],
+            [ProductCategoryId],
+            [ProductCategoryIsActive],
+            [ProductCategoryName],
+            DealId,
+            DealEndDate,
+            DealStartDate,
+            DealIsActive,
+            DealOffPercentage,
+            InCart,
+            InFavorite
+        FROM [dbo].[GetProductDetailsWithInFavoriteAndInCartFN](@Language, @Customer) pd
+        INNER JOIN 
+        (SELECT TOP(@Count)
+            Product, COUNT(Product) Count
+            FROM dbo.[OrderProduct]
+            GROUP BY Product) p ON p.Product = pd.ProductId";
+
+        return await connection.QueryAsync<ProductDetailWithInFavoriteAndOnCart>(query, new
+        {
+            Language = language,
+            Customer = customer,
+            Count = count
+        });
+    }
 
     public static async Task<IEnumerable<ProductDetailWithInFavoriteAndOnCart>> GetProductDetailsFilteredWithInFavoriteAndOnCartAsync(
         IDbConnection connection,
@@ -258,7 +292,7 @@ public static partial class Db
 
             return new PaginatedResult<ProductDetailWithPricingWithInFavoriteAndOnCart>
             {
-                Items = [..items],
+                Items = [.. items],
                 TotalCount = totalCount,
                 PageNumber = pageNumber,
                 PageSize = pageSize
@@ -359,7 +393,7 @@ public static partial class Db
 
             return new PaginatedResult<ProductDetailWithPricingWithInFavoriteAndOnCart>
             {
-                Items = [..items],
+                Items = [.. items],
                 TotalCount = totalCount,
                 PageNumber = pageNumber,
                 PageSize = pageSize

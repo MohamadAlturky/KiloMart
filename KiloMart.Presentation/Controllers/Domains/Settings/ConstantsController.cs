@@ -107,12 +107,12 @@ public partial class ConstantsController(IDbFactory dbFactory, IUserContext user
         var result = await DatabaseHelper.SelectFromTable("Language", _dbFactory.CreateDbConnection());
         return Success(result);
     }
-    [HttpGet("OrderRequestStatus")]
-    public async Task<IActionResult> GetOrderRequestStatuses()
-    {
-        var result = await DatabaseHelper.SelectFromTable("OrderRequestStatus", _dbFactory.CreateDbConnection());
-        return Success(result);
-    }
+    // [HttpGet("OrderRequestStatus")]
+    // public async Task<IActionResult> GetOrderRequestStatuses()
+    // {
+    //     var result = await DatabaseHelper.SelectFromTable("OrderRequestStatus", _dbFactory.CreateDbConnection());
+    //     return Success(result);
+    // }
     [HttpGet("OrderStatus")]
     public async Task<IActionResult> GetOrderStatuses()
     {

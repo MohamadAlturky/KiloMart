@@ -75,7 +75,7 @@ public class UserCommandController : AppController
                 result.Role,
                 result.Language
             })
-        : Fail("User Name Or Password Is Not Valid");
+        : Fail(result.Errors);
     }
     #endregion
 

@@ -33,6 +33,7 @@ public class SliderItemController(IDbFactory dbFactory, IUserContext userContext
     }
 
     [HttpPost("upload")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> Insert([FromForm] UploadSliderItemModel request)
     {
         (bool success, string[] errors) = request.Validate();
@@ -82,7 +83,7 @@ public class SliderItemController(IDbFactory dbFactory, IUserContext userContext
         return Success(sliderItem.ToList());
     }
     [HttpPut("")]
-    // [Guard([Roles.Admin])]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> Update([FromQuery] int id, [FromForm] UploadSliderItemModel request)
     {
         using var connection = _dbFactory.CreateDbConnection();
@@ -117,7 +118,7 @@ public class SliderItemController(IDbFactory dbFactory, IUserContext userContext
     }
 
     [HttpDelete("")]
-    // [Guard([Roles.Admin])]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> Delete([FromQuery] int id)
     {
         using var connection = _dbFactory.CreateDbConnection();

@@ -351,11 +351,19 @@ public class UserCommandController : AppController
     }
     #endregion
 
-    #region logout
+    #region get out
     [HttpPost("logout")]
     public IActionResult Logout()
     {
         return Success("Just Delete the Token From The Client Side");
+    }
+
+    [HttpPost("delete-account")]
+    public async Task<IActionResult> DeleteAccount()
+    {
+        int id = _userContext.Get().Id;
+        var result = await UserAccountService.DeActivateUser(id, _dbFactory);
+        return result ? Success() : Fail();
     }
     #endregion
 }

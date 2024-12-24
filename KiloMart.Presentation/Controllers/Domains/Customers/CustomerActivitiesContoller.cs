@@ -2,6 +2,7 @@ using KiloMart.Commands.Services;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Database;
+using KiloMart.Domain.Orders.Common;
 using KiloMart.Domain.Orders.Queries;
 using KiloMart.Domain.Orders.Services;
 using KiloMart.Domain.Register.Utils;
@@ -397,6 +398,16 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
         return Success(result);
 
     }
+    [HttpGet("cart/mine-with-info-and-pricing")]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> CartMinWithInfoWithPricing([FromQuery] byte language)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open(); // Use await to open the connection asynchronously
+        var result = await Db.GetCartsByCustomerWithProductsInfoAndPricingAsync(_userContext.Get().Party, language, connection);
+        return Success(result);
+
+    }
     #endregion
 
     #region card
@@ -491,10 +502,10 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
 
     [HttpPost("orders/cancel")]
     [Guard([Roles.Customer])]
-    public async Task<IActionResult> Cancel([FromBody] long orderId)
+    public async Task<IActionResult> Cancel([FromBody] CancelOrderRequest cancelOrderRequest)
     {
         var result = await OrderCancelService.CustomerCancel(
-            orderId,
+            cancelOrderRequest.OrderId,
             _userContext.Get(),
             _dbFactory
             );

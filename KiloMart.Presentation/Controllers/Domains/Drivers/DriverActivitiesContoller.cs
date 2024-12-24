@@ -177,10 +177,10 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory,
     }
     [HttpPost("orders/cancel")]
     [Guard([Roles.Delivery])]
-    public async Task<IActionResult> Cancel([FromBody] long orderId)
+    public async Task<IActionResult> Cancel([FromBody] CancelOrderRequest cancelOrderRequest)
     {
         var result = await OrderCancelService.DeliveryCancel(
-            orderId,
+            cancelOrderRequest.OrderId,
             _userContext.Get(),
             _dbFactory
             );

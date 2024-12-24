@@ -1,6 +1,7 @@
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Database;
+using KiloMart.Domain.Orders.Common;
 using KiloMart.Domain.Orders.DataAccess;
 using KiloMart.Domain.Orders.Services;
 using KiloMart.Domain.ProductRequests.Add;
@@ -160,10 +161,10 @@ public class ProviderActivitiesContoller : AppController
     }
     [HttpPost("orders/cancel")]
     [Guard([Roles.Provider])]
-    public async Task<IActionResult> Cancel([FromBody] long orderId)
+    public async Task<IActionResult> Cancel([FromBody] CancelOrderRequest cancelOrderRequest)
     {
         var result = await OrderCancelService.ProviderCancel(
-            orderId,
+            cancelOrderRequest.OrderId,
             _userContext.Get(),
             _dbFactory
             );

@@ -195,7 +195,6 @@ public class UserCommandController : AppController
         // Call the service to reset the password
         var result = await ResetPasswordService.ChangePassword(
             email,
-            request.Code,
             _userContext.Get().Id,
             request.OldPassword,
             request.NewPassword,
@@ -206,23 +205,23 @@ public class UserCommandController : AppController
             : Fail(result.Errors);
     }
 
-    [HttpPost("send-reset-password-token")]
-    public async Task<IActionResult> SendResetPasswordToken()
-    {
-        using var connection = _dbFactory.CreateDbConnection();
-        connection.Open();
+    // [HttpPost("send-reset-password-token")]
+    // public async Task<IActionResult> SendResetPasswordToken()
+    // {
+    //     using var connection = _dbFactory.CreateDbConnection();
+    //     connection.Open();
 
-        int userId = _userContext.Get().Id;
-        string code = GenerateRandomString(4);
-        DateTime date = DateTime.Now;
+    //     int userId = _userContext.Get().Id;
+    //     string code = GenerateRandomString(4);
+    //     DateTime date = DateTime.Now;
 
-        await Db.InsertResetPasswordCodeAsync(
-            connection,
-            code,
-            userId,
-            date);
-        return Success(new { Code = code });
-    }
+    //     await Db.InsertResetPasswordCodeAsync(
+    //         connection,
+    //         code,
+    //         userId,
+    //         date);
+    //     return Success(new { Code = code });
+    // }
 
 
     public class EmailDto
@@ -298,7 +297,6 @@ public class UserCommandController : AppController
     public class ResetPasswordRequest
     {
         public string OldPassword { get; set; } = null!;
-        public string Code { get; set; } = null!;
         public string NewPassword { get; set; } = null!;
 
         public (bool success, List<string> errors) Validate()

@@ -60,6 +60,7 @@
 //    }
 //}
 
+using System.Data;
 using Dapper;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
@@ -71,12 +72,9 @@ namespace KiloMart.Domain.Deliveries.Profile;
 public static class DeliveryProfileService
 {
     public static async Task<Result<CreateDeliveryProfileResponse>> InsertAsync(
-        IDbFactory dbFactory,
+        IDbConnection connection,
         CreateDeliveryProfileRequest deliveryProfileRequest)
     {
-        using var connection = dbFactory.CreateDbConnection();
-        connection.Open();
-
         var existingProfile = await Db.GetDeliveryProfileByDeliveryIdAsync(deliveryProfileRequest.Delivery, connection);
         if (existingProfile is not null)
         {

@@ -1,6 +1,7 @@
 using Dapper;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
+using KiloMart.DataAccess.Database;
 using KiloMart.Domain.Providers.Profile;
 using KiloMart.Domain.Register.Provider.Models;
 using KiloMart.Domain.Register.Provider.Services;
@@ -46,7 +47,6 @@ public class ProviderCommandController(IConfiguration configuration,
     }
 
     [HttpPost("profile/create")]
-    [Guard([Roles.Provider])]
     public async Task<IActionResult> CreateProfile(CreateProviderProfileApiRequest request)
     {
         var (success, errors) = request.Validate();
@@ -54,12 +54,24 @@ public class ProviderCommandController(IConfiguration configuration,
         {
             return ValidationError(errors);
         }
-        var provider = _userContext.Get().Party;
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
 
-        var result = await ProviderProfileService.InsertAsync(_dbFactory,
+        var user = await Db.GetMembershipUserByEmailAsync(request.Email, connection);
+
+        if (user is null)
+        {
+            return Fail("User Not Found");
+        }
+        if (user.PasswordHash != HashHandler.GetHash(request.Password))
+        {
+            return Fail("Invalid Phone Number Or Password");
+        }
+
+        var result = await ProviderProfileService.InsertAsync(connection,
         new CreateProviderProfileRequest
         {
-            Provider = provider,
+            Provider = user.Party,
             FirstName = request.FirstName,
             SecondName = request.SecondName,
             NationalApprovalId = request.NationalApprovalId,

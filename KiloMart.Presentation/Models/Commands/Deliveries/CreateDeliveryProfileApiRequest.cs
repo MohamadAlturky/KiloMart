@@ -1,6 +1,8 @@
 namespace KiloMart.Presentation.Models.Commands.Deliveries;
 public class CreateDeliveryProfileApiRequest
 {
+    public string Email { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
     public string FirstName { get; set; } = string.Empty;
     public string SecondName { get; set; } = string.Empty;
     public string NationalName { get; set; } = string.Empty;
@@ -31,6 +33,10 @@ public class CreateDeliveryProfileApiRequest
             errors.Add("Driving license number is required");
         if (DrivingLicenseExpiredDate == default)
             errors.Add("Driving license expired date is required");
+        if (string.IsNullOrEmpty(Email))
+            errors.Add("Email is required");
+        if (string.IsNullOrEmpty(Password))
+            errors.Add("Password is required");
         return (errors.Count == 0, errors.ToArray());
     }
 

@@ -1,6 +1,7 @@
 using Dapper;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
+using KiloMart.DataAccess.Database;
 using KiloMart.Domain.Customers.Profile;
 using KiloMart.Domain.Register.Customer.Models;
 using KiloMart.Domain.Register.Customer.Services;
@@ -52,7 +53,6 @@ public class CustomerCommandController : AppController
 
     #region profile
     [HttpPost("profile/add")]
-    [Guard([Roles.Customer])]
     public async Task<IActionResult> CreateProfile(CreateCustomerProfileApiRequest request)
     {
 
@@ -61,13 +61,25 @@ public class CustomerCommandController : AppController
         {
             return ValidationError(errors);
         }
-        var customer = _userContext.Get().Party;
 
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
 
+        var user = await Db.GetMembershipUserByEmailAsync(request.Email, connection);
+
+        if (user is null)
+        {
+            return Fail("User Not Found");
+        }
+        if(user.PasswordHash != HashHandler.GetHash(request.Password))
+        {
+            return Fail("Invalid Phone Number Or Password");
+        }
+        
         var result = await CustomerProfileService.InsertAsync(_dbFactory,
         new CreateCustomerProfileRequest
         {
-            Customer = customer,
+            Customer = user.Party,
             FirstName = request.FirstName,
             SecondName = request.SecondName,
             NationalId = request.NationalId,

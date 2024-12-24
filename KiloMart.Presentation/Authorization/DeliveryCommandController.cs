@@ -1,6 +1,7 @@
 using Dapper;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
+using KiloMart.DataAccess.Database;
 using KiloMart.Domain.Deliveries.Profile;
 using KiloMart.Domain.Register.Delivery.Models;
 using KiloMart.Domain.Register.Delivery.Services;
@@ -41,7 +42,7 @@ public class DeliveryCommandController : AppController
             dto.Password,
             dto.DisplayName,
             dto.Language);
-            
+
         return result.IsSuccess
             ? Success(new
             {
@@ -52,7 +53,6 @@ public class DeliveryCommandController : AppController
     }
 
     [HttpPost("profile/add")]
-    [Guard([Roles.Delivery])]
     public async Task<IActionResult> CreateProfile(CreateDeliveryProfileApiRequest request)
     {
         var (success, errors) = request.Validate();
@@ -60,12 +60,25 @@ public class DeliveryCommandController : AppController
         {
             return ValidationError(errors);
         }
-        var delivery = _userContext.Get().Party;
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
 
-        var result = await DeliveryProfileService.InsertAsync(_dbFactory,
+        var user = await Db.GetMembershipUserByEmailAsync(request.Email, connection);
+
+        if (user is null)
+        {
+            return Fail("User Not Found");
+        }
+        if (user.PasswordHash != HashHandler.GetHash(request.Password))
+        {
+            return Fail("Invalid Phone Number Or Password");
+        }
+
+
+        var result = await DeliveryProfileService.InsertAsync(connection,
         new CreateDeliveryProfileRequest
         {
-            Delivery = delivery,
+            Delivery = user.Party,
             FirstName = request.FirstName,
             SecondName = request.SecondName,
             NationalId = request.NationalId,

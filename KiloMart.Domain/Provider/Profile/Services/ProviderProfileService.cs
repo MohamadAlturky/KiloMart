@@ -55,6 +55,7 @@
 //    }
 //}
 
+using System.Data;
 using Dapper;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
@@ -66,12 +67,9 @@ namespace KiloMart.Domain.Providers.Profile;
 public static class ProviderProfileService
 {
     public static async Task<Result<CreateProviderProfileResponse>> InsertAsync(
-        IDbFactory dbFactory,
+        IDbConnection connection,
         CreateProviderProfileRequest providerProfileRequest)
     {
-        using var connection = dbFactory.CreateDbConnection();
-        connection.Open();
-
         var existingProfile = await Db.GetProviderProfileByProviderIdAsync(providerProfileRequest.Provider, connection);
         if (existingProfile is not null)
         {

@@ -6,7 +6,8 @@ public class CreateProviderProfileApiRequest
     public string CompanyName { get; set; }
     public string OwnerName { get; set; }
     public string OwnerNationalId { get; set; }
-
+    public string Email { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
     public (bool success, List<string> errors) Validate()
     {
         var errors = new List<string>();
@@ -23,7 +24,11 @@ public class CreateProviderProfileApiRequest
             errors.Add("Owner name is required");
         if (string.IsNullOrEmpty(OwnerNationalId))
             errors.Add("Owner national ID is required");
-
+        if (string.IsNullOrEmpty(Email))
+            errors.Add("Email is required");
+        if (string.IsNullOrEmpty(Password))
+            errors.Add("Password is required");
+            
         return (errors.Count == 0, errors);
     }
 }

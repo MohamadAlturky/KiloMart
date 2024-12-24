@@ -70,7 +70,7 @@ public class NotificationsController(IDbFactory dbFactory, IUserContext userCont
 
     [HttpPost("mark-as-read")]
     [Guard([Roles.Admin, Roles.Delivery, Roles.Provider, Roles.Customer, Roles.Admin])]
-    public async Task<IActionResult> MarkNotificationsAsRead([FromBody] List<long> notificationIds)
+    public async Task<IActionResult> MarkNotificationsAsRead([FromBody] List<MarkNotificationsAsReadDto> notificationIds)
     {
         int party = _userContext.Get().Party;
 
@@ -82,7 +82,7 @@ public class NotificationsController(IDbFactory dbFactory, IUserContext userCont
 
             int updatedCount = await Db.MarkNotificationsAsReadAsync(
                 connection,
-                idList: notificationIds,
+                idList: notificationIds.Select(e => e.Id).ToList(),
                 party: party);
 
             return Success(new { UpdatedCount = updatedCount });
@@ -91,5 +91,33 @@ public class NotificationsController(IDbFactory dbFactory, IUserContext userCont
         {
             return Fail(new string[] { ex.Message });
         }
+    }
+    [HttpDelete("admin/delete")]
+    [Guard([Roles.Admin])]
+    public async Task<IActionResult> Delete([FromBody] MarkNotificationsAsReadDto notification)
+    {
+        int party = _userContext.Get().Party;
+
+        using var connection = _dbFactory.CreateDbConnection();
+
+        try
+        {
+            connection.Open();
+
+            await Db.DeleteNotificationAsync(
+                connection,
+                notification.Id);
+
+            return Success(new { DeletedId = notification.Id });
+        }
+        catch (Exception ex)
+        {
+            return Fail(new string[] { ex.Message });
+        }
+    }
+
+    public class MarkNotificationsAsReadDto
+    {
+        public long Id { get; set; }
     }
 }

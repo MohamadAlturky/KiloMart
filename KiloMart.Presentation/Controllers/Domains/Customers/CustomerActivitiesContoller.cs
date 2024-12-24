@@ -372,9 +372,15 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
         {
             return DataNotFound("No cart items found for this customer.");
         }
+        var systemSettings = await Db.GetSystemSettingsByIdAsync(0, connection);
 
+        if (systemSettings is null)
+        {
+            return DataNotFound("System settings couldn't be found");
+        }
+        
         // Return success with the price summary
-        return Success(priceSummary);
+        return Success(new { priceSummary, systemSettings.DeliveryOrderFee });
     }
 
     [HttpGet("cart/mine")]

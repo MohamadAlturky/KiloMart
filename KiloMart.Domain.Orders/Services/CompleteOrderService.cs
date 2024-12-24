@@ -113,6 +113,7 @@ public class CompleteOrderService
                 order.Date,
                 order.PaymentType,
                 order.IsPaid,
+                order.SpecialRequest,
                 transaction);
             // Log order activity
             OrderActivity activity = new()

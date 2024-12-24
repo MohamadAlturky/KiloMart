@@ -25,11 +25,12 @@ public static partial class OrdersDb
         DateTime date,
         bool isPaid,
         byte paymentType,
+        string? specialRequest,
         IDbTransaction? transaction = null)
     {
         const string query = @"INSERT INTO [dbo].[Order]
-                            ([OrderStatus], [TotalPrice], [TransactionId], [Date],[PaymentType],[IsPaid],[DeliveryFee],[SystemFee],[ItemsPrice])
-                            VALUES (@OrderStatus, @TotalPrice, @TransactionId, @Date, @PaymentType, @IsPaid,@DeliveryFee,@SystemFee,@ItemsPrice)
+                            ([OrderStatus], [TotalPrice], [TransactionId], [Date],[PaymentType],[IsPaid],[DeliveryFee],[SystemFee],[ItemsPrice],[SpecialRequest])
+                            VALUES (@OrderStatus, @TotalPrice, @TransactionId, @Date, @PaymentType, @IsPaid,@DeliveryFee,@SystemFee,@ItemsPrice,@SpecialRequest)
                             SELECT CAST(SCOPE_IDENTITY() AS BIGINT)";
 
         return await connection.ExecuteScalarAsync<long>(query, new
@@ -42,7 +43,8 @@ public static partial class OrdersDb
             IsPaid = isPaid,
             ItemsPrice = itemsPrice,
             SystemFee = systemFee,
-            DeliveryFee = deliveryFee
+            DeliveryFee = deliveryFee,
+            SpecialRequest = specialRequest
         }, transaction);
     }
 
@@ -57,6 +59,7 @@ public static partial class OrdersDb
         DateTime date,
         byte paymentType,
         bool isPaid,
+        string? specialRequest,
         IDbTransaction? transaction = null)
     {
         const string query = @"UPDATE [dbo].[Order]
@@ -69,7 +72,8 @@ public static partial class OrdersDb
                                 [SystemFee] = @SystemFee,
                                 [DeliveryFee] = @DeliveryFee,
                                 [IsPaid] = @IsPaid,
-                                [PaymentType] = @PaymentType
+                                [PaymentType] = @PaymentType,
+                                [SpecialRequest] = @SpecialRequest
                                 WHERE [Id] = @Id";
 
         var updatedRowsCount = await connection.ExecuteAsync(query, new
@@ -83,7 +87,8 @@ public static partial class OrdersDb
             IsPaid = isPaid,
             ItemsPrice = itemsPrice,
             SystemFee = systemFee,
-            DeliveryFee = deliveryFee
+            DeliveryFee = deliveryFee,
+            SpecialRequest = specialRequest
         }, transaction);
 
         return updatedRowsCount > 0;
@@ -149,7 +154,8 @@ public static partial class OrdersDb
                             [IsPaid],
                             [DeliveryFee],
                             [SystemFee],
-                            [ItemsPrice]
+                            [ItemsPrice],
+                            [SpecialRequest]
                             FROM [dbo].[Order]
                             WHERE [Id] = @Id";
 
@@ -169,6 +175,7 @@ public class Order
     public decimal SystemFee { get; set; }
     public decimal DeliveryFee { get; set; }
     public string TransactionId { get; set; } = null!;
+    public string? SpecialRequest { get; set; }
     public DateTime Date { get; set; }
     public byte PaymentType { get; set; }
     public bool IsPaid { get; set; }

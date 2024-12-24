@@ -22,6 +22,7 @@ public static partial class OrderRepository
                 o.ItemsPrice,
                 o.SystemFee,
                 o.DeliveryFee,
+                o.SpecialRequest,
                 oci.Customer,
                 oci.Location AS CustomerLocation,
                 oci.Id AS CustomerInformationId,
@@ -73,6 +74,7 @@ public static partial class OrderRepository
                 o.ItemsPrice,
                 o.SystemFee,
                 o.DeliveryFee,
+                o.SpecialRequest,
                 oci.Customer,
                 oci.Location AS CustomerLocation,
                 oci.Id AS CustomerInformationId,
@@ -121,6 +123,8 @@ public class OrderDetailsDto
     public decimal ItemsPrice { get; set; }
     public decimal SystemFee { get; set; }
     public decimal DeliveryFee { get; set; }
+    public string? SpecialRequest { get; set; }
+
     public int? Customer { get; set; }
     public int? CustomerLocation { get; set; }
     public int? CustomerInformationId { get; set; }
@@ -188,8 +192,8 @@ public class OrderProductDetailsDto
     public int ItemId { get; set; }
     public long ItemOrder { get; set; }
     public int ItemQuantity { get; set; }
-    
-    
+
+
     public int ProductId { get; set; }
     public string ProductImageUrl { get; set; } = null!;
     public bool ProductIsActive { get; set; }
@@ -199,9 +203,9 @@ public class OrderProductDetailsDto
     public int ProductCategoryId { get; set; }
     public bool ProductCategoryIsActive { get; set; }
     public string ProductCategoryName { get; set; } = null!;
-    public int? DealId { get; set; } 
-    public DateTime? DealEndDate { get; set; } 
-    public DateTime? DealStartDate { get; set; } 
+    public int? DealId { get; set; }
+    public DateTime? DealEndDate { get; set; }
+    public DateTime? DealStartDate { get; set; }
     public bool? DealIsActive { get; set; }
     public decimal? DealOffPercentage { get; set; }
 }
@@ -317,29 +321,29 @@ public static partial class OrderRepository
                 dbo.GetProductDetailsFN(@language) pd ON po.Product = pd.ProductId
             WHERE 
                 op.[Order] = @OrderId;";
-// var sql = @"
-// SELECT 
-// op.[Id],
-// op.[Order],
-// op.[ProductOffer], 
-// op.[Quantity],
-// op.UnitPrice,
-// pd.ProductDescription,
-// pd.ProductImageUrl,
-// pd.ProductProductCategory,
-// pd.ProductMeasurementUnit,
-// pd.ProductName,
-// cd.ProductCategoryName
-// FROM 
-// OrderProductOffer op
-// INNER JOIN 
-// ProductOffer po ON po.Id = op.ProductOffer 
-// INNER JOIN 
-// GetProductDetailsByLanguageFN(@language) pd ON po.Product = pd.ProductId
-// INNER JOIN 
-// GetProductCategoryDetailsByLanguageFN(@language) cd ON cd.ProductCategoryId = pd.ProductProductCategory
-// WHERE 
-// op.[Order] = @OrderId;";
+        // var sql = @"
+        // SELECT 
+        // op.[Id],
+        // op.[Order],
+        // op.[ProductOffer], 
+        // op.[Quantity],
+        // op.UnitPrice,
+        // pd.ProductDescription,
+        // pd.ProductImageUrl,
+        // pd.ProductProductCategory,
+        // pd.ProductMeasurementUnit,
+        // pd.ProductName,
+        // cd.ProductCategoryName
+        // FROM 
+        // OrderProductOffer op
+        // INNER JOIN 
+        // ProductOffer po ON po.Id = op.ProductOffer 
+        // INNER JOIN 
+        // GetProductDetailsByLanguageFN(@language) pd ON po.Product = pd.ProductId
+        // INNER JOIN 
+        // GetProductCategoryDetailsByLanguageFN(@language) cd ON cd.ProductCategoryId = pd.ProductProductCategory
+        // WHERE 
+        // op.[Order] = @OrderId;";
 
         var parameters = new { OrderId = orderId, Language = language };
 
@@ -368,9 +372,9 @@ public class OrderProductOfferDetailsDto
     public int ProductCategoryId { get; set; }
     public bool ProductCategoryIsActive { get; set; }
     public string ProductCategoryName { get; set; } = null!;
-    public int? DealId { get; set; } 
-    public DateTime? DealEndDate { get; set; } 
-    public DateTime? DealStartDate { get; set; } 
+    public int? DealId { get; set; }
+    public DateTime? DealEndDate { get; set; }
+    public DateTime? DealStartDate { get; set; }
     public bool? DealIsActive { get; set; }
     public decimal? DealOffPercentage { get; set; }
 }
@@ -444,6 +448,7 @@ public static partial class OrderRepository
             o.ItemsPrice,
             o.SystemFee,
             o.DeliveryFee,
+            o.SpecialRequest,
             oci.Customer,
             oci.Location AS CustomerLocation,
             oci.Id AS CustomerInformationId,
@@ -504,6 +509,7 @@ public class OrderDetailsForDeliveryDto
     public decimal ItemsPrice { get; set; }
     public decimal SystemFee { get; set; }
     public decimal DeliveryFee { get; set; }
+    public string? SpecialRequest { get; set; }
     public int? Customer { get; set; }
     public int? CustomerLocation { get; set; }
     public int? CustomerInformationId { get; set; }

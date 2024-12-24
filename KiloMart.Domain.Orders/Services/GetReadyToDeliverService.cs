@@ -32,6 +32,7 @@ namespace KiloMart.Domain.Orders.Services
                     o.TotalPrice,
                     o.TransactionId,
                     o.Date,
+                    o.SpecialRequest,
                     oci.Customer,
                     oci.Location AS CustomerLocation,
                     oci.Id AS CustomerInformationId,
@@ -128,6 +129,7 @@ public class ReadyToDeliverOrder
 {
     public int Id { get; set; }
     public byte OrderStatus { get; set; }
+    public string? SpecialRequest { get; set; }
     public decimal TotalPrice { get; set; }
     public string TransactionId { get; set; }
     public DateTime Date { get; set; }

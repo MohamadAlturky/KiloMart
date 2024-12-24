@@ -52,7 +52,8 @@ public class RequestOrderService
                 TransactionId = Guid.NewGuid().ToString(),
                 Date = DateTime.Now,
                 PaymentType = model.PaymentType,
-                IsPaid = false
+                IsPaid = false,
+                SpecialRequest = model.SpecialRequest
             };
 
             response.Order.Id = await OrdersDb.InsertOrderAsync(connection,
@@ -65,6 +66,7 @@ public class RequestOrderService
                 response.Order.Date,
                 response.Order.IsPaid,
                 response.Order.PaymentType,
+                response.Order.SpecialRequest,
                 transaction);
             if (model.DiscountCode is not null)
             {
@@ -170,6 +172,7 @@ public class CreateOrderRequestModel
 {
     public List<RequestedProduct> RequestedProducts { get; set; } = null!;
     public string? DiscountCode { get; set; }
+    public string? SpecialRequest { get; set; }
     public int LocationId { get; set; }
     public byte PaymentType { get; set; }
     public (bool Success, string[] Errors) Validate()

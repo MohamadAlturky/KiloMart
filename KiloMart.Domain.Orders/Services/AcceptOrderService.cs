@@ -44,7 +44,7 @@ public static class AcceptOrderService
         }
         var orderDicountCode = await Db.GetOrderDiscountCodeByOrderIdAsync(orderId, readConnection);
         DiscountCode? discountCode = null;
-        if(orderDicountCode is not null)
+        if (orderDicountCode is not null)
         {
             discountCode = await Db.GetDiscountCodeByIdAsync(orderDicountCode.DiscountCode, readConnection);
         }
@@ -54,7 +54,7 @@ public static class AcceptOrderService
         try
         {
             Order? order = await OrdersDb.GetOrderByIdAsync(orderId, readConnection);
-            DriverFreeFee? driverFreeFee  = await Db.GetActiveDriverFreeFeesAsync(readConnection);
+            DriverFreeFee? driverFreeFee = await Db.GetActiveDriverFreeFeesAsync(readConnection);
 
             if (order is null)
             {
@@ -114,18 +114,18 @@ public static class AcceptOrderService
                         transaction);
 
                     response.OrderOffers.Add(orderOffer);
-                    itemsPriceAfterOffPercentage += 
-                    orderOffer.UnitPrice 
-                    * orderOffer.Quantity 
-                    * (item.DealOffPercentage??100)/100;
+                    itemsPriceAfterOffPercentage +=
+                    orderOffer.UnitPrice
+                    * orderOffer.Quantity
+                    * (item.DealOffPercentage ?? 100) / 100;
                 }
             }
             decimal itemsPrice = response.OrderOffers.Sum(o => o.UnitPrice * o.Quantity);
             decimal systemFee = systemSettings.SystemOrderFee;
             decimal deliveryFee = systemSettings.DeliveryOrderFee;
             decimal totalPrice = systemFee + deliveryFee + itemsPriceAfterOffPercentage;
-            
-            if(driverFreeFee is not null)
+
+            if (driverFreeFee is not null)
             {
                 totalPrice -= deliveryFee;
             }
@@ -135,7 +135,7 @@ public static class AcceptOrderService
                 return Result<AcceptOrderResponseModel>.Fail(["Total Price is less than the MinOrderValue that is configured by the admin"]);
             }
 
-            if(discountCode is not null)
+            if (discountCode is not null)
             {
                 totalPrice *= discountCode.Value;
             }
@@ -158,6 +158,7 @@ public static class AcceptOrderService
                 order.Date,
                 order.PaymentType,
                 order.IsPaid,
+                order.SpecialRequest,
                 transaction);
 
             await OrdersDb.InsertOrderActivityAsync(connection,
@@ -253,6 +254,7 @@ public static class AcceptOrderService
                 order.Date,
                 order.PaymentType,
                 order.IsPaid,
+                order.SpecialRequest,
                 transaction);
 
             transaction.Commit();

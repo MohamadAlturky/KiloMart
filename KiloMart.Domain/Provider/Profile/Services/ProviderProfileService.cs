@@ -68,9 +68,10 @@ public static class ProviderProfileService
 {
     public static async Task<Result<CreateProviderProfileResponse>> InsertAsync(
         IDbConnection connection,
+        IDbTransaction transaction,
         CreateProviderProfileRequest providerProfileRequest)
     {
-        var existingProfile = await Db.GetProviderProfileByProviderIdAsync(providerProfileRequest.Provider, connection);
+        var existingProfile = await Db.GetProviderProfileByProviderIdAsync(providerProfileRequest.Provider, connection, transaction);
         if (existingProfile is not null)
         {
             return Result<CreateProviderProfileResponse>.Fail(["Profile Already Exists"]);
@@ -94,7 +95,7 @@ public static class ProviderProfileService
                 providerProfileRequest.NationalApprovalId,
                 providerProfileRequest.CompanyName,
                 providerProfileRequest.OwnerName
-            });
+            },transaction);
 
             return Result<CreateProviderProfileResponse>.Ok(new CreateProviderProfileResponse
             {

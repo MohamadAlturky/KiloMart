@@ -2,12 +2,14 @@ using Dapper;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Database;
+using KiloMart.Domain.Documents;
 using KiloMart.Domain.Providers.Profile;
 using KiloMart.Domain.Register.Provider.Models;
 using KiloMart.Domain.Register.Provider.Services;
 using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Authorization;
 using KiloMart.Presentation.Controllers;
+using KiloMart.Presentation.Services;
 using KiloMart.Requests.Queries;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,7 +18,8 @@ using Microsoft.AspNetCore.Mvc;
 [Route("api/provider")]
 public class ProviderCommandController(IConfiguration configuration,
  IDbFactory dbFactory,
-  IUserContext userContext) : AppController(dbFactory, userContext)
+  IUserContext userContext,
+  IWebHostEnvironment environment) : AppController(dbFactory, userContext)
 {
     private readonly IConfiguration _configuration = configuration;
 
@@ -68,7 +71,13 @@ public class ProviderCommandController(IConfiguration configuration,
             return Fail("Invalid Phone Number Or Password");
         }
 
-        var result = await ProviderProfileService.InsertAsync(connection,
+        using var writeConnection = _dbFactory.CreateDbConnection();
+        writeConnection.Open();
+        using var transaction = writeConnection.BeginTransaction();
+
+        var result = await ProviderProfileService.InsertAsync(
+            writeConnection,
+            transaction,
         new CreateProviderProfileRequest
         {
             Provider = user.Party,
@@ -79,7 +88,93 @@ public class ProviderCommandController(IConfiguration configuration,
             OwnerName = request.OwnerName,
             OwnerNationalId = request.OwnerNationalId,
         });
-        return result.Success ? Success(result) : Fail(result.Errors);
+        if (!result.Success)
+        {
+            transaction.Rollback();
+            return Fail(result.Errors);
+        }
+
+        // Save OwnerNationalApprovalFile
+
+        Guid fileName = Guid.NewGuid();
+        if (request.OwnerNationalApprovalFile is null)
+        {
+            transaction.Rollback();
+            return Fail("OwnerNationalApprovalFile is null");
+        }
+        var filePath = await FileService.SaveImageFileAsync(request.OwnerNationalApprovalFile,
+            environment.WebRootPath,
+            fileName);
+
+        if (string.IsNullOrEmpty(filePath))
+        {
+            transaction.Rollback();
+            return Fail("failed to save file");
+        }
+        int providerId = user.Party;
+        int documentId = await Db.InsertProviderDocumentAsync(
+            writeConnection,
+            "OwnerNationalApproval",
+            (byte)DocumentType.OwnerNationalApproval,
+            filePath,
+            providerId,
+            transaction);
+
+
+        // // Save NationalIqamaIDFile
+
+        // fileName = Guid.NewGuid();
+        // if (request.NationalIqamaIDFile is null)
+        // {
+        //     transaction.Rollback();
+        //     return Fail("NationalIqamaIDFile is null");
+        // }
+        // filePath = await FileService.SaveImageFileAsync(request.NationalIqamaIDFile,
+        //     environment.WebRootPath,
+        //     fileName);
+
+        // if (string.IsNullOrEmpty(filePath))
+        // {
+        //     transaction.Rollback();
+        //     return Fail("failed to save file");
+        // }
+        // documentId = await Db.InsertProviderDocumentAsync(
+        //     writeConnection,
+        //     "NationalIqamaIDFile",
+        //     (byte)DocumentType.NationalIqamaID,
+        //     filePath,
+        //     providerId,
+        //     transaction);
+
+
+        // Save OwnershipDocumentFile
+
+        fileName = Guid.NewGuid();
+        if (request.OwnershipDocumentFile is null)
+        {
+            transaction.Rollback();
+            return Fail("OwnershipDocumentFile is null");
+        }
+        filePath = await FileService.SaveImageFileAsync(request.OwnershipDocumentFile,
+            environment.WebRootPath,
+            fileName);
+
+        if (string.IsNullOrEmpty(filePath))
+        {
+            transaction.Rollback();
+            return Fail("failed to save file");
+        }
+        documentId = await Db.InsertProviderDocumentAsync(
+            writeConnection,
+            "OwnershipDocumentFile",
+            (byte)DocumentType.OwnershipDocument,
+            filePath,
+            providerId,
+            transaction);
+
+        transaction.Commit();
+        return Success();
+        //return result.Success ? Success(result) : Fail(result.Errors);
     }
 
     #region profile

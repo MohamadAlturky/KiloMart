@@ -3,12 +3,14 @@ using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Database;
 using KiloMart.Domain.Deliveries.Profile;
+using KiloMart.Domain.Documents;
 using KiloMart.Domain.Register.Delivery.Models;
 using KiloMart.Domain.Register.Delivery.Services;
 using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Authorization;
 using KiloMart.Presentation.Controllers;
 using KiloMart.Presentation.Models.Commands.Deliveries;
+using KiloMart.Presentation.Services;
 using KiloMart.Requests.Queries;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,11 +20,13 @@ using Microsoft.AspNetCore.Mvc;
 public class DeliveryCommandController : AppController
 {
     private readonly IConfiguration _configuration;
+    private readonly IWebHostEnvironment environment;
     public DeliveryCommandController(IDbFactory dbFactory,
         IConfiguration configuration,
-        IUserContext userContext) : base(dbFactory, userContext)
+        IUserContext userContext, IWebHostEnvironment environment) : base(dbFactory, userContext)
     {
         _configuration = configuration;
+        this.environment = environment;
     }
 
     [HttpPost("register")]
@@ -73,9 +77,12 @@ public class DeliveryCommandController : AppController
         {
             return Fail("Invalid Phone Number Or Password");
         }
+        using var writeConnection = _dbFactory.CreateDbConnection();
+        writeConnection.Open();
+        using var transaction = writeConnection.BeginTransaction();
 
-
-        var result = await DeliveryProfileService.InsertAsync(connection,
+        var result = await DeliveryProfileService.InsertAsync(writeConnection,
+            transaction,
         new CreateDeliveryProfileRequest
         {
             Delivery = user.Party,
@@ -89,7 +96,137 @@ public class DeliveryCommandController : AppController
             LicenseExpiredDate = request.LicenseExpiredDate,
         });
 
-        return result.Success ? Success(result) : Fail(result.Errors);
+        if (!result.Success)
+        {
+            transaction.Rollback();
+            return Fail(result.Errors);
+        }
+
+        #region VehiclePhotoFile
+        // Save VehiclePhotoFile
+
+        Guid fileName = Guid.NewGuid();
+        if (request.VehiclePhotoFile is null)
+        {
+            transaction.Rollback();
+            return Fail("VehiclePhotoFile is null");
+        }
+        var filePath = await FileService.SaveImageFileAsync(request.VehiclePhotoFile,
+            environment.WebRootPath,
+            fileName);
+
+        if (string.IsNullOrEmpty(filePath))
+        {
+            transaction.Rollback();
+            return Fail("failed to save file");
+        }
+        int deliveryId = user.Party;
+
+        int documentId = await Db.InsertDeliveryDocumentAsync(
+            writeConnection,
+            "VehiclePhotoFile",
+            filePath,
+            deliveryId,
+            (byte)DocumentType.VehiclePhoto,
+            transaction);
+        #endregion
+        
+        #region DrivingLicenseFile
+
+        // Save DrivingLicenseFile
+
+        fileName = Guid.NewGuid();
+        if (request.DrivingLicenseFile is null)
+        {
+            transaction.Rollback();
+            return Fail("DrivingLicenseFile is null");
+        }
+        filePath = await FileService.SaveImageFileAsync(request.DrivingLicenseFile,
+            environment.WebRootPath,
+            fileName);
+
+        if (string.IsNullOrEmpty(filePath))
+        {
+            transaction.Rollback();
+            return Fail("failed to save file");
+        }
+
+        documentId = await Db.InsertDeliveryDocumentAsync(
+            writeConnection,
+            "DrivingLicenseFile",
+            filePath,
+            deliveryId,
+            (byte)DocumentType.DrivingLicense,
+            transaction);
+        #endregion
+
+        #region NationalIqamaIDFile
+        // Save NationalIqamaIDFile
+
+        fileName = Guid.NewGuid();
+        if (request.NationalIqamaIDFile is null)
+        {
+            transaction.Rollback();
+            return Fail("NationalIqamaIDFile is null");
+        }
+        filePath = await FileService.SaveImageFileAsync(request.NationalIqamaIDFile,
+            environment.WebRootPath,
+            fileName);
+
+        if (string.IsNullOrEmpty(filePath))
+        {
+            transaction.Rollback();
+            return Fail("failed to save file");
+        }
+
+        documentId = await Db.InsertDeliveryDocumentAsync(
+            writeConnection,
+            "NationalIqamaIDFile",
+            filePath,
+            deliveryId,
+            (byte)DocumentType.NationalIqamaID,
+            transaction);
+        #endregion
+
+        #region VehicleLicenseFile
+
+        fileName = Guid.NewGuid();
+        if (request.VehicleLicenseFile is null)
+        {
+            transaction.Rollback();
+            return Fail("VehicleLicenseFile is null");
+        }
+        filePath = await FileService.SaveImageFileAsync(request.VehicleLicenseFile,
+            environment.WebRootPath,
+            fileName);
+
+        if (string.IsNullOrEmpty(filePath))
+        {
+            transaction.Rollback();
+            return Fail("failed to save file");
+        }
+
+        documentId = await Db.InsertDeliveryDocumentAsync(
+            writeConnection,
+            "VehicleLicenseFile",
+            filePath,
+            deliveryId,
+            (byte)DocumentType.VehicleLicense,
+            transaction);
+        #endregion
+
+        #region Insert Vehicle
+        var vehicleId = await Db.InsertVehicleAsync(
+            writeConnection, 
+            request.Number, 
+            request.Model, 
+            request.Type, 
+            request.Year, deliveryId,
+            transaction);
+        #endregion
+
+        transaction.Commit();
+        return Success();
     }
 
     #region profile

@@ -122,7 +122,7 @@ public static partial class Db
             Id = id
         });
     }
-    public static async Task<DelivaryProfile?> GetDeliveryProfileByDeliveryIdAsync(int id, IDbConnection connection)
+    public static async Task<DelivaryProfile?> GetDeliveryProfileByDeliveryIdAsync(int id, IDbConnection connection,IDbTransaction? transaction = null)
     {
         const string query = @"SELECT 
                                 [Id], 
@@ -140,7 +140,7 @@ public static partial class Db
         return await connection.QueryFirstOrDefaultAsync<DelivaryProfile>(query, new
         {
             Id = id
-        });
+        },transaction);
     }
 }
 

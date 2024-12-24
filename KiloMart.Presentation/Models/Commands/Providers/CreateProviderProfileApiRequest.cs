@@ -8,6 +8,11 @@ public class CreateProviderProfileApiRequest
     public string OwnerNationalId { get; set; }
     public string Email { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
+
+    // public IFormFile? NationalIqamaIDFile { get; set; }
+    public IFormFile? OwnershipDocumentFile { get; set; }
+    public IFormFile? OwnerNationalApprovalFile { get; set; }
+    
     public (bool success, List<string> errors) Validate()
     {
         var errors = new List<string>();

@@ -73,9 +73,10 @@ public static class DeliveryProfileService
 {
     public static async Task<Result<CreateDeliveryProfileResponse>> InsertAsync(
         IDbConnection connection,
+        IDbTransaction transaction,
         CreateDeliveryProfileRequest deliveryProfileRequest)
     {
-        var existingProfile = await Db.GetDeliveryProfileByDeliveryIdAsync(deliveryProfileRequest.Delivery, connection);
+        var existingProfile = await Db.GetDeliveryProfileByDeliveryIdAsync(deliveryProfileRequest.Delivery, connection, transaction);
         if (existingProfile is not null)
         {
             return Result<CreateDeliveryProfileResponse>.Fail(new[] { "Profile Already Exists" });
@@ -103,7 +104,7 @@ public static class DeliveryProfileService
                 deliveryProfileRequest.LicenseExpiredDate,
                 deliveryProfileRequest.DrivingLicenseNumber,
                 deliveryProfileRequest.DrivingLicenseExpiredDate
-            });
+            }, transaction);
 
             return Result<CreateDeliveryProfileResponse>.Ok(new CreateDeliveryProfileResponse
             {

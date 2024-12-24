@@ -205,6 +205,7 @@ public class UserCommandController : AppController
             Success("Password has been successfully reset.")
             : Fail(result.Errors);
     }
+
     [HttpPost("send-reset-password-token")]
     public async Task<IActionResult> SendResetPasswordToken()
     {
@@ -221,6 +222,64 @@ public class UserCommandController : AppController
             userId,
             date);
         return Success(new { Code = code });
+    }
+
+
+    public class EmailDto
+    {
+        public string Email { get; set; }
+    }
+
+    [HttpPost("send-forget-password-token")]
+    public async Task<IActionResult> SendForgetPasswordToken([FromBody] EmailDto emailDto)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        var user = await Db.GetMembershipUserByEmailAsync(emailDto.Email, connection);
+
+        if (user is null)
+        {
+            return Fail("User Not Found");
+        }
+
+        string code = GenerateRandomString(4);
+        DateTime date = DateTime.Now;
+
+        await Db.InsertResetPasswordCodeAsync(
+            connection,
+            code,
+            user.Id,
+            date);
+        return Success(new { Code = code });
+    }
+    [HttpPost("reset-the-forgeted-password")]
+    public async Task<IActionResult> ResetForgetedPassword([FromBody] ResetTheForgettedPasswordRequest request)
+    {
+        var (success, errors) = request.Validate();
+        if (!success)
+            return ValidationError(errors);
+
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        var user = await Db.GetMembershipUserByEmailAsync(request.Email, connection);
+        if (user is null)
+        {
+            return Fail("User Not Found");
+        }
+
+        // Call the service to reset the password
+        var result = await ResetPasswordService.ChangeForgettedPassword(
+            request.Email,
+            request.Code,
+            user.Id,
+            request.NewPassword,
+            _dbFactory);
+
+        return result.Success ?
+            Success("Password has been successfully reset.")
+            : Fail(result.Errors);
     }
     public static string GenerateRandomString(int length)
     {
@@ -251,6 +310,26 @@ public class UserCommandController : AppController
 
             if (string.IsNullOrWhiteSpace(NewPassword) || NewPassword.Length < 6)
                 errors.Add("New password must be at least 6 characters long.");
+
+            return errors.Count == 0 ? (true, errors) : (false, errors);
+        }
+    }
+    public class ResetTheForgettedPasswordRequest
+    {
+        public string Email { get; set; } = null!;
+        public string Code { get; set; } = null!;
+        public string NewPassword { get; set; } = null!;
+
+        public (bool success, List<string> errors) Validate()
+        {
+            var errors = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(NewPassword) || NewPassword.Length < 6)
+                errors.Add("New password must be at least 6 characters long.");
+
+
+            if (string.IsNullOrWhiteSpace(Email))
+                errors.Add("Email should be provided.");
 
             return errors.Count == 0 ? (true, errors) : (false, errors);
         }

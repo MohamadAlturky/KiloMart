@@ -130,7 +130,7 @@ public class DeliveryCommandController : AppController
             (byte)DocumentType.VehiclePhoto,
             transaction);
         #endregion
-        
+
         #region DrivingLicenseFile
 
         // Save DrivingLicenseFile
@@ -217,10 +217,10 @@ public class DeliveryCommandController : AppController
 
         #region Insert Vehicle
         var vehicleId = await Db.InsertVehicleAsync(
-            writeConnection, 
-            request.Number, 
-            request.Model, 
-            request.Type, 
+            writeConnection,
+            request.Number,
+            request.Model,
+            request.Type,
             request.Year, deliveryId,
             transaction);
         #endregion
@@ -251,11 +251,15 @@ public class DeliveryCommandController : AppController
         connection.Open();
         var query = "SELECT [Id], [Delivary], [FirstName], [SecondName], [NationalName], [NationalId], [LicenseNumber], [LicenseExpiredDate], [DrivingLicenseNumber], [DrivingLicenseExpiredDate] FROM [dbo].[DelivaryProfile] WHERE [Delivary] = @Party";
         var result = await connection.QueryFirstOrDefaultAsync<DelivaryProfile>(query, new { Party = party });
+        
+        var documents = await Db.GetDeliveryDocumentByDelivaryIdAsync(party, connection);
+        var vehicles = await Db.GetVehicleByDelivaryIdAsync(party, connection);
+
         if (result is null)
         {
             return DataNotFound();
         }
-        return Success(result);
+        return Success(new { profile = result, documents = documents,vehicle = vehicles });
     }
 
 

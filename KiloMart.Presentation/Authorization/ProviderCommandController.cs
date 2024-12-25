@@ -197,13 +197,16 @@ public class ProviderCommandController(IConfiguration configuration,
         var provider = _userContext.Get().Party; // Assuming you have a way to get the current provider
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
+        
         var query = "SELECT * FROM [dbo].[ProviderProfile] WHERE [Provider] = @Provider";
         var result = await connection.QueryFirstOrDefaultAsync<ProviderProfile>(query, new { Provider = provider });
+        var documents = await Db.GetProviderDocumentsByProviderIdAsync(provider, connection); 
+        
         if (result is null)
         {
             return DataNotFound();
         }
-        return Success(result);
+        return Success(new {profile = result, documents = documents});
     }
 
     // Define a class for ProviderProfile

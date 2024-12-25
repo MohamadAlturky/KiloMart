@@ -100,6 +100,23 @@ public static partial class Db
             Id = id
         });
     }
+    public static async Task<Vehicle?> GetVehicleByDelivaryIdAsync(int id, IDbConnection connection)
+    {
+        const string query = @"SELECT 
+                            [Id], 
+                            [Number], 
+                            [Model], 
+                            [Type], 
+                            [Year], 
+                            [Delivary]
+                            FROM [dbo].[Vehicle]
+                            WHERE [Delivary] = @Id";
+
+        return await connection.QueryFirstOrDefaultAsync<Vehicle>(query, new
+        {
+            Id = id
+        });
+    }
 }
 
 public class Vehicle

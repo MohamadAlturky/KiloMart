@@ -126,7 +126,16 @@ public class CustomerCommandController : AppController
         {
             return DataNotFound();
         }
-        return Success(result);
+        var user = await Db.GetMembershipUserByIdAsync(_userContext.Get().Id, connection);
+        var party = await Db.GetPartyByIdAsync(_userContext.Get().Party, connection);
+        return Success(
+            new 
+            {
+                profile = result,
+                userInfo = user,
+                customerInfo = party
+            }
+        );
     }
 
     // Assuming CustomerProfile class is defined as

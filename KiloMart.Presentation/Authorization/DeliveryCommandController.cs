@@ -259,7 +259,18 @@ public class DeliveryCommandController : AppController
         {
             return DataNotFound();
         }
-        return Success(new { profile = result, documents = documents,vehicle = vehicles });
+        var user = await Db.GetMembershipUserByIdAsync(_userContext.Get().Id, connection);
+        var partyInfo = await Db.GetPartyByIdAsync(_userContext.Get().Party, connection);
+        
+        return Success(
+            new 
+            { 
+                profile = result, 
+                documents = documents,
+                vehicle = vehicles,
+                userInfo = user,
+                Delivaryinfo = partyInfo
+            });
     }
 
 

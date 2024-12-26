@@ -99,8 +99,8 @@ public class UserCommandController : AppController
         var query = "SELECT * FROM [dbo].[ProviderProfile] WHERE [Provider] = @Provider";
         var profile = await connection.QueryFirstOrDefaultAsync<ProviderProfile>(query, new { Provider = result.Party });
         var documents = await Db.GetProviderDocumentsByProviderIdAsync(result.Party, connection);
-        var user = await Db.GetMembershipUserByIdAsync(_userContext.Get().Id, connection);
-        var partyInfo = await Db.GetPartyByIdAsync(_userContext.Get().Party, connection);
+        var user = await Db.GetMembershipUserByIdAsync(result.UserId, connection);
+        var partyInfo = await Db.GetPartyByIdAsync(result.Party, connection);
 
         return Success(
             new

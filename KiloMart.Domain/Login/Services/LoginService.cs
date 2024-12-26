@@ -28,7 +28,7 @@ public class LoginService
         }
         if (!user.IsActive)
         {
-            return new LoginResult { Success = false, Errors = ["User is not active."] };
+            return new LoginResult { Success = false, Errors = ["This User account needs to be activated from the admin."] };
         }
         if (!user.EmailConfirmed)
         {
@@ -47,8 +47,11 @@ public class LoginService
             Success = true,
             Token = token,
             UserName = party.DisplayName,
+            Party = party.Id,
             Email = user.Email,
+            UserId = user.Id,
             Role = CheckRole(user.Role),
+            RoleNumber = user.Role, 
             Language = user.Language
         };
     }

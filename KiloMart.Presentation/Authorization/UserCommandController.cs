@@ -1,3 +1,4 @@
+using System.Data;
 using Dapper;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
@@ -66,16 +67,124 @@ public class UserCommandController : AppController
             return ValidationError(errors);
 
         var result = await LoginService.Login(request.Email, request.Password, _dbFactory, _configuration);
-        return result.Success ?
-            Success(new
+
+        if (!result.Success)
+        {
+            return Fail(result.Errors);
+        }
+        return await _handleProfile(result);
+    }
+
+    private async Task<IActionResult> _handleProfile(LoginResult result)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+        if (result.RoleNumber == (short)Roles.Customer)
+        {
+            return await _handleCustomerProfile(result, connection);
+        }
+        if (result.RoleNumber == (short)Roles.Delivery)
+        {
+            return await _handleDeliveryProfile(result, connection);
+        }
+        if (result.RoleNumber == (short)Roles.Provider)
+        {
+            return await _handleProviderProfile(result, connection);
+        }
+        return Fail("User Role Not Found");
+    }
+
+    private async Task<IActionResult> _handleProviderProfile(LoginResult result, IDbConnection connection)
+    {
+        var query = "SELECT * FROM [dbo].[ProviderProfile] WHERE [Provider] = @Provider";
+        var profile = await connection.QueryFirstOrDefaultAsync<ProviderProfile>(query, new { Provider = result.Party });
+        var documents = await Db.GetProviderDocumentsByProviderIdAsync(result.Party, connection);
+        var user = await Db.GetMembershipUserByIdAsync(_userContext.Get().Id, connection);
+        var partyInfo = await Db.GetPartyByIdAsync(_userContext.Get().Party, connection);
+
+        return Success(
+            new
             {
-                result.Token,
-                result.Email,
-                result.UserName,
+                token = result.Token,
                 result.Role,
-                result.Language
-            })
-        : Fail(result.Errors);
+                userInfo = new
+                {
+                    user?.Id,
+                    user?.Email,
+                    user?.EmailConfirmed,
+                    user?.IsActive,
+                    user?.Role
+                },
+                providerInfo = partyInfo,
+                profile = profile,
+                documents = documents
+            });
+    }
+
+    private async Task<IActionResult> _handleDeliveryProfile(LoginResult result, IDbConnection connection)
+    {
+        var query = "SELECT [Id], [Delivary], [FirstName], [SecondName], [NationalName], [NationalId], [LicenseNumber], [LicenseExpiredDate], [DrivingLicenseNumber], [DrivingLicenseExpiredDate] FROM [dbo].[DelivaryProfile] WHERE [Delivary] = @Party";
+
+        var profile = await connection.QueryFirstOrDefaultAsync<DelivaryProfile>(query, new { Party = result.Party });
+        var documents = await Db.GetDeliveryDocumentByDelivaryIdAsync(result.Party, connection);
+        var vehicles = await Db.GetVehicleByDelivaryIdAsync(result.Party, connection);
+        var user = await Db.GetMembershipUserByIdAsync(result.UserId, connection);
+        var partyInfo = await Db.GetPartyByIdAsync(result.Party, connection);
+
+        return Success(
+            new
+            {
+                token = result.Token,
+                result.Role,
+                profile = profile,
+                documents = documents,
+                vehicle = vehicles,
+                userInfo = new
+                {
+                    user?.Id,
+                    user?.Email,
+                    user?.EmailConfirmed,
+                    user?.IsActive,
+                    user?.Role
+                },
+                Delivaryinfo = partyInfo
+            });
+    }
+
+    private async Task<IActionResult> _handleCustomerProfile(LoginResult result, IDbConnection connection)
+    {
+        var query = @"
+            SELECT
+                [Id]
+                ,[Customer]
+                ,[FirstName]
+                ,[SecondName]
+                ,[NationalName]
+                ,[NationalId]
+            FROM [dbo].[CustomerProfile]
+            WHERE [Customer] = @Customer";
+        var profile = await connection.QueryFirstOrDefaultAsync<CustomerProfile>(query, new { Customer = result.Party });
+        var user = await Db.GetMembershipUserByIdAsync(result.UserId, connection);
+        var party = await Db.GetPartyByIdAsync(result.Party, connection);
+
+
+        return Success(
+            new
+            {
+                token = result.Token,
+                result.Role,
+                profile = profile,
+                userInfo = new
+                {
+                    user?.Id,
+                    user?.Email,
+                    user?.EmailConfirmed,
+                    user?.IsActive,
+                    user?.Role
+                },
+                customerInfo = party
+            }
+        );
     }
     #endregion
 

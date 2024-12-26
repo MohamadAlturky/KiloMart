@@ -268,7 +268,14 @@ public class DeliveryCommandController : AppController
                 profile = result, 
                 documents = documents,
                 vehicle = vehicles,
-                userInfo = user,
+                userInfo = new 
+                    {
+                        user?.Id,
+                        user?.Email,
+                        user?.EmailConfirmed,
+                        user?.IsActive,
+                        user?.Role
+                    },
                 Delivaryinfo = partyInfo
             });
     }

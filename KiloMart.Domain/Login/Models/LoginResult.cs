@@ -9,4 +9,7 @@ public class LoginResult
     public string? Token { get; set; }
     public string[] Errors { get; set; } = [];
     public byte Language { get; set; }
+    public int Party { get; set; }
+    public int UserId { get; set; }
+    public short RoleNumber { get; set; }
 }

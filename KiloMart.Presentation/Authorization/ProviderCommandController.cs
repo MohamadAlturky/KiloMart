@@ -212,7 +212,14 @@ public class ProviderCommandController(IConfiguration configuration,
         return Success(
             new 
             { 
-                userInfo = user,
+                userInfo = new 
+                    {
+                        user?.Id,
+                        user?.Email,
+                        user?.EmailConfirmed,
+                        user?.IsActive,
+                        user?.Role
+                    },
                 providerInfo = partyInfo, 
                 profile = result, 
                 documents = documents 

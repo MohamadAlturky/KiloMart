@@ -132,7 +132,14 @@ public class CustomerCommandController : AppController
             new 
             {
                 profile = result,
-                userInfo = user,
+                userInfo = new 
+                {
+                    user?.Id,
+                    user?.Email,
+                    user?.EmailConfirmed,
+                    user?.IsActive,
+                    user?.Role
+                },
                 customerInfo = party
             }
         );

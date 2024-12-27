@@ -91,7 +91,25 @@ public class UserCommandController : AppController
         {
             return await _handleProviderProfile(result, connection);
         }
-        return Fail("User Role Not Found");
+
+        var user = await Db.GetMembershipUserByIdAsync(result.UserId, connection);
+        var partyInfo = await Db.GetPartyByIdAsync(result.Party, connection);
+
+        return Success(
+            new
+            {
+                token = result.Token,
+                result.Role,
+                userInfo = new
+                {
+                    user?.Id,
+                    user?.Email,
+                    user?.EmailConfirmed,
+                    user?.IsActive,
+                    user?.Role
+                },
+                adminInfo = partyInfo,
+            });
     }
 
     private async Task<IActionResult> _handleProviderProfile(LoginResult result, IDbConnection connection)

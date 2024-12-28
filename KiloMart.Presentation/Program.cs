@@ -239,7 +239,7 @@ builder.Services.AddCors(options =>
 
 // Add Data Access
 builder.Services.AddDataAccess(builder.Configuration);
-builder.Services.AddEFDataAccess(builder.Configuration.GetConnectionString("DefaultConnection")!);
+//builder.Services.AddEFDataAccess(builder.Configuration.GetConnectionString("DefaultConnection")!);
 
 // Set JWT values for GuardAttribute
 GuardAttribute.SECRET_KEY = jwtKey;

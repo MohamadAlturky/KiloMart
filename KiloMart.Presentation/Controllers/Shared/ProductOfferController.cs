@@ -133,45 +133,49 @@ public class ProductOfferController(
         });
     }
 
-    [HttpGet("provider/my-offers")]
-    [Guard([Roles.Provider])]
-    public async Task<IActionResult> Mine(
-    [FromQuery] byte language, 
-    [FromQuery] int page = 1, 
-    [FromQuery] int pageSize = 10)
-    {
-        using var connection = _dbFactory.CreateDbConnection();
-        connection.Open();
+    // [HttpGet("provider/my-offers")]
+    // [Guard([Roles.Provider])]
+    // public async Task<IActionResult> Mine(
+    // [FromQuery] byte language, 
+    // [FromQuery] int page = 1, 
+    // [FromQuery] int pageSize = 10)
+    // {
+    //     using var connection = _dbFactory.CreateDbConnection();
+    //     connection.Open();
         
-        int provider = _userContext.Get().Party;
+    //     int provider = _userContext.Get().Party;
 
-        var (ProductOffers, TotalCount) = await Query.GetProductOffersPaginated(connection, provider, language, page, pageSize);
-        if (ProductOffers is null || ProductOffers.Length == 0)
-        {
-            return DataNotFound();
-        }
-        return Success(
-            new
-        {
-            Data = ProductOffers.Select(e=>new
-            {
-                e.ProductId,
-                e.ProductImageUrl,
-                e.ProductIsActive,
-                ProductDescription = e.ProductLocalizedDescription??e.ProductDescription,
-                ProductMeasurementUnit = e.ProductLocalizedMeasurementUnit??e.ProductMeasurementUnit,
-                ProductName = e.ProductLocalizedName??e.ProductName,
-                e.ProductOfferId,
-                e.ProductOfferFromDate,
-                e.ProductOfferIsActive,
-                e.ProductOfferOffPercentage,
-                e.ProductOfferPrice,
-                e.ProductOfferQuantity,
-                e.ProductProductCategory,
-                e.ProductCategoryName
-            }).ToList(),
+    //     var (ProductOffers, TotalCount) = await Query.GetProductOffersPaginated(connection, provider, language, page, pageSize);
+    //     if (ProductOffers is null || ProductOffers.Length == 0)
+    //     {
+    //         return DataNotFound();
+    //     }
+    //     return Success(
+    //         new
+    //     {
+    //         Data = ProductOffers.Select(e=>new
+    //         {
+    //             e.ProductId,
+    //             e.ProductImageUrl,
+    //             e.ProductIsActive,
+    //             ProductDescription = e.ProductLocalizedDescription??e.ProductDescription,
+    //             ProductMeasurementUnit = e.ProductLocalizedMeasurementUnit??e.ProductMeasurementUnit,
+    //             ProductName = e.ProductLocalizedName??e.ProductName,
+    //             e.ProductOfferId,
+    //             e.ProductOfferFromDate,
+    //             e.ProductOfferIsActive,
+    //             e.ProductOfferOffPercentage,
+    //             e.ProductOfferPrice,
+    //             e.ProductOfferQuantity,
+    //             e.ProductProductCategory,
+    //             e.ProductCategoryName
+    //         }).ToList(),
 
-            TotalCount
-        });
-    }
+    //         TotalCount
+    //     });
+    // }
+
+
+
+
 }

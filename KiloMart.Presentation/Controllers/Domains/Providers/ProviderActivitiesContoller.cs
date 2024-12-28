@@ -422,4 +422,37 @@ public class ProviderActivitiesContoller : AppController
 
     #endregion
 
+
+
+    #region offers reading mine
+    [HttpGet("products-with-offers/mine")]
+    [Guard([Roles.Provider])]
+    public async Task<IActionResult> GetMineByCategory(
+           [FromQuery] byte language,
+           [FromQuery] int? categoryId = null,
+           [FromQuery] int pageNumber = 1,
+           [FromQuery] int pageSize = 10)
+    {
+        int providerId = _userContext.Get().Party;
+
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        // Get paginated products
+        var products = await Query.GetProviderPaginatedProducts(connection, providerId, language, pageNumber, pageSize, categoryId);
+
+        // Get total count of products for pagination
+        var totalCount = await Query.GetCountProviderPaginatedProducts(connection, providerId, language, categoryId);
+
+        // Create a response object containing products and total count
+        var response = new
+        {
+            TotalCount = totalCount,
+            Products = products
+        };
+
+        return Success(response); // Return success response with products and count
+    }
+
+    #endregion
 }

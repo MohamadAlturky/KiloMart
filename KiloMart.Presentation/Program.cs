@@ -146,7 +146,6 @@ using KiloMart.Core.Configurations;
 using KiloMart.Presentation.Authorization;
 using KiloMart.Presentation.RealTime;
 using KiloMart.Core.Authentication;
-using KiloMart.DataAccess.EFCore.Configuration;
 using KiloMart.Core.Repositories;
 using KiloMart.Core.Settings;
 using KiloMart.DataAccess.EFCore.Repositories;

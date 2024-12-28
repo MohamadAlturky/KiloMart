@@ -224,8 +224,8 @@ public class ProviderActivitiesContoller : AppController
     [Guard([Roles.Provider])]
     public async Task<IActionResult> GetByDateRange(
        [FromQuery] int startYear,
-       [FromQuery] int startMonth, 
-       [FromQuery] int endYear, 
+       [FromQuery] int startMonth,
+       [FromQuery] int endYear,
        [FromQuery] int endMonth)
     {
         int providerId = _userContext.Get().Party;
@@ -388,4 +388,38 @@ public class ProviderActivitiesContoller : AppController
         return Success(providerDocument);
     }
     #endregion
+
+
+    #region offers reading
+    [HttpGet("products-with-offers/browsing")]
+    [Guard([Roles.Provider])]
+    public async Task<IActionResult> GetByCategory(
+           [FromQuery] byte language,
+           [FromQuery] int? categoryId = null,
+           [FromQuery] int pageNumber = 1,
+           [FromQuery] int pageSize = 10)
+    {
+        int providerId = _userContext.Get().Party;
+
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        // Get paginated products
+        var products = await Query.GetPaginatedProducts(connection, providerId, language, pageNumber, pageSize, categoryId);
+
+        // Get total count of products for pagination
+        var totalCount = await Query.GetCountPaginatedProducts(connection, providerId, language, categoryId);
+
+        // Create a response object containing products and total count
+        var response = new
+        {
+            TotalCount = totalCount,
+            Products = products
+        };
+
+        return Success(response); // Return success response with products and count
+    }
+
+    #endregion
+
 }

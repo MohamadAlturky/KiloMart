@@ -31,7 +31,7 @@ public partial class SearchController(
         // Insert the search term into the database
         var searchId = await Db.InsertSearchHistoryAsync(connection, customerId, request.Term);
         var productsInfos = await Db.SearchProductsAsync(connection, request.Term, 5);
-        return Success(new { Id = searchId, });
+        return Success(new { Id = searchId,productsInfos });
     }
 
     [HttpGet("get-last-searches/{count}")]

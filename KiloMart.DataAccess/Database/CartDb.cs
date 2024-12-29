@@ -237,8 +237,8 @@ public class CartItemWithProductWithPricing
 {
     public int CartItemId { get; set; }              // c.Id as CartItemId
     public int CartItemProduct { get; set; }          // c.Product as CartItemProduct
-    public int Quantity { get; set; }                  // c.Quantity as CartItemQuantity
-    public int Customer { get; set; }                  // c.Customer as CartItemCustomer
+    public int CartItemQuantity { get; set; }                  // c.Quantity as CartItemQuantity
+    public int CartItemCustomer { get; set; }                  // c.Customer as CartItemCustomer
 
     public int ProductId { get; set; }                 // p.ProductId
     public string ProductImageUrl { get; set; }        // p.ProductImageUrl

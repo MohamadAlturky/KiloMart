@@ -115,13 +115,29 @@ public static partial class Db
             DealIsActive,
             DealOffPercentage,
             InCart,
-            InFavorite
+            InFavorite, 
+			po.MaxPrice AS MaxPrice, 
+            po.MinPrice AS MinPrice 
         FROM [dbo].[GetProductDetailsWithInFavoriteAndInCartFN](@Language, @Customer) pd
         INNER JOIN 
         (SELECT TOP(@Count)
             Product, COUNT(Product) Count
             FROM dbo.[OrderProduct]
-            GROUP BY Product) p ON p.Product = pd.ProductId";
+            GROUP BY Product) p ON p.Product = pd.ProductId
+        INNER JOIN (
+            SELECT 
+                [Product], 
+                MAX([Price]) AS MaxPrice, 
+                MIN([Price]) AS MinPrice,
+                SUM(Quantity) AS Quantity
+            FROM 
+                [ProductOffer]
+            WHERE 
+                [IsActive] = 1
+            GROUP BY 
+                [Product]
+        ) po ON pd.[ProductId] = po.[Product]
+        WHERE pd.[ProductIsActive] = 1 AND po.Quantity > 0";
 
         return await connection.QueryAsync<ProductDetailWithInFavoriteAndOnCart>(query, new
         {
@@ -420,6 +436,8 @@ public class ProductDetailWithInFavoriteAndOnCart
     public decimal? DealOffPercentage { get; set; }
     public bool InCart { get; set; }
     public bool InFavorite { get; set; }
+    public decimal MaxPrice { get; set; }
+    public decimal MinPrice { get; set; }
 }
 
 public class ProductDetailWithPricingWithInFavoriteAndOnCart

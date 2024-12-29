@@ -43,7 +43,7 @@ public class GetProductDetailsWithInFavoriteAndOnCartController(IDbFactory dbFac
             count,
             connection);
 
-        return Success(result);
+        return Success(result.ToArray());
     }
 
     [HttpGet("with-pricing/list/paginated")]

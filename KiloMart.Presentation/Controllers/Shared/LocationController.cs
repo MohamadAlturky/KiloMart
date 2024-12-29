@@ -2,6 +2,7 @@ using Dapper;
 using KiloMart.Commands.Services;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
+using KiloMart.DataAccess.Database;
 using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -83,9 +84,49 @@ public class LocationController(IDbFactory dbFactory, IUserContext userContext)
         var party = _userContext.Get().Party;
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
-        var query = "SELECT * FROM [dbo].[Location] WHERE [Party] = @Party AND IsActive = 1;";
-        var result = await connection.QueryAsync<Location>(query, new { Party = party });
+        var query = @"
+        SELECT 
+            l.Id LocationId,
+            l.IsActive LocationIsActive,
+            l.Latitude LocationLatitude,
+            l.Longitude LocationLongitude,
+            l.Name LocationName,
+            l.Party LocationParty,
+            ld.ApartmentNumber LocationDetailsApartmentNumber,
+            ld.BuildingNumber LocationDetailsBuildingNumber,
+            ld.BuildingType LocationDetailsBuildingType,
+            ld.FloorNumber LocationDetailsFloorNumber,
+            ld.Id LocationDetailsId,
+            ld.Location LocationDetailsLocation,
+            ld.PhoneNumber LocationDetailsPhoneNumber,
+            ld.StreetNumber LocationDetailsStreetNumber
+        FROM [dbo].[Location] l 
+        LEFT JOIN [dbo].[LocationDetails] ld
+        ON ld.[Location] = l.Id 
+        WHERE l.[Party] = @Party 
+        AND l.IsActive = 1;";
+        var result = await connection.QueryAsync<LocationVw>(query, new { Party = party });
+
         return Success(result.ToList());
+    }
+    public class LocationVw
+    {
+        public int LocationId { get; set; } 
+        public bool LocationIsActive { get; set; }
+        public decimal LocationLatitude { get; set; } 
+        public decimal LocationLongitude { get; set; } 
+        public string LocationName { get; set; } 
+        public int LocationParty { get; set; } 
+
+        // details
+        public string? LocationDetailsApartmentNumber { get; set; } 
+        public string? LocationDetailsBuildingNumber { get; set; } 
+        public string? LocationDetailsBuildingType { get; set; } 
+        public string? LocationDetailsFloorNumber { get; set; } 
+        public int? LocationDetailsId { get; set; } 
+        public int? LocationDetailsLocation { get; set; } 
+        public string? LocationDetailsPhoneNumber { get; set; } 
+        public string? LocationDetailsStreetNumber { get; set; } 
     }
 
 

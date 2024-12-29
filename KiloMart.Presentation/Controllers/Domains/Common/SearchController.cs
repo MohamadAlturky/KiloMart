@@ -15,6 +15,12 @@ public partial class SearchController(
     : AppController(dbFactory, userContext)
 {
 
+    [HttpPost("demo")]
+    public IActionResult Demo()
+    {
+        return Ok("demo");
+    }
+
     #region Search History
     [HttpPost("search")]
     [Guard([Roles.Customer, Roles.Provider])]
@@ -44,7 +50,7 @@ public partial class SearchController(
             return Success(new { searchId, products });
         }
 
-        
+
         if (_userContext.Get().Role == (byte)Roles.Provider)
         {
             var products = await Db.SearchProductDetailsForProviderAsync(

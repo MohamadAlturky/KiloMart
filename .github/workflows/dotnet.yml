@@ -18,18 +18,18 @@ jobs:
       - name: Restore dependencies
         run: |
           echo "Restoring dependencies..."
-          cd Foam  
-          dotnet restore Foam.csproj  
+          cd .\KiloMart.Presentation\  
+          dotnet restore  
 
       - name: Build the project
         run: |
           echo "Building the project..."
-          dotnet build Foam.csproj 
+          dotnet build  
 
       - name: Publish the project
         run: |
           echo "Publishing the project..."  
-          dotnet publish Foam.csproj -c Release -o publish
+          dotnet publish -c Release -o publish
 
       - name: Check build directory contents
         run: |

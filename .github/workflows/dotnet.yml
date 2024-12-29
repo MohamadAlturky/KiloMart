@@ -40,4 +40,4 @@ jobs:
       - name: Upload files
         run: |
           echo "Uploading files..."
-          find publish/ -type f -exec curl -u ramadan09514:aboabdallahramadan@1 -T {} ftp://kilomart-001-site1.ptempurl.com/kilomartapi/ \;
+          find publish/ -type f -exec curl -u kilomart-001:ramadan09514@1 -T {} ftp://kilomart-001-site1.ptempurl.com/kilomartapi/ \;

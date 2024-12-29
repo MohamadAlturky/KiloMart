@@ -115,7 +115,10 @@ namespace KiloMart.DataAccess.Database
             });
         }
 
-        public static async Task<LocationDetails?> GetLocationDetailsByLocationIdAsync(int locationId, IDbConnection connection)
+        public static async Task<LocationDetails?> GetLocationDetailsByLocationIdAsync(
+            int locationId,
+            IDbConnection connection,
+            IDbTransaction? transaction = null)
         {
             const string query = @"SELECT 
                             [Id], 
@@ -132,7 +135,7 @@ namespace KiloMart.DataAccess.Database
             return await connection.QueryFirstOrDefaultAsync<LocationDetails>(query, new
             {
                 locationId = locationId
-            });
+            },transaction);
         }
     }
 

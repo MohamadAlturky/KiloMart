@@ -55,6 +55,32 @@ public class LocationController(IDbFactory dbFactory, IUserContext userContext)
             }
         }
     }
+
+    [HttpPut("edit-with-full-details/{id}")]
+    [Guard([Roles.Customer, Roles.Provider])]
+    public async Task<IActionResult> UpdateWithFullDetails(int id, LocationUpdateWithFullDetailsModel model)
+    {
+        model.Id = id;
+
+        var result = await LocationService.UpdateWithFullDetails(_dbFactory, _userContext.Get(), model);
+
+        if (result.Success)
+        {
+            return Success(result.Data);
+        }
+        else
+        {
+            if (result.Errors.Contains("Not Found"))
+            {
+                return DataNotFound();
+            }
+            else
+            {
+                return Fail(result.Errors);
+            }
+        }
+    }
+
     [HttpDelete("{id}")]
     [Guard([Roles.Customer, Roles.Provider])]
     public async Task<IActionResult> Delete(int id)
@@ -109,27 +135,7 @@ public class LocationController(IDbFactory dbFactory, IUserContext userContext)
 
         return Success(result.ToList());
     }
-    public class LocationVw
-    {
-        public int LocationId { get; set; } 
-        public bool LocationIsActive { get; set; }
-        public decimal LocationLatitude { get; set; } 
-        public decimal LocationLongitude { get; set; } 
-        public string LocationName { get; set; } 
-        public int LocationParty { get; set; } 
-
-        // details
-        public string? LocationDetailsApartmentNumber { get; set; } 
-        public string? LocationDetailsBuildingNumber { get; set; } 
-        public string? LocationDetailsBuildingType { get; set; } 
-        public string? LocationDetailsFloorNumber { get; set; } 
-        public int? LocationDetailsId { get; set; } 
-        public int? LocationDetailsLocation { get; set; } 
-        public string? LocationDetailsPhoneNumber { get; set; } 
-        public string? LocationDetailsStreetNumber { get; set; } 
-    }
-
-
+    
     [HttpPost("provider-and-customer/create-with-full-details")]
     [Guard([Roles.Customer, Roles.Provider])]
     public async Task<IActionResult> Create(LocationInsertWithDetailsModel model)

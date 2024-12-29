@@ -81,7 +81,10 @@ public static partial class Db
         return deletedRowsCount > 0;
     }
 
-    public static async Task<Location?> GetLocationByIdAsync(int id, IDbConnection connection)
+    public static async Task<Location?> GetLocationByIdAsync(
+        int id, 
+        IDbConnection connection,
+        IDbTransaction? transaction = null)
     {
         const string query = @"SELECT 
                             [Id], 
@@ -96,7 +99,7 @@ public static partial class Db
         return await connection.QueryFirstOrDefaultAsync<Location>(query, new
         {
             Id = id
-        });
+        }, transaction);
     }
     public static async Task<Location?> GetLocationByPartyAsync(int party, IDbConnection connection)
     {

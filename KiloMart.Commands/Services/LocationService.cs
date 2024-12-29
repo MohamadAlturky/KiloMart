@@ -32,16 +32,18 @@ public class LocationInsertModel
 
 public class LocationUpdateModel
 {
-    public int Id  { get; set; }
+    public int Id { get; set; }
     public string? Name { get; set; }
     public decimal? Longitude { get; set; }
     public decimal? Latitude { get; set; }
     public bool? IsActive { get; set; }
 
+
+
     public (bool Success, string[] Errors) Validate()
     {
         var errors = new List<string>();
-        if(Id <= 0)
+        if (Id <= 0)
         {
             errors.Add("Id is required");
         }
@@ -49,6 +51,37 @@ public class LocationUpdateModel
     }
 }
 
+public class LocationUpdateWithFullDetailsModel
+{
+    public int Id { get; set; }
+    public string? Name { get; set; }
+    public decimal? Longitude { get; set; }
+    public decimal? Latitude { get; set; }
+    public bool? IsActive { get; set; }
+
+
+
+
+    // details
+    public string? LocationDetailsApartmentNumber { get; set; }
+    public string? LocationDetailsBuildingNumber { get; set; }
+    public string? LocationDetailsBuildingType { get; set; }
+    public string? LocationDetailsFloorNumber { get; set; }
+    public string? LocationDetailsPhoneNumber { get; set; }
+    public string? LocationDetailsStreetNumber { get; set; }
+
+
+
+    public (bool Success, string[] Errors) Validate()
+    {
+        var errors = new List<string>();
+        if (Id <= 0)
+        {
+            errors.Add("Id is required");
+        }
+        return (errors.Count == 0, errors.ToArray());
+    }
+}
 public static class LocationService
 {
     public static async Task<Result<Location>> Insert(
@@ -66,13 +99,13 @@ public static class LocationService
         {
             var connection = dbFactory.CreateDbConnection();
             connection.Open();
-            
-            if(userPayLoad.Role == ((int)Roles.Provider))
+
+            if (userPayLoad.Role == ((int)Roles.Provider))
             {
                 var existingLocation = Db.GetLocationByPartyAsync(userPayLoad.Party,
                 connection);
 
-                if(existingLocation is not null)
+                if (existingLocation is not null)
                 {
                     return Result<Location>.Fail(["can't add multiple locations for the provider"]);
                 }
@@ -123,7 +156,7 @@ public static class LocationService
                 return Result<Location>.Fail(["Not Found"]);
             }
 
-            if(existingModel.Party != userPayLoad.Party)
+            if (existingModel.Party != userPayLoad.Party)
             {
                 return Result<Location>.Fail(["Un Authorized"]);
             }
@@ -146,6 +179,110 @@ public static class LocationService
         catch (Exception e)
         {
             return Result<Location>.Fail([e.Message]);
+        }
+    }
+
+    public static async Task<Result<LocationVw>> UpdateWithFullDetails(
+        IDbFactory dbFactory,
+        UserPayLoad userPayLoad,
+        LocationUpdateWithFullDetailsModel model)
+    {
+        var (success, errors) = model.Validate();
+        if (!success)
+        {
+            return Result<LocationVw>.Fail(errors);
+        }
+        var connection = dbFactory.CreateDbConnection();
+        connection.Open();
+        using var transaction = connection.BeginTransaction();
+        try
+        {
+
+            var existingModel = await Db.GetLocationByIdAsync(
+                model.Id,
+                connection,
+                transaction);
+
+            if (existingModel is null)
+            {
+                transaction.Rollback();
+                return Result<LocationVw>.Fail(["Not Found"]);
+            }
+
+            if (existingModel.Party != userPayLoad.Party)
+            {
+                transaction.Rollback();
+                return Result<LocationVw>.Fail(["Un Authorized"]);
+            }
+
+            existingModel.Name = model.Name ?? existingModel.Name;
+            existingModel.Longitude = model.Longitude ?? existingModel.Longitude;
+            existingModel.Latitude = model.Latitude ?? existingModel.Latitude;
+            existingModel.IsActive = model.IsActive ?? existingModel.IsActive;
+
+            await Db.UpdateLocationAsync(connection,
+                existingModel.Id,
+                existingModel.Longitude,
+                existingModel.Latitude,
+                existingModel.Name,
+                existingModel.Party,
+                existingModel.IsActive,
+                transaction);
+
+            var details = await Db.GetLocationDetailsByLocationIdAsync(
+                existingModel.Id, 
+                connection,
+                transaction);
+
+            if (details is null)
+            {
+                transaction.Rollback();
+                return Result<LocationVw>.Fail(["Details Not Found"]);
+            }
+            details.StreetNumber = model.LocationDetailsStreetNumber ?? details.StreetNumber;
+            details.ApartmentNumber = model.LocationDetailsApartmentNumber ?? details.ApartmentNumber;
+            details.PhoneNumber = model.LocationDetailsPhoneNumber ?? details.PhoneNumber;
+            details.FloorNumber = model.LocationDetailsFloorNumber ?? details.FloorNumber;
+            details.BuildingNumber = model.LocationDetailsBuildingNumber ?? details.BuildingNumber;
+            details.BuildingType = model.LocationDetailsBuildingType ?? details.BuildingType;
+
+            await Db.UpdateLocationDetailsAsync(
+               connection,
+               details.Id,
+               details.BuildingType,
+               details.BuildingNumber,
+               details.FloorNumber,
+               details.ApartmentNumber,
+               details.StreetNumber,
+               details.PhoneNumber,
+               details.Location,
+               transaction);
+
+            transaction.Commit();
+            
+            return Result<LocationVw>.Ok(new LocationVw
+            {
+                LocationId = existingModel.Id,
+                LocationIsActive = existingModel.IsActive,
+                LocationName = existingModel.Name,
+                LocationParty = existingModel.Party,
+                LocationLongitude = existingModel.Longitude,
+                LocationLatitude = existingModel.Latitude,
+
+                LocationDetailsApartmentNumber = details.ApartmentNumber,
+                LocationDetailsBuildingNumber = details.BuildingNumber,
+                LocationDetailsBuildingType = details.BuildingType,
+                LocationDetailsFloorNumber = details.FloorNumber,
+                LocationDetailsId = details.Id,
+                LocationDetailsLocation = details.Location,
+                LocationDetailsPhoneNumber = details.PhoneNumber,
+                LocationDetailsStreetNumber = details.StreetNumber
+            });
+        }
+        catch (Exception e)
+        {
+            transaction.Rollback();
+            return Result<LocationVw>.Fail([e.Message]);
         }
     }
     public static async Task<Result<Location>> DeActivate(
@@ -188,3 +325,23 @@ public static class LocationService
         }
     }
 }
+public class LocationVw
+{
+    public int LocationId { get; set; }
+    public bool LocationIsActive { get; set; }
+    public decimal LocationLatitude { get; set; }
+    public decimal LocationLongitude { get; set; }
+    public string LocationName { get; set; }
+    public int LocationParty { get; set; }
+
+    // details
+    public string? LocationDetailsApartmentNumber { get; set; }
+    public string? LocationDetailsBuildingNumber { get; set; }
+    public string? LocationDetailsBuildingType { get; set; }
+    public string? LocationDetailsFloorNumber { get; set; }
+    public int? LocationDetailsId { get; set; }
+    public int? LocationDetailsLocation { get; set; }
+    public string? LocationDetailsPhoneNumber { get; set; }
+    public string? LocationDetailsStreetNumber { get; set; }
+}
+

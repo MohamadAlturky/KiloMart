@@ -1,5 +1,6 @@
 using Dapper;
 using KiloMart.Core.Models;
+using KiloMart.Requests.Queries;
 using System.Data;
 
 namespace KiloMart.DataAccess.Database;
@@ -416,6 +417,116 @@ public static partial class Db
             };
         }
     }
+
+
+
+
+    public static async Task<IEnumerable<ProductDetailWithPricingWithInFavoriteAndOnCart>> SearchProductDetailsForCustomerAsync
+    (
+        int top,
+        byte language,
+        int customer,
+        string searchTerm,
+        IDbConnection connection)
+    {
+        const string query = @"
+        SELECT TOP(@Top)
+            pd.[ProductId],
+            pd.[ProductImageUrl],
+            pd.[ProductIsActive],
+            pd.[ProductMeasurementUnit],
+            pd.[ProductDescription],
+            pd.[ProductName],
+            pd.[ProductCategoryId],
+            pd.[ProductCategoryIsActive],
+            pd.[ProductCategoryName],
+            pd.[DealId],
+            pd.[DealEndDate],
+            pd.[DealStartDate],
+            pd.[DealIsActive],
+            pd.[DealOffPercentage],
+            pd.[InCart],
+            pd.[InFavorite],
+            po.MaxPrice, 
+            po.MinPrice
+        FROM 
+            dbo.GetProductDetailsWithInFavoriteAndInCartFN(@Language, @Customer) pd
+        INNER JOIN (
+            SELECT 
+                [Product], 
+                MAX([Price]) AS MaxPrice, 
+                MIN([Price]) AS MinPrice,
+                SUM(Quantity) AS Quantity
+            FROM 
+                [ProductOffer]
+            WHERE 
+                [IsActive] = 1
+            GROUP BY 
+                [Product]
+        ) po ON pd.[ProductId] = po.[Product]
+        WHERE 
+            pd.[ProductIsActive] = 1 AND 
+            po.Quantity > 0 AND 
+            pd.ProductName LIKE '%' + @SearchTerm + '%'";
+
+        return await connection.QueryAsync<ProductDetailWithPricingWithInFavoriteAndOnCart>(query, new
+        {
+            Language = language,
+            Customer = customer,
+            SearchTerm = searchTerm,
+            Top = top
+        });
+    }
+    public static async Task<IEnumerable<ProductWithOffersDetailsResponse>> SearchProductDetailsForProviderAsync(
+        int top,
+        byte language,        
+        int provider,
+        string searchTerm,
+        IDbConnection connection)
+    {
+        const string query = @"
+        SELECT TOP(@Top)
+            pd.[ProductId],
+            pd.[ProductImageUrl],
+            pd.[ProductIsActive],
+            pd.[ProductMeasurementUnit],
+            pd.[ProductDescription],
+            pd.[ProductName],
+            pd.[ProductCategoryId],
+            pd.[ProductCategoryIsActive],
+            pd.[ProductCategoryName],
+            pd.DealId,
+            pd.DealEndDate,
+            pd.DealStartDate,
+            pd.DealIsActive,
+            pd.DealOffPercentage,
+            po.Id AS ProductOfferId,
+            po.FromDate AS ProductOfferFromDate,
+            po.IsActive AS ProductOfferIsActive,
+            po.OffPercentage AS ProductOfferOffPercentage,
+            po.Price AS ProductOfferPrice,
+            po.Product AS ProductOfferProduct,
+            po.Provider AS ProductOfferProvider,
+            po.Quantity AS ProductOfferQuantity,
+            po.ToDate AS ProductOfferToDate
+        FROM 
+            GetProductDetailsFN(@language) pd
+        INNER JOIN 
+            dbo.[ProductOffer] po ON 
+                pd.ProductId = po.Product 
+                AND po.[Provider] = @provider 
+                AND po.IsActive = 1 
+                AND pd.ProductName LIKE '%' + @SearchTerm + '%'";
+
+        return await connection.QueryAsync<ProductWithOffersDetailsResponse>(query, new
+        {
+            Language = language,
+            Provider = provider,
+            SearchTerm = searchTerm,
+            Top = top
+        });
+    }
+
 }
 
 public class ProductDetailWithInFavoriteAndOnCart

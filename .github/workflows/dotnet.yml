@@ -1,20 +1,42 @@
-stages:
-  - build
+name: Build Project
 
-build_project:
-  stage: build
-  image: mcr.microsoft.com/dotnet/sdk:8.0
-  script:
-    - echo "Restoring dependencies..."
-    - cd Foam  
-    - dotnet restore Foam.csproj  
-    - echo "Building the project..."
-    - dotnet build Foam.csproj 
-    - echo "Publishing the project..."  
-    - dotnet publish Foam.csproj -c Release -o puplish
-    - echo "Checking build directory contents..."
-    - ls -R puplish/  
-    - echo "Uploading files..."
-    - curl -u ramadan09514:aboabdallahramadan@1 -T 'puplish/*' ftp://kilomart-001-site1.ptempurl.com/kilomartapi/ \;
-  only:
-    - dev
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/dotnet/sdk:8.0
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Restore dependencies
+        run: |
+          echo "Restoring dependencies..."
+          cd Foam  
+          dotnet restore Foam.csproj  
+
+      - name: Build the project
+        run: |
+          echo "Building the project..."
+          dotnet build Foam.csproj 
+
+      - name: Publish the project
+        run: |
+          echo "Publishing the project..."  
+          dotnet publish Foam.csproj -c Release -o publish
+
+      - name: Check build directory contents
+        run: |
+          echo "Checking build directory contents..."
+          ls -R publish/  
+
+      - name: Upload files
+        run: |
+          echo "Uploading files..."
+          curl -u ramadan09514:aboabdallahramadan@1 -T 'publish/*' ftp://kilomart-001-site1.ptempurl.com/kilomartapi/

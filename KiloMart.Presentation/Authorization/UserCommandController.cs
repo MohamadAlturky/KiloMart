@@ -137,8 +137,8 @@ public class UserCommandController : AppController
                     user?.Role
                 },
                 providerInfo = partyInfo,
-                profile = profile,
-                allProfiles = profiles
+                activeProfile = profile,
+                profilesHistory = profiles
             });
     }
 
@@ -158,7 +158,7 @@ public class UserCommandController : AppController
             {
                 token = result.Token,
                 result.Role,
-                profile = profile,
+                activeProfile = profile,
                 userInfo = new
                 {
                     user?.Id,
@@ -167,7 +167,8 @@ public class UserCommandController : AppController
                     user?.IsActive,
                     user?.Role
                 },
-                Delivaryinfo = partyInfo
+                Delivaryinfo = partyInfo,
+                profilesHistory = profiles
             });
     }
 

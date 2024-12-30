@@ -21,9 +21,11 @@ public class DeliveryCommandController : AppController
 {
     private readonly IConfiguration _configuration;
     private readonly IWebHostEnvironment environment;
-    public DeliveryCommandController(IDbFactory dbFactory,
+    public DeliveryCommandController(
+        IDbFactory dbFactory,
         IConfiguration configuration,
-        IUserContext userContext, IWebHostEnvironment environment) : base(dbFactory, userContext)
+        IUserContext userContext, 
+        IWebHostEnvironment environment) : base(dbFactory, userContext)
     {
         _configuration = configuration;
         this.environment = environment;

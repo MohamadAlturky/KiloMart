@@ -172,6 +172,35 @@ public class ProviderCommandController(IConfiguration configuration,
             providerId,
             transaction);
 
+
+        // location
+        var id = await Db.InsertLocationAsync(writeConnection,
+                     request.Longitude,
+                     request.Latitude,
+                     request.LocationName,
+                     providerId,
+                     transaction);
+        
+        var location = new KiloMart.DataAccess.Database.Location
+        {
+            Id = id,
+            Name = request.LocationName,
+            Longitude = request.Longitude,
+            Latitude = request.Latitude,
+            Party = providerId,
+            IsActive = true
+        };
+        var detailId = await Db.InsertLocationDetailsAsync(
+            writeConnection, 
+            request.BuildingType, 
+            request.BuildingNumber, 
+            request.FloorNumber, 
+            request.ApartmentNumber, 
+            request.StreetNumber, 
+            request.PhoneNumber, 
+            location.Id,
+            transaction);
+
         transaction.Commit();
         return Success();
         //return result.Success ? Success(result) : Fail(result.Errors);
@@ -210,19 +239,19 @@ public class ProviderCommandController(IConfiguration configuration,
         var partyInfo = await Db.GetPartyByIdAsync(_userContext.Get().Party, connection);
 
         return Success(
-            new 
-            { 
-                userInfo = new 
-                    {
-                        user?.Id,
-                        user?.Email,
-                        user?.EmailConfirmed,
-                        user?.IsActive,
-                        user?.Role
-                    },
-                providerInfo = partyInfo, 
-                profile = result, 
-                documents = documents 
+            new
+            {
+                userInfo = new
+                {
+                    user?.Id,
+                    user?.Email,
+                    user?.EmailConfirmed,
+                    user?.IsActive,
+                    user?.Role
+                },
+                providerInfo = partyInfo,
+                profile = result,
+                documents = documents
             });
     }
 

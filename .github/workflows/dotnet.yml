@@ -40,5 +40,5 @@ jobs:
       - name: Upload files
         run: |
           echo "Uploading files..."
-          find publish/ -type f -exec curl -u kilomart-001:ramadan09514 -T {} ftp://win9073.site4now.net:21/kilomartapi/ \;
+          find publish/ -type f -exec curl -u kilomart-001:ramadan09514 -T {} ftp://win9073.site4now.net:21/kilomartapi \;
 

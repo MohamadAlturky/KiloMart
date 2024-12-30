@@ -49,241 +49,241 @@ public class ProviderCommandController(IConfiguration configuration,
             }) : Fail(new string[] { result.ErrorMessage });
     }
 
-    [HttpPost("profile/create")]
-    public async Task<IActionResult> CreateProfile(CreateProviderProfileApiRequest request)
-    {
-        var (success, errors) = request.Validate();
-        if (!success)
-        {
-            return ValidationError(errors);
-        }
-        using var connection = _dbFactory.CreateDbConnection();
-        connection.Open();
+    // [HttpPost("profile/create")]
+    // public async Task<IActionResult> CreateProfile(CreateProviderProfileApiRequest request)
+    // {
+    //     var (success, errors) = request.Validate();
+    //     if (!success)
+    //     {
+    //         return ValidationError(errors);
+    //     }
+    //     using var connection = _dbFactory.CreateDbConnection();
+    //     connection.Open();
 
-        var user = await Db.GetMembershipUserByEmailAsync(request.Email, connection);
+    //     var user = await Db.GetMembershipUserByEmailAsync(request.Email, connection);
 
-        if (user is null)
-        {
-            return Fail("User Not Found");
-        }
-        if (user.PasswordHash != HashHandler.GetHash(request.Password))
-        {
-            return Fail("Invalid Phone Number Or Password");
-        }
+    //     if (user is null)
+    //     {
+    //         return Fail("User Not Found");
+    //     }
+    //     if (user.PasswordHash != HashHandler.GetHash(request.Password))
+    //     {
+    //         return Fail("Invalid Phone Number Or Password");
+    //     }
 
-        using var writeConnection = _dbFactory.CreateDbConnection();
-        writeConnection.Open();
-        using var transaction = writeConnection.BeginTransaction();
+    //     using var writeConnection = _dbFactory.CreateDbConnection();
+    //     writeConnection.Open();
+    //     using var transaction = writeConnection.BeginTransaction();
 
-        var result = await ProviderProfileService.InsertAsync(
-            writeConnection,
-            transaction,
-        new CreateProviderProfileRequest
-        {
-            Provider = user.Party,
-            FirstName = request.FirstName,
-            SecondName = request.SecondName,
-            NationalApprovalId = request.NationalApprovalId,
-            CompanyName = request.CompanyName,
-            OwnerName = request.OwnerName,
-            OwnerNationalId = request.OwnerNationalId,
-        });
-        if (!result.Success)
-        {
-            transaction.Rollback();
-            return Fail(result.Errors);
-        }
+    //     var result = await ProviderProfileService.InsertAsync(
+    //         writeConnection,
+    //         transaction,
+    //     new CreateProviderProfileRequest
+    //     {
+    //         Provider = user.Party,
+    //         FirstName = request.FirstName,
+    //         SecondName = request.SecondName,
+    //         NationalApprovalId = request.NationalApprovalId,
+    //         CompanyName = request.CompanyName,
+    //         OwnerName = request.OwnerName,
+    //         OwnerNationalId = request.OwnerNationalId,
+    //     });
+    //     if (!result.Success)
+    //     {
+    //         transaction.Rollback();
+    //         return Fail(result.Errors);
+    //     }
 
-        // Save OwnerNationalApprovalFile
+    //     // Save OwnerNationalApprovalFile
 
-        Guid fileName = Guid.NewGuid();
-        if (request.OwnerNationalApprovalFile is null)
-        {
-            transaction.Rollback();
-            return Fail("OwnerNationalApprovalFile is null");
-        }
-        var filePath = await FileService.SaveImageFileAsync(request.OwnerNationalApprovalFile,
-            environment.WebRootPath,
-            fileName);
+    //     Guid fileName = Guid.NewGuid();
+    //     if (request.OwnerNationalApprovalFile is null)
+    //     {
+    //         transaction.Rollback();
+    //         return Fail("OwnerNationalApprovalFile is null");
+    //     }
+    //     var filePath = await FileService.SaveImageFileAsync(request.OwnerNationalApprovalFile,
+    //         environment.WebRootPath,
+    //         fileName);
 
-        if (string.IsNullOrEmpty(filePath))
-        {
-            transaction.Rollback();
-            return Fail("failed to save file");
-        }
-        int providerId = user.Party;
-        int documentId = await Db.InsertProviderDocumentAsync(
-            writeConnection,
-            "OwnerNationalApproval",
-            (byte)DocumentType.OwnerNationalApproval,
-            filePath,
-            providerId,
-            transaction);
-
-
-        // // Save NationalIqamaIDFile
-
-        // fileName = Guid.NewGuid();
-        // if (request.NationalIqamaIDFile is null)
-        // {
-        //     transaction.Rollback();
-        //     return Fail("NationalIqamaIDFile is null");
-        // }
-        // filePath = await FileService.SaveImageFileAsync(request.NationalIqamaIDFile,
-        //     environment.WebRootPath,
-        //     fileName);
-
-        // if (string.IsNullOrEmpty(filePath))
-        // {
-        //     transaction.Rollback();
-        //     return Fail("failed to save file");
-        // }
-        // documentId = await Db.InsertProviderDocumentAsync(
-        //     writeConnection,
-        //     "NationalIqamaIDFile",
-        //     (byte)DocumentType.NationalIqamaID,
-        //     filePath,
-        //     providerId,
-        //     transaction);
+    //     if (string.IsNullOrEmpty(filePath))
+    //     {
+    //         transaction.Rollback();
+    //         return Fail("failed to save file");
+    //     }
+    //     int providerId = user.Party;
+    //     int documentId = await Db.InsertProviderDocumentAsync(
+    //         writeConnection,
+    //         "OwnerNationalApproval",
+    //         (byte)DocumentType.OwnerNationalApproval,
+    //         filePath,
+    //         providerId,
+    //         transaction);
 
 
-        // Save OwnershipDocumentFile
+    //     // // Save NationalIqamaIDFile
 
-        fileName = Guid.NewGuid();
-        if (request.OwnershipDocumentFile is null)
-        {
-            transaction.Rollback();
-            return Fail("OwnershipDocumentFile is null");
-        }
-        filePath = await FileService.SaveImageFileAsync(request.OwnershipDocumentFile,
-            environment.WebRootPath,
-            fileName);
+    //     // fileName = Guid.NewGuid();
+    //     // if (request.NationalIqamaIDFile is null)
+    //     // {
+    //     //     transaction.Rollback();
+    //     //     return Fail("NationalIqamaIDFile is null");
+    //     // }
+    //     // filePath = await FileService.SaveImageFileAsync(request.NationalIqamaIDFile,
+    //     //     environment.WebRootPath,
+    //     //     fileName);
 
-        if (string.IsNullOrEmpty(filePath))
-        {
-            transaction.Rollback();
-            return Fail("failed to save file");
-        }
-        documentId = await Db.InsertProviderDocumentAsync(
-            writeConnection,
-            "OwnershipDocumentFile",
-            (byte)DocumentType.OwnershipDocument,
-            filePath,
-            providerId,
-            transaction);
+    //     // if (string.IsNullOrEmpty(filePath))
+    //     // {
+    //     //     transaction.Rollback();
+    //     //     return Fail("failed to save file");
+    //     // }
+    //     // documentId = await Db.InsertProviderDocumentAsync(
+    //     //     writeConnection,
+    //     //     "NationalIqamaIDFile",
+    //     //     (byte)DocumentType.NationalIqamaID,
+    //     //     filePath,
+    //     //     providerId,
+    //     //     transaction);
 
 
-        // location
-        var id = await Db.InsertLocationAsync(writeConnection,
-                     request.Longitude,
-                     request.Latitude,
-                     request.LocationName,
-                     providerId,
-                     transaction);
+    //     // Save OwnershipDocumentFile
+
+    //     fileName = Guid.NewGuid();
+    //     if (request.OwnershipDocumentFile is null)
+    //     {
+    //         transaction.Rollback();
+    //         return Fail("OwnershipDocumentFile is null");
+    //     }
+    //     filePath = await FileService.SaveImageFileAsync(request.OwnershipDocumentFile,
+    //         environment.WebRootPath,
+    //         fileName);
+
+    //     if (string.IsNullOrEmpty(filePath))
+    //     {
+    //         transaction.Rollback();
+    //         return Fail("failed to save file");
+    //     }
+    //     documentId = await Db.InsertProviderDocumentAsync(
+    //         writeConnection,
+    //         "OwnershipDocumentFile",
+    //         (byte)DocumentType.OwnershipDocument,
+    //         filePath,
+    //         providerId,
+    //         transaction);
+
+
+    //     // location
+    //     var id = await Db.InsertLocationAsync(writeConnection,
+    //                  request.Longitude,
+    //                  request.Latitude,
+    //                  request.LocationName,
+    //                  providerId,
+    //                  transaction);
         
-        var location = new KiloMart.DataAccess.Database.Location
-        {
-            Id = id,
-            Name = request.LocationName,
-            Longitude = request.Longitude,
-            Latitude = request.Latitude,
-            Party = providerId,
-            IsActive = true
-        };
-        var detailId = await Db.InsertLocationDetailsAsync(
-            writeConnection, 
-            request.BuildingType, 
-            request.BuildingNumber, 
-            request.FloorNumber, 
-            request.ApartmentNumber, 
-            request.StreetNumber, 
-            request.PhoneNumber, 
-            location.Id,
-            transaction);
+    //     var location = new KiloMart.DataAccess.Database.Location
+    //     {
+    //         Id = id,
+    //         Name = request.LocationName,
+    //         Longitude = request.Longitude,
+    //         Latitude = request.Latitude,
+    //         Party = providerId,
+    //         IsActive = true
+    //     };
+    //     var detailId = await Db.InsertLocationDetailsAsync(
+    //         writeConnection, 
+    //         request.BuildingType, 
+    //         request.BuildingNumber, 
+    //         request.FloorNumber, 
+    //         request.ApartmentNumber, 
+    //         request.StreetNumber, 
+    //         request.PhoneNumber, 
+    //         location.Id,
+    //         transaction);
 
-        transaction.Commit();
-        return Success();
-        //return result.Success ? Success(result) : Fail(result.Errors);
-    }
+    //     transaction.Commit();
+    //     return Success();
+    //     //return result.Success ? Success(result) : Fail(result.Errors);
+    // }
 
-    #region profile
-    [HttpPost("profile/edit")]
-    [Guard([Roles.Provider])]
-    public async Task<IActionResult> EditProfile(UpdateProviderProfileRequest request)
-    {
+    // #region profile
+    // [HttpPost("profile/edit")]
+    // [Guard([Roles.Provider])]
+    // public async Task<IActionResult> EditProfile(UpdateProviderProfileRequest request)
+    // {
 
-        var result = await ProviderProfileService.UpdateAsync(_dbFactory,
-            _userContext.Get(), request);
+    //     var result = await ProviderProfileService.UpdateAsync(_dbFactory,
+    //         _userContext.Get(), request);
 
-        return result.Success ? Success(result) : Fail(result.Errors);
-    }
-    #endregion
+    //     return result.Success ? Success(result) : Fail(result.Errors);
+    // }
+    // #endregion
 
-    [HttpGet("mine")]
-    [Guard([Roles.Provider])]
-    public async Task<IActionResult> GetMine()
-    {
-        var provider = _userContext.Get().Party; // Assuming you have a way to get the current provider
-        using var connection = _dbFactory.CreateDbConnection();
-        connection.Open();
+    // [HttpGet("mine")]
+    // [Guard([Roles.Provider])]
+    // public async Task<IActionResult> GetMine()
+    // {
+    //     var provider = _userContext.Get().Party; // Assuming you have a way to get the current provider
+    //     using var connection = _dbFactory.CreateDbConnection();
+    //     connection.Open();
 
-        var query = "SELECT * FROM [dbo].[ProviderProfile] WHERE [Provider] = @Provider";
-        var result = await connection.QueryFirstOrDefaultAsync<ProviderProfile>(query, new { Provider = provider });
-        var documents = await Db.GetProviderDocumentsByProviderIdAsync(provider, connection);
+    //     var query = "SELECT * FROM [dbo].[ProviderProfile] WHERE [Provider] = @Provider";
+    //     var result = await connection.QueryFirstOrDefaultAsync<ProviderProfile>(query, new { Provider = provider });
+    //     var documents = await Db.GetProviderDocumentsByProviderIdAsync(provider, connection);
 
-        if (result is null)
-        {
-            return DataNotFound();
-        }
-        var user = await Db.GetMembershipUserByIdAsync(_userContext.Get().Id, connection);
-        var partyInfo = await Db.GetPartyByIdAsync(_userContext.Get().Party, connection);
+    //     if (result is null)
+    //     {
+    //         return DataNotFound();
+    //     }
+    //     var user = await Db.GetMembershipUserByIdAsync(_userContext.Get().Id, connection);
+    //     var partyInfo = await Db.GetPartyByIdAsync(_userContext.Get().Party, connection);
 
-        return Success(
-            new
-            {
-                userInfo = new
-                {
-                    user?.Id,
-                    user?.Email,
-                    user?.EmailConfirmed,
-                    user?.IsActive,
-                    user?.Role
-                },
-                providerInfo = partyInfo,
-                profile = result,
-                documents = documents
-            });
-    }
+    //     return Success(
+    //         new
+    //         {
+    //             userInfo = new
+    //             {
+    //                 user?.Id,
+    //                 user?.Email,
+    //                 user?.EmailConfirmed,
+    //                 user?.IsActive,
+    //                 user?.Role
+    //             },
+    //             providerInfo = partyInfo,
+    //             profile = result,
+    //             documents = documents
+    //         });
+    // }
 
-    // Define a class for ProviderProfile
-    public class ProviderProfile
-    {
-        public int Id { get; set; }
-        public int Provider { get; set; }
-        public string FirstName { get; set; } = null!;
-        public string SecondName { get; set; } = null!;
-        public string OwnerNationalId { get; set; } = null!;
-        public string NationalApprovalId { get; set; } = null!;
-        public string CompanyName { get; set; } = null!;
-        public string OwnerName { get; set; } = null!;
-    }
+    // // Define a class for ProviderProfile
+    // public class ProviderProfile
+    // {
+    //     public int Id { get; set; }
+    //     public int Provider { get; set; }
+    //     public string FirstName { get; set; } = null!;
+    //     public string SecondName { get; set; } = null!;
+    //     public string OwnerNationalId { get; set; } = null!;
+    //     public string NationalApprovalId { get; set; } = null!;
+    //     public string CompanyName { get; set; } = null!;
+    //     public string OwnerName { get; set; } = null!;
+    // }
 
-    [HttpGet("admin/list")]
-    public async Task<IActionResult> List([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
-    {
-        using var connection = _dbFactory.CreateDbConnection();
-        connection.Open();
+    // [HttpGet("admin/list")]
+    // public async Task<IActionResult> List([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    // {
+    //     using var connection = _dbFactory.CreateDbConnection();
+    //     connection.Open();
 
-        var result = await Query.GetProviderProfilesWithUserInfoPaginated(connection, page, pageSize);
-        if (result.Profiles is null || result.Profiles.Length == 0)
-        {
-            return DataNotFound();
-        }
-        return Success(
-            new
-            {
-                Data = result.Profiles,
-                TotalCount = result.TotalCount
-            });
-    }
+    //     var result = await Query.GetProviderProfilesWithUserInfoPaginated(connection, page, pageSize);
+    //     if (result.Profiles is null || result.Profiles.Length == 0)
+    //     {
+    //         return DataNotFound();
+    //     }
+    //     return Success(
+    //         new
+    //         {
+    //             Data = result.Profiles,
+    //             TotalCount = result.TotalCount
+    //         });
+    // }
 }

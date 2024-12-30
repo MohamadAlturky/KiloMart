@@ -114,9 +114,12 @@ public class UserCommandController : AppController
 
     private async Task<IActionResult> _handleProviderProfile(LoginResult result, IDbConnection connection)
     {
-        var query = "SELECT * FROM [dbo].[ProviderProfile] WHERE [Provider] = @Provider";
-        var profile = await connection.QueryFirstOrDefaultAsync<ProviderProfile>(query, new { Provider = result.Party });
-        var documents = await Db.GetProviderDocumentsByProviderIdAsync(result.Party, connection);
+        var profile = await Db.GetActiveProviderProfileHistoryAsync(connection, result.Party);
+        var profiles = await Db.GetAllProviderProfileHistoryAsync(connection, result.Party);
+        if (profile is null)
+        {
+            return Fail(new { profiles }, "This User Profile needs to be accepted from the admin, this are your profiles.");
+        }
         var user = await Db.GetMembershipUserByIdAsync(result.UserId, connection);
         var partyInfo = await Db.GetPartyByIdAsync(result.Party, connection);
 
@@ -135,17 +138,18 @@ public class UserCommandController : AppController
                 },
                 providerInfo = partyInfo,
                 profile = profile,
-                documents = documents
+                allProfiles = profiles
             });
     }
 
     private async Task<IActionResult> _handleDeliveryProfile(LoginResult result, IDbConnection connection)
     {
-        var query = "SELECT [Id], [Delivary], [FirstName], [SecondName], [NationalName], [NationalId], [LicenseNumber], [LicenseExpiredDate], [DrivingLicenseNumber], [DrivingLicenseExpiredDate] FROM [dbo].[DelivaryProfile] WHERE [Delivary] = @Party";
-
-        var profile = await connection.QueryFirstOrDefaultAsync<DelivaryProfile>(query, new { Party = result.Party });
-        var documents = await Db.GetDeliveryDocumentByDelivaryIdAsync(result.Party, connection);
-        var vehicles = await Db.GetVehicleByDelivaryIdAsync(result.Party, connection);
+        var profile = await Db.GetDeliveryActiveProfileHistoryAsync(connection, result.Party);
+        var profiles = await Db.GetDeliveryAllProfileHistoryAsync(connection, result.Party);
+        if (profile is null)
+        {
+            return Fail(new { profiles }, "This User Profile needs to be accepted from the admin, this are your profiles.");
+        }
         var user = await Db.GetMembershipUserByIdAsync(result.UserId, connection);
         var partyInfo = await Db.GetPartyByIdAsync(result.Party, connection);
 
@@ -155,8 +159,6 @@ public class UserCommandController : AppController
                 token = result.Token,
                 result.Role,
                 profile = profile,
-                documents = documents,
-                vehicle = vehicles,
                 userInfo = new
                 {
                     user?.Id,

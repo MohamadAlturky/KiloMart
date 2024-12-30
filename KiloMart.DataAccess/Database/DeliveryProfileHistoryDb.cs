@@ -160,7 +160,12 @@ public static partial class Db
         return deletedRowsCount > 0;
     }
 
-    public static async Task<DeliveryProfileHistory?> GetDeliveryProfileHistoryByIdAsync(long id, IDbConnection connection)
+
+
+    public static async Task<DeliveryProfileHistory?> GetDeliveryProfileHistoryByIdAsync(
+        long id,
+        IDbConnection connection,
+        IDbTransaction? transaction = null)
     {
         const string query = @"SELECT 
                             [Id], 
@@ -185,16 +190,96 @@ public static partial class Db
                             [DeliveryId], 
                             [IsActive], 
                             [IsRejected], 
-                            [IsAccepted]
+                            [IsAccepted],
+                            [ReviewDescription]
                             FROM [dbo].[DeliveryProfileHistory]
                             WHERE [Id] = @Id";
 
         return await connection.QueryFirstOrDefaultAsync<DeliveryProfileHistory>(query, new
         {
             Id = id
+        }, transaction);
+    }
+    public static async Task<DeliveryProfileHistory?> GetDeliveryActiveProfileHistoryAsync(
+            IDbConnection connection,
+            int deliveryId)
+    {
+        const string query = @"
+        SELECT
+            [Id],
+            [FirstName],
+            [SecondName],
+            [NationalName],
+            [NationalId],
+            [LicenseNumber],
+            [LicenseExpiredDate],
+            [DrivingLicenseNumber],
+            [DrivingLicenseExpiredDate],
+            [VehicleNumber],
+            [VehicleModel],
+            [VehicleType],
+            [VehicleYear],
+            [VehiclePhotoFileUrl],
+            [DrivingLicenseFileUrl],
+            [VehicleLicenseFileUrl],
+            [NationalIqamaIDFileUrl],
+            [SubmitDate],
+            [ReviewDate],
+            [DeliveryId],
+            [IsActive],
+            [IsRejected],
+            [IsAccepted],
+            [ReviewDescription]
+        FROM [dbo].[DeliveryProfileHistory]
+        WHERE
+            [DeliveryId] = @DeliveryId AND [IsActive] = 1;";
+
+
+        return await connection.QueryFirstOrDefaultAsync<DeliveryProfileHistory>(query, new
+        {
+            DeliveryId = deliveryId,
         });
     }
+    public static async Task<IEnumerable<DeliveryProfileHistory>> GetDeliveryAllProfileHistoryAsync(
+            IDbConnection connection,
+            int deliveryId)
+    {
+        const string query = @"
+        SELECT
+            [Id],
+            [FirstName],
+            [SecondName],
+            [NationalName],
+            [NationalId],
+            [LicenseNumber],
+            [LicenseExpiredDate],
+            [DrivingLicenseNumber],
+            [DrivingLicenseExpiredDate],
+            [VehicleNumber],
+            [VehicleModel],
+            [VehicleType],
+            [VehicleYear],
+            [VehiclePhotoFileUrl],
+            [DrivingLicenseFileUrl],
+            [VehicleLicenseFileUrl],
+            [NationalIqamaIDFileUrl],
+            [SubmitDate],
+            [ReviewDate],
+            [DeliveryId],
+            [IsActive],
+            [IsRejected],
+            [IsAccepted],
+            [ReviewDescription]
+        FROM [dbo].[DeliveryProfileHistory]
+        WHERE
+            [DeliveryId] = @DeliveryId;";
 
+
+        return await connection.QueryAsync<DeliveryProfileHistory>(query, new
+        {
+            DeliveryId = deliveryId,
+        });
+    }
     public static async Task<IEnumerable<DeliveryProfileHistory>> GetDeliveryProfileHistoryFilteredAsync(
         IDbConnection connection,
         int? deliveryId = null,
@@ -232,7 +317,8 @@ public static partial class Db
             [DeliveryId],
             [IsActive],
             [IsRejected],
-            [IsAccepted]
+            [IsAccepted],
+            [ReviewDescription]
         FROM [dbo].[DeliveryProfileHistory]
         WHERE
             (@DeliveryId IS NULL OR [DeliveryId] = @DeliveryId)
@@ -301,6 +387,63 @@ public static partial class Db
             ReviewDateTo = reviewDateTo
         });
     }
+
+
+    public static async Task<bool> UpdateDeliveryProfileHistoryByIdAsync(
+            IDbConnection connection,
+            long id,
+            bool isActive,
+            bool isAccepted,
+            bool isRejected,
+            string reviewDescription,
+            IDbTransaction? transaction = null)
+    {
+        const string query = @"
+                UPDATE [dbo].[DeliveryProfileHistory]
+                SET IsActive = @IsActive,
+                    IsAccepted = @IsAccepted,
+                    IsRejected = @IsRejected,
+                    ReviewDescription = @ReviewDescription
+                    ReviewDate = GETDATE()
+                WHERE Id = @Id";
+
+        var updatedRowsCount = await connection.ExecuteAsync(
+            query,
+            new
+            {
+                Id = id,
+                IsActive = isActive,
+                IsAccepted = isAccepted,
+                IsRejected = isRejected,
+                ReviewDescription = reviewDescription
+            },
+            transaction);
+
+        return updatedRowsCount > 0;
+    }
+
+    public static async Task<bool> DeactivateDeliveryProfileHistoryByDeliveryIdAsync(
+        IDbConnection connection,
+        int deliveryId,
+        bool isActive = false,
+        IDbTransaction? transaction = null)
+    {
+        const string query = @"
+                UPDATE [dbo].[DeliveryProfileHistory]
+                SET IsActive = @IsActive
+                WHERE DeliveryId = @DeliveryId";
+
+        var updatedRowsCount = await connection.ExecuteAsync(
+            query,
+            new
+            {
+                DeliveryId = deliveryId,
+                IsActive = isActive
+            },
+            transaction);
+
+        return updatedRowsCount > 0;
+    }
 }
 
 
@@ -330,4 +473,5 @@ public class DeliveryProfileHistory
     public bool IsActive { get; set; }
     public bool IsRejected { get; set; }
     public bool IsAccepted { get; set; }
+    public string? ReviewDescription { get; set; }
 }

@@ -45,6 +45,15 @@ IUserContext userContext) : ControllerBase
             Message = message??"Task Failed" 
         });
     }
+    protected IActionResult Fail(object data,string? message = null)
+    {
+        return StatusCode(500, new 
+        { 
+            Data = data,
+            Status = false,
+            Message = message??"Task Failed" 
+        });
+    }
     protected IActionResult DataNotFound(string? message = null)
     {
         return StatusCode(500, new 

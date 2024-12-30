@@ -20,17 +20,17 @@ jobs:
           ls
           echo "Restoring dependencies..."
           cd KiloMart.Presentation
-          dotnet restore  
+          dotnet restore KiloMart.Presentation.csproj
 
       - name: Build the project
         run: |
           echo "Building the project..."
-          dotnet build -c Release
+          dotnet build KiloMart.Presentation.csproj
 
       - name: Publish the project
         run: |
           echo "Publishing the project..."  
-          dotnet publish -c Release -o publish
+          dotnet publish KiloMart.Presentation.csproj -c Release -o publish
 
       - name: Check build directory contents
         run: |

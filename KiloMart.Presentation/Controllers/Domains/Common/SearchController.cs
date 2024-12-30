@@ -15,16 +15,13 @@ public partial class SearchController(
     : AppController(dbFactory, userContext)
 {
 
-    [HttpPost("demo")]
+    [HttpPost("demo3")]
     public IActionResult Demo()
     {
-        return Ok("demo");
+        return Ok("demo3");
     }
-    [HttpPost("demo2")]
-    public IActionResult Demo2()
-    {
-        return Ok("demo2");
-    }
+
+    
     #region Search History
     [HttpPost("search")]
     [Guard([Roles.Customer, Roles.Provider])]

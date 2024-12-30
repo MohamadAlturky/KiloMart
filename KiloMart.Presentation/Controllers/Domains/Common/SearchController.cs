@@ -20,7 +20,11 @@ public partial class SearchController(
     {
         return Ok("demo");
     }
-
+    [HttpPost("demo2")]
+    public IActionResult Demo2()
+    {
+        return Ok("demo2");
+    }
     #region Search History
     [HttpPost("search")]
     [Guard([Roles.Customer, Roles.Provider])]

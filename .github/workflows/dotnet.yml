@@ -40,7 +40,6 @@ jobs:
       - name: Upload files
         run: |
           echo "Uploading files..."
-          curl -T publish/* https://win9073.site4now.net:8172/msdeploy.axd?site=kilomart-001-site1 --user kilomart-001:ramadan09514@1 --ftp-ssl --ftp-pasv
-          
+          msdeploy -verb:sync -source:package="." -dest:auto,ComputerName="https://win9073.site4now.net:8172/msdeploy.axd?site=kilomart-001-site1",UserName="kilomart-001",Password="ramadan09514@1",AuthType="Basic" -allowUntrusted          
 
 

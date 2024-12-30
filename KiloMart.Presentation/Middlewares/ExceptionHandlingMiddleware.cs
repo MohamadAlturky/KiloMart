@@ -20,7 +20,7 @@ public class ExceptionHandlingMiddleware : IMiddleware
             var response = new
             {
                 Status = false,
-                Message = "un expected error occured try again or contant the backend team.",
+                Message = "un expected error occured try again or contact the backend team.",
                 Errors = new
                 {
                     ExceptionMessage = ex.Message,

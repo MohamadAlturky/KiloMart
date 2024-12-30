@@ -15,7 +15,7 @@ public partial class SearchController(
     : AppController(dbFactory, userContext)
 {
 
-    [HttpPost("demo3")]
+    [HttpPost("demo33")]
     public IActionResult Demo()
     {
         return Ok("demo3");

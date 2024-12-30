@@ -40,7 +40,7 @@ jobs:
       - name: Upload files
         run: |
           echo "Uploading files..."
-          curl -T publish/* ftp://win9073.site4now.net/kilomartapi --user kilomart-001:ramadan09514@1 --ftp-pasv
+          curl -T publish/* ftp://win9073.site4now.net/kilomartapi --user kilomart-001:ramadan09514@1 --ftp-ssl --ftp-pasv
           
 
 

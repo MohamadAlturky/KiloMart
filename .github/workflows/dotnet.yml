@@ -37,9 +37,12 @@ jobs:
           echo "Checking build directory contents..."
           ls -R publish/  
 
-      - name: Upload files
-        run: |
-          echo "Uploading files..."
-          msdeploy -verb:sync -source:package="." -dest:auto,ComputerName="https://win9073.site4now.net:8172/msdeploy.axd?site=kilomart-001-site1",UserName="kilomart-001",Password="ramadan09514@1",AuthType="Basic" -allowUntrusted          
-
+      - name: Upload files to SmarterASP
+              uses: ChristopheLav/iis-deploy@v1
+              with:
+                website-name: 'kilomart-001-site1'
+                msdeploy-service-url: 'https://win9073.site4now.net:8172/msdeploy.axd?site=kilomart-001-site1'
+                msdeploy-username: kilomart-001
+                msdeploy-password: ramadan09514@1
+                source-path: '${{ github.workspace }}/publish'
 

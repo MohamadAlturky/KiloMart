@@ -322,6 +322,7 @@ public class DeliveryProfileHistoryController(
         profileHistory.IsAccepted = true;
         profileHistory.IsRejected = false;
         profileHistory.IsActive = true;
+        profileHistory.ReviewDescription = profileHistoryId.ReviewDescription;
 
         await Db.UpdateDeliveryProfileHistoryByIdAsync(
             connection,
@@ -372,6 +373,7 @@ public class DeliveryProfileHistoryController(
         profileHistory.IsAccepted = false;
         profileHistory.IsRejected = true;
         profileHistory.IsActive = false;
+        profileHistory.ReviewDescription = profileHistoryId.ReviewDescription;
 
         await Db.UpdateDeliveryProfileHistoryByIdAsync(
             connection,

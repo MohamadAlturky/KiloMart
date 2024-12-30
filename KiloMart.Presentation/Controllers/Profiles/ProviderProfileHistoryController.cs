@@ -282,6 +282,7 @@ namespace KiloMart.Presentation.Controllers.Profiles
             profileHistory.IsAccepted = true;
             profileHistory.IsRejected = false;
             profileHistory.IsActive = true;
+            profileHistory.ReviewDescription = profileHistoryId.ReviewDescription;
 
             await Db.UpdateProviderProfileHistoryByIdAsync(
                 connection,
@@ -329,6 +330,7 @@ namespace KiloMart.Presentation.Controllers.Profiles
             profileHistory.IsAccepted = false;
             profileHistory.IsRejected = true;
             profileHistory.IsActive = false;
+            profileHistory.ReviewDescription = profileHistoryId.ReviewDescription;
 
             await Db.UpdateProviderProfileHistoryByIdAsync(
                 connection,

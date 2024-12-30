@@ -403,7 +403,7 @@ public static partial class Db
                 SET IsActive = @IsActive,
                     IsAccepted = @IsAccepted,
                     IsRejected = @IsRejected,
-                    ReviewDescription = @ReviewDescription
+                    ReviewDescription = @ReviewDescription,
                     ReviewDate = GETDATE()
                 WHERE Id = @Id";
 

@@ -25,7 +25,7 @@ jobs:
       - name: Build the project
         run: |
           echo "Building the project..."
-          dotnet build  
+          dotnet build  -c Release
 
       - name: Publish the project
         run: |

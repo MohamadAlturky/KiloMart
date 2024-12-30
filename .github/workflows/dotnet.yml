@@ -19,8 +19,7 @@ jobs:
         run: |
           ls
           echo "Restoring dependencies..."
-          cd KiloMart.Presentation
-          dotnet restore KiloMart.Presentation.csproj
+          dotnet restore
 
       - name: Build the project
         run: |

@@ -216,7 +216,7 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
     #endregion
 
     #region Search History
-   
+
     // [HttpPost("search")]
     // [Guard([Roles.Customer])]
     // public async Task<IActionResult> Search([FromBody] AddSearchTermRequest request)
@@ -302,8 +302,21 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
     {
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
+
+        Cart? cart = await Db.GetCartByCustomerAndProductIdAsync(_userContext.Get().Party, request.Product, connection);
+        if (cart is not null)
+        {
+            await Db.UpdateCartAsync(
+                connection,
+                cart.Id,
+                cart.Product,
+                cart.Quantity + request.Quantity,
+                cart.Customer);
+            return Success(new { id = cart.Id, Status = "Quantity Increased" });
+
+        }
         var cartId = await Db.InsertCartAsync(connection, request.Product, request.Quantity, _userContext.Get().Party);
-        return Success(new { id = cartId });
+        return Success(new { id = cartId, Status = "New Cart Item Inserted" });
     }
 
     [HttpPut("cart/edit/{id}")]
@@ -379,7 +392,7 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
         {
             return DataNotFound("System settings couldn't be found");
         }
-        
+
         // Return success with the price summary
         return Success(new { priceSummary, systemSettings.DeliveryOrderFee });
     }

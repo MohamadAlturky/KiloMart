@@ -82,6 +82,22 @@ public static partial class Db
             Id = id
         });
     }
+    public static async Task<Cart?> GetCartByCustomerAndProductIdAsync(int customer,int product, IDbConnection connection)
+    {
+        const string query = @"SELECT 
+                            [Id], 
+                            [Product], 
+                            [Quantity], 
+                            [Customer]
+                            FROM [dbo].[Cart]
+                            WHERE [Customer] = @Customer AND [Product] = @Product";
+
+        return await connection.QueryFirstOrDefaultAsync<Cart>(query, new
+        {
+            Customer = customer,
+            Product = product
+        });
+    }
     public static async Task<IEnumerable<Cart>> GetCartsByCustomerAsync(int customerId, IDbConnection connection)
     {
         const string query = @"SELECT 

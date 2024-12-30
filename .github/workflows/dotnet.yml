@@ -31,8 +31,7 @@ jobs:
       - name: Publish the project
         run: |
           echo "Publishing the project..." 
-          cd KiloMart.Presentation 
-          dotnet publish KiloMart.Presentation.csproj -c Release -o publish
+          dotnet publish KiloMart.Presentation/KiloMart.Presentation.csproj -c Release -o publish
 
       - name: Check build directory contents
         run: |

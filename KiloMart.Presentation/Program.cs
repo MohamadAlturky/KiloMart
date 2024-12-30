@@ -13,13 +13,13 @@ using KiloMart.Presentation.Middlewares;
 using KiloMart.Presentation.Tracking;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddMemoryCache();
+//builder.Services.AddMemoryCache();
 
 // Dependency Injection
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserContext, UserContext>();
 builder.Services.AddSingleton<IAppSettingsRepository, AppSettingsRepository>();
-builder.Services.AddSingleton<IAppSettingsProvider, AppSettingsProvider>();
+//builder.Services.AddSingleton<IAppSettingsProvider, AppSettingsProvider>();
 builder.Services.AddSingleton<DriversTrackerService>();
 // builder.Services.AddHostedService<FFF.NotificationService>();
 

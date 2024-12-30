@@ -14,17 +14,17 @@ namespace KiloMart.Presentation.Controllers;
 [Route("api/admin")]
 public class AppSettingsController : AppController
 {
-    private readonly IAppSettingsProvider _settingsProvider;
+    // private readonly IAppSettingsProvider _settingsProvider;
     private readonly IHubContext<NotificationHub> _hubContext;
 
     public AppSettingsController(
         IDbFactory dbFactory,
-        IAppSettingsProvider settingsProvider,
+        // IAppSettingsProvider settingsProvider,
         IHubContext<NotificationHub> hubContext,
         IUserContext userContext)
             : base(dbFactory, userContext)
     {
-        _settingsProvider = settingsProvider;
+        // _settingsProvider = settingsProvider;
         _hubContext = hubContext;
     }
 

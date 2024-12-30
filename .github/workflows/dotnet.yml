@@ -25,11 +25,13 @@ jobs:
       - name: Build the project
         run: |
           echo "Building the project..."
+          cd KiloMart.Presentation
           dotnet build KiloMart.Presentation.csproj
 
       - name: Publish the project
         run: |
-          echo "Publishing the project..."  
+          echo "Publishing the project..." 
+          cd KiloMart.Presentation 
           dotnet publish KiloMart.Presentation.csproj -c Release -o publish
 
       - name: Check build directory contents

@@ -68,6 +68,23 @@ public static partial class Db
         return updatedRowsCount > 0;
     }
 
+    public static async Task<bool> DeactivateLocationByPartyAsync(IDbConnection connection,
+        int party,
+        IDbTransaction? transaction = null)
+    {
+        const string query = @"UPDATE [dbo].[Location]
+                                SET 
+                                [IsActive] = 0
+                                WHERE [Party] = @Party";
+
+        var updatedRowsCount = await connection.ExecuteAsync(query, new
+        {
+            Party = party
+        }, transaction);
+
+        return updatedRowsCount > 0;
+    }
+
     public static async Task<bool> DeleteLocationAsync(IDbConnection connection, int id, IDbTransaction? transaction = null)
     {
         const string query = @"DELETE FROM [dbo].[Location]

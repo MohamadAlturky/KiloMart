@@ -15,8 +15,8 @@ public partial class Db
         string ownershipDocumentFileUrl,
         string ownerNationalApprovalFileUrl,
         string locationName,
-        float longitude,
-        float latitude,
+        decimal longitude,
+        decimal latitude,
         string buildingType,
         string buildingNumber,
         string floorNumber,
@@ -83,8 +83,8 @@ public partial class Db
         string ownershipDocumentFileUrl,
         string ownerNationalApprovalFileUrl,
         string locationName,
-        float longitude,
-        float latitude,
+        decimal longitude,
+        decimal latitude,
         string buildingType,
         string buildingNumber,
         string floorNumber,
@@ -470,8 +470,8 @@ public class ProviderProfileHistory
     public string OwnershipDocumentFileUrl { get; set; } = null!;
     public string OwnerNationalApprovalFileUrl { get; set; } = null!;
     public string LocationName { get; set; } = null!;
-    public float Longitude { get; set; }
-    public float Latitude { get; set; }
+    public decimal Longitude { get; set; }
+    public decimal Latitude { get; set; }
     public string BuildingType { get; set; } = null!;
     public string BuildingNumber { get; set; } = null!;
     public string FloorNumber { get; set; } = null!;

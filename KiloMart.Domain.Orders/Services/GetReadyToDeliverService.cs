@@ -18,12 +18,7 @@ namespace KiloMart.Domain.Orders.Services
             IDbFactory dbFactory)
         {
 
-            // DECLARE @Latitude FLOAT = @latitude; 
-            // DECLARE @Longitude FLOAT = @longitude; 
-            // DECLARE @TimeToMakeTheRaduisBigger INT = 5;
-            // DECLARE @DistanceToAdd FLOAT = 1;
-            // DECLARE @MaxDistanceToAdd FLOAT = 1;
-            // DECLARE @Raduis FLOAT = 10000;
+
             const string sql = @"
             SELECT * FROM (
                 SELECT 

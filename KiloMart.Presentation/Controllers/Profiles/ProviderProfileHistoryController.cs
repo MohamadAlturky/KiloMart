@@ -293,6 +293,31 @@ namespace KiloMart.Presentation.Controllers.Profiles
                 profileHistoryId.ReviewDescription,
                 transaction);
 
+
+            await Db.DeactivateLocationByPartyAsync(
+                connection, 
+                profileHistory.ProviderId, 
+                transaction);
+            
+           var locationId =  await Db.InsertLocationAsync(
+                connection,
+                profileHistory.Longitude,
+                profileHistory.Latitude,
+                profileHistory.LocationName,
+                profileHistory.ProviderId,
+                transaction);
+
+            await Db.InsertLocationDetailsAsync(
+                connection,
+                profileHistory.BuildingType,
+                profileHistory.BuildingNumber,
+                profileHistory.FloorNumber,
+                profileHistory.ApartmentNumber,
+                profileHistory.StreetNumber,
+                profileHistory.PhoneNumber,
+                locationId,
+                transaction);
+
             transaction.Commit();
             return Success(profileHistory);
         }
@@ -359,8 +384,8 @@ public class ProviderProfileHistoryInsertModel
     public IFormFile? OwnershipDocumentFile { get; set; }
     public IFormFile? OwnerNationalApprovalFile { get; set; }
     public string LocationName { get; set; } = null!;
-    public float Longitude { get; set; }
-    public float Latitude { get; set; }
+    public decimal Longitude { get; set; }
+    public decimal Latitude { get; set; }
     public string BuildingType { get; set; } = null!;
     public string BuildingNumber { get; set; } = null!;
     public string FloorNumber { get; set; } = null!;

@@ -29,11 +29,11 @@ jobs:
       - name: Publish the solution
         run: |
           echo "Publishing the solution..." 
-          dotnet publish -c Release -o publish
-
-      - name: Publish the project
-        run: |
-          echo "Publishing the project..." 
+          dotnet publish KiloMart.Core/KiloMart.Core.csproj -c Release -o publish
+          dotnet publish KiloMart.DataAccess/KiloMart.DataAccess.csproj -c Release -o publish
+          dotnet publish KiloMart.Domain/KiloMart.Domain.csproj -c Release -o publish
+          dotnet publish KiloMart.Commands/KiloMart.Commands.csproj -c Release -o publish
+          dotnet publish KiloMart.Domain.Orders/KiloMart.Domain.Orders.csproj -c Release -o publish
           dotnet publish KiloMart.Presentation/KiloMart.Presentation.csproj -c Release -o publish
 
       - name: Check build directory contents

@@ -28,7 +28,7 @@ public class DeliveryProfileHistoryController(
 
 
         #region Getting the User 
-        var user = await Db.GetMembershipUserByEmailAsync(request.Email, connection);
+            var user = await Db.GetMembershipUserByEmailAsync(connection, request.Email);
 
         if (user is null)
         {

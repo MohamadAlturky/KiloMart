@@ -6,5 +6,6 @@ public class UserPayLoad
     public int Role { get; set;}
     public int Party { get; set;}
     public string Email { get; set;} = null!;
+    public string Code { get; set;} = null!;
 
 }

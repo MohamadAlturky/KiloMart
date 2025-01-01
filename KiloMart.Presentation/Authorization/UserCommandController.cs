@@ -1,4 +1,3 @@
-using System.Data;
 using Dapper;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
@@ -7,6 +6,7 @@ using KiloMart.Domain.Login.Models;
 using KiloMart.Domain.Login.Services;
 using KiloMart.Domain.Register.Activate;
 using KiloMart.Domain.Register.Utils;
+using KiloMart.Presentation.Authentication.Services.Login;
 using KiloMart.Presentation.Controllers;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,14 +14,11 @@ namespace KiloMart.Presentation.Authorization;
 
 [ApiController]
 [Route("api/user")]
-public class UserCommandController : AppController
+public class UserCommandController(IConfiguration configuration,
+    IDbFactory dbFactory,
+    IUserContext userContext) : AppController(dbFactory, userContext)
 {
-    private readonly IConfiguration _configuration;
-
-    public UserCommandController(IConfiguration configuration, IDbFactory dbFactory, IUserContext userContext) : base(dbFactory, userContext)
-    {
-        _configuration = configuration;
-    }
+    private readonly IConfiguration _configuration = configuration;
 
 
     #region decode token
@@ -59,6 +56,7 @@ public class UserCommandController : AppController
     #endregion
 
     #region login
+
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LogInRequest request)
     {
@@ -70,144 +68,172 @@ public class UserCommandController : AppController
 
         if (!result.Success)
         {
-            return Fail(result.Errors);
+            return Fail(new { profilesHistory = result.AllProfiles }, result.Errors);
         }
-        return await _handleProfile(result);
+        return _factor(result);
     }
-
-    private async Task<IActionResult> _handleProfile(LoginResult result)
+    private IActionResult _factor(LoginResult result)
     {
-        using var connection = _dbFactory.CreateDbConnection();
-        connection.Open();
-        if (result.RoleNumber == (short)Roles.Customer)
+        switch (result.RoleNumber)
         {
-            return await _handleCustomerProfile(result, connection);
-        }
-        if (result.RoleNumber == (short)Roles.Delivery)
-        {
-            return await _handleDeliveryProfile(result, connection);
-        }
-        if (result.RoleNumber == (short)Roles.Provider)
-        {
-            return await _handleProviderProfile(result, connection);
-        }
-
-        var user = await Db.GetMembershipUserByIdAsync(result.UserId, connection);
-        var partyInfo = await Db.GetPartyByIdAsync(result.Party, connection);
-
-        return Success(
-            new
-            {
-                token = result.Token,
-                result.Role,
-                userInfo = new
+            case (short)Roles.Customer:
+                var customerData = new CustomerData
                 {
-                    user?.Id,
-                    user?.Email,
-                    user?.EmailConfirmed,
-                    user?.IsActive,
-                    user?.Role
-                },
-                adminInfo = partyInfo,
-            });
-    }
+                    Token = result.Token,
+                    Role = result.Role,
+                    ActiveProfile = result.ActiveProfile,
+                    UserInfo = result.UserInfo,
+                    CustomerInfo = result.PartyInfo
+                };
+                return Success(customerData);
 
-    private async Task<IActionResult> _handleProviderProfile(LoginResult result, IDbConnection connection)
-    {
-        var profile = await Db.GetActiveProviderProfileHistoryAsync(connection, result.Party);
-        var profiles = await Db.GetAllProviderProfileHistoryAsync(connection, result.Party);
-        if (profile is null)
-        {
-            return Fail(new { profiles }, "This User Profile needs to be accepted from the admin, this are your profiles.");
+            case (short)Roles.Delivery:
+                var deliveryData = new DeliveryData
+                {
+                    Token = result.Token,
+                    Role = result.Role,
+                    ActiveProfile = result.ActiveProfile,
+                    UserInfo = result.UserInfo,
+                    DeliveryInfo = result.PartyInfo,
+                    ProfilesHistory = result.AllProfiles
+                };
+                return Success(deliveryData);
+
+            case (short)Roles.Provider:
+                var providerData = new ProviderData
+                {
+                    Token = result.Token,
+                    Role = result.Role,
+                    UserInfo = result.UserInfo,
+                    ProviderInfo = result.PartyInfo,
+                    ActiveProfile = result.ActiveProfile,
+                    ProfilesHistory = result.AllProfiles
+                };
+                return Success(providerData);
+
+            case (short)Roles.Admin:
+                var adminData = new AdminData
+                {
+                    Token = result.Token,
+                    Role = result.Role,
+                    UserInfo = result.UserInfo,
+                    AdminInfo = result.PartyInfo
+                };
+                return Success(adminData);
+
+            default:
+                return Fail("Not Supported User Role");
+
         }
-        var user = await Db.GetMembershipUserByIdAsync(result.UserId, connection);
-        var partyInfo = await Db.GetPartyByIdAsync(result.Party, connection);
-
-        return Success(
-            new
-            {
-                token = result.Token,
-                result.Role,
-                userInfo = new
-                {
-                    user?.Id,
-                    user?.Email,
-                    user?.EmailConfirmed,
-                    user?.IsActive,
-                    user?.Role
-                },
-                providerInfo = partyInfo,
-                activeProfile = profile,
-                profilesHistory = profiles
-            });
-    }
-
-    private async Task<IActionResult> _handleDeliveryProfile(LoginResult result, IDbConnection connection)
-    {
-        var profile = await Db.GetDeliveryActiveProfileHistoryAsync(connection, result.Party);
-        var profiles = await Db.GetDeliveryAllProfileHistoryAsync(connection, result.Party);
-        if (profile is null)
-        {
-            return Fail(new { profiles }, "This User Profile needs to be accepted from the admin, this are your profiles.");
-        }
-        var user = await Db.GetMembershipUserByIdAsync(result.UserId, connection);
-        var partyInfo = await Db.GetPartyByIdAsync(result.Party, connection);
-
-        return Success(
-            new
-            {
-                token = result.Token,
-                result.Role,
-                activeProfile = profile,
-                userInfo = new
-                {
-                    user?.Id,
-                    user?.Email,
-                    user?.EmailConfirmed,
-                    user?.IsActive,
-                    user?.Role
-                },
-                Delivaryinfo = partyInfo,
-                profilesHistory = profiles
-            });
-    }
-
-    private async Task<IActionResult> _handleCustomerProfile(LoginResult result, IDbConnection connection)
-    {
-        var query = @"
-            SELECT
-                [Id]
-                ,[Customer]
-                ,[FirstName]
-                ,[SecondName]
-                ,[NationalName]
-                ,[NationalId]
-            FROM [dbo].[CustomerProfile]
-            WHERE [Customer] = @Customer";
-        var profile = await connection.QueryFirstOrDefaultAsync<CustomerProfile>(query, new { Customer = result.Party });
-        var user = await Db.GetMembershipUserByIdAsync(result.UserId, connection);
-        var party = await Db.GetPartyByIdAsync(result.Party, connection);
-
-
-        return Success(
-            new
-            {
-                token = result.Token,
-                result.Role,
-                profile = profile,
-                userInfo = new
-                {
-                    user?.Id,
-                    user?.Email,
-                    user?.EmailConfirmed,
-                    user?.IsActive,
-                    user?.Role
-                },
-                customerInfo = party
-            }
-        );
     }
     #endregion
+
+    #region sessions
+
+    [HttpDelete("session/delete/{id}")]
+    [Guard([Roles.Admin, Roles.Delivery, Roles.Provider, Roles.Customer])]
+    public async Task<IActionResult> DeleteSession([FromRoute] long id)
+    {
+        int membershipUserId = _userContext.Get().Id;
+
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        // Retrieve the session to ensure it belongs to the current user
+        var session = await Db.GetSessionByIdAsync(connection, id);
+        if (session == null)
+        {
+            return DataNotFound("Session not found.");
+        }
+
+        if (session.UserId != membershipUserId)
+        {
+            return Fail("Unauthorized :: You do not have permission to delete this session.");
+        }
+
+        // Delete the session
+        bool deleted = await Db.DeleteSessionAsync(connection, id);
+        if (deleted)
+        {
+            return Success(new { Message = "Session deleted successfully." });
+        }
+        else
+        {
+            return Fail(new string[] { "Failed to delete session." });
+        }
+    }
+
+    [HttpGet("session/mine")]
+    [Guard([Roles.Admin, Roles.Delivery, Roles.Provider, Roles.Customer])]
+    public async Task<IActionResult> GetMySessions()
+    {
+        int membershipUserId = _userContext.Get().Id;
+
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        // Retrieve all active sessions for the current user
+        var sessions = await Db.GetActiveSessionsByUserIdAsync(connection, membershipUserId);
+
+        if (sessions == null || !sessions.Any())
+        {
+            return DataNotFound("No active sessions found.");
+        }
+
+        // Map sessions to SessionsDto if necessary
+        var sessionsDto = sessions.Select(s => new SessionsDto
+        {
+            Id = s.Id,
+            Token = "For Security Issues We Will Not Show The Token",//s.Token,
+            UserId = s.UserId,
+            ExpireDate = s.ExpireDate,
+            CreationDate = s.CreationDate,
+            Code = s.Code
+        }).ToList();
+
+        return Success(sessionsDto);
+    }
+
+    [HttpGet("session/mine/this")]
+    [Guard([Roles.Admin, Roles.Delivery, Roles.Provider, Roles.Customer])]
+    public async Task<IActionResult> GetThisSession()
+    {
+        var code = _userContext.Get().Code;
+
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        Sessions? session = await Db.GetSessionByCodeAsync(connection, code);
+
+        if (session is null)
+        {
+            return DataNotFound("");
+        }
+
+        return Success(new SessionsDto
+        {
+            Id = session.Id,
+            Token = "For Security Issues We Will Not Show The Token",//s.Token,
+            UserId = session.UserId,
+            ExpireDate = session.ExpireDate,
+            CreationDate = session.CreationDate,
+            Code = session.Code
+        });
+    }
+
+
+    public class SessionsDto
+    {
+        public long Id { get; set; }
+        public string Token { get; set; } = null!;
+        public int UserId { get; set; }
+        public DateTime ExpireDate { get; set; }
+        public DateTime CreationDate { get; set; }
+        public string Code { get; set; } = null!;
+    }
+
+    #endregion
+
 
     #region language
 
@@ -365,7 +391,7 @@ public class UserCommandController : AppController
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
 
-        var user = await Db.GetMembershipUserByEmailAsync(emailDto.Email, connection);
+        var user = await Db.GetMembershipUserByEmailAsync(connection, emailDto.Email);
 
         if (user is null)
         {
@@ -392,7 +418,7 @@ public class UserCommandController : AppController
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
 
-        var user = await Db.GetMembershipUserByEmailAsync(request.Email, connection);
+        var user = await Db.GetMembershipUserByEmailAsync(connection, request.Email);
         if (user is null)
         {
             return Fail("User Not Found");

@@ -26,6 +26,11 @@ jobs:
           echo "Building the project..."
           dotnet build -c Release -o publish
 
+      - name: Publish the solution
+        run: |
+          echo "Publishing the solution..." 
+          dotnet publish -c Release -o publish
+
       - name: Publish the project
         run: |
           echo "Publishing the project..." 

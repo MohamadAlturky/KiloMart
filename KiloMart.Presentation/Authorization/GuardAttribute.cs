@@ -5,7 +5,8 @@ using KiloMart.Domain.Login.Models;
 using KiloMart.Domain.Register.Utils;
 using Microsoft.Data.SqlClient;
 using KiloMart.DataAccess.Database;
-using Microsoft.AspNetCore.Http.HttpResults;
+using KiloMart.Core.Authentication;
+using Dapper;
 
 namespace KiloMart.Presentation.Authorization;
 
@@ -38,60 +39,66 @@ public class GuardAttribute : Attribute, IAuthorizationFilter
             return;
         }
 
-        try
+        var user = context.HttpContext?.User;
+
+        var userPayLoad = new UserPayLoad
         {
-            bool decodingResult = JwtTokenValidator.ValidateToken(token, SECRET_KEY, ISSUER, AUDIENCE, out JwtSecurityToken? decodedToken);
-            if (!decodingResult || decodedToken is null)
-            {
-                context.Result = new UnauthorizedResult();
-                return;
-            }
+            Id = int.Parse(user?.FindFirst(CustomClaimTypes.UserId)?.Value ?? "0"),
+            Role = int.Parse(user?.FindFirst(CustomClaimTypes.Role)?.Value ?? "0"),
+            Party = int.Parse(user?.FindFirst(CustomClaimTypes.Party)?.Value ?? "0"),
+            Email = user?.FindFirst(CustomClaimTypes.Email)?.Value ?? string.Empty,
+            Code = user?.FindFirst(CustomClaimTypes.Code)?.Value ?? string.Empty
+        };
 
 
-            var roleIdClaim = decodedToken?.Claims.FirstOrDefault(c => c.Type == CustomClaimTypes.Role);
+        System.Console.WriteLine(userPayLoad.Code);
+        System.Console.WriteLine(userPayLoad.Id);
+        System.Console.WriteLine(userPayLoad.Party);
+        System.Console.WriteLine(userPayLoad.Email);
+        System.Console.WriteLine(userPayLoad.Role);
 
-            var codeClaim = decodedToken?.Claims.FirstOrDefault(c => c.Type == CustomClaimTypes.Code);
-            if (codeClaim is null)
-            {
-                context.Result = new UnauthorizedResult();
-                return;
-            }
-            using var connection = new SqlConnection(CONNECTION_STRING);
-            connection.Open();
-            Sessions? session = await Db.GetSessionByCodeAsync(connection, codeClaim.Value);
-            if (session is null)
-            {
-                context.Result = new JsonResult("Your Session Is Not Active");
-                return;
-            }
-            if (session.ExpireDate <= DateTime.Now)
-            {
-                context.Result = new JsonResult("Your Session Expired");
-                return;
-            }
 
-            if (roleIdClaim == null || !byte.TryParse(roleIdClaim.Value, out byte roleIdFromToken))
-            {
-                context.Result = new ForbidResult();
-                return;
-            }
-            bool roleExists = false;
-            foreach (var role in _roles)
-            {
-                if (role == roleIdFromToken)
-                {
-                    roleExists = true;
-                    break;
-                }
-            }
-            if (!roleExists)
-            {
-                context.Result = new ForbidResult();
-            }
-        }
-        catch (Exception)
+        using var connection = new SqlConnection(CONNECTION_STRING);
+        connection.Open();
+
+        var query = @"SELECT 
+                        [Id], 
+                        [Token], 
+                        [UserId], 
+                        [ExpireDate], 
+                        [CreationDate], 
+                        [Code]
+                        FROM [dbo].[Sessions]
+                        WHERE [Code] = @Code";
+        Sessions? session = connection.QueryFirstOrDefault<Sessions>(query, new
+        {
+            Code = userPayLoad.Code
+        });
+
+        if (session is null)
         {
             context.Result = new UnauthorizedResult();
+            return;
+        }
+
+        if (session.ExpireDate <= DateTime.Now)
+        {
+            context.Result = new UnauthorizedResult();
+            return;
+        }
+
+        bool roleExists = false;
+        foreach (var role in _roles)
+        {
+            if (role == userPayLoad.Role)
+            {
+                roleExists = true;
+                break;
+            }
+        }
+        if (!roleExists)
+        {
+            context.Result = new ForbidResult();
         }
     }
 }

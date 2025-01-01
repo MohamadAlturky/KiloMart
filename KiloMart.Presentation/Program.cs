@@ -51,7 +51,7 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
     };
 });
-
+builder.Services.AddAuthorization();
 // Controllers, SignalR, and Swagger
 builder.Services.AddControllers();
 builder.Services.AddSignalR();

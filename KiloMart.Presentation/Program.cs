@@ -27,8 +27,9 @@ builder.Services.AddSingleton<DriversTrackerService>();
 var jwtKey = builder.Configuration["Jwt:Key"];
 var jwtIssuer = builder.Configuration["Jwt:Issuer"];
 var jwtAudience = builder.Configuration["Jwt:Audience"];
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-if (string.IsNullOrEmpty(jwtKey) || string.IsNullOrEmpty(jwtIssuer) || string.IsNullOrEmpty(jwtAudience))
+if (string.IsNullOrEmpty(connectionString) || string.IsNullOrEmpty(jwtKey) || string.IsNullOrEmpty(jwtIssuer) || string.IsNullOrEmpty(jwtAudience))
 {
     throw new InvalidOperationException("JWT configuration is missing or invalid.");
 }
@@ -104,6 +105,7 @@ builder.Services.AddDataAccess(builder.Configuration);
 GuardAttribute.SECRET_KEY = jwtKey;
 GuardAttribute.ISSUER = jwtIssuer;
 GuardAttribute.AUDIENCE = jwtAudience;
+GuardAttribute.CONNECTION_STRING = connectionString;
 
 builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 

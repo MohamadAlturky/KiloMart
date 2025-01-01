@@ -31,7 +31,7 @@ namespace KiloMart.Presentation.Controllers.Profiles
             connection.Open();
 
             #region Getting the User
-            var user = await Db.GetMembershipUserByEmailAsync(request.Email, connection);
+            var user = await Db.GetMembershipUserByEmailAsync(connection, request.Email);
 
             if (user is null)
             {

@@ -207,30 +207,10 @@ using KiloMart.Domain.Login.Models;
 
 namespace KiloMart.Domain.Login.Services;
 
-public class DeliveryProfileHandler : IProfileHandler
+public class AdminProfileHandler : IProfileHandler
 {
     public async Task<LoginResult> HandleProfileAsync(LoginResult result, IDbConnection connection)
     {
-        var profile = await Db.GetDeliveryActiveProfileHistoryAsync(connection, result.Party);
-        var profiles = await Db.GetDeliveryAllProfileHistoryAsync(connection, result.Party);
-
-        result.ActiveProfile = profile;
-        result.AllProfiles = profiles;
-
-        if (profile is null)
-        {
-            result.Success = false;
-
-            if (!profiles.Any())
-            {
-                result.Errors = ["No User Profile Available, please fill the profile information."];
-            }
-            else
-            {
-                result.Errors = ["This User Profile needs to be accepted from the admin, these are your profiles."];
-            }
-        }
-
         var user = await Db.GetMembershipUserByIdAsync(connection, result.UserId);
         var party = await Db.GetPartyByIdAsync(result.Party, connection);
 

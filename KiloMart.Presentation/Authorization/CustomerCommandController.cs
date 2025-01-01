@@ -65,7 +65,7 @@ public class CustomerCommandController : AppController
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
 
-        var user = await Db.GetMembershipUserByEmailAsync(request.Email, connection);
+        var user = await Db.GetMembershipUserByEmailAsync(connection, request.Email);
 
         if (user is null)
         {
@@ -126,7 +126,7 @@ public class CustomerCommandController : AppController
         {
             return DataNotFound();
         }
-        var user = await Db.GetMembershipUserByIdAsync(_userContext.Get().Id, connection);
+        var user = await Db.GetMembershipUserByIdAsync(connection, _userContext.Get().Id);
         var party = await Db.GetPartyByIdAsync(_userContext.Get().Party, connection);
         return Success(
             new 

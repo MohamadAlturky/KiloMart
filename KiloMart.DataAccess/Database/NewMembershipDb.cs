@@ -16,7 +16,7 @@ namespace KiloMart.DataAccess.Database
             int party,
             bool isActive,
             byte language,
-            bool? isDeleted,
+            bool? isDeleted = null,
             IDbTransaction? transaction = null)
         {
             const string query = @"INSERT INTO [dbo].[MembershipUser]

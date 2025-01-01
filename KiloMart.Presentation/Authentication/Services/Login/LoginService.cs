@@ -276,6 +276,7 @@ public class LoginService
             (byte)Roles.Customer => new CustomerProfileHandler(),
             (byte)Roles.Delivery => new DeliveryProfileHandler(),
             (byte)Roles.Provider => new ProviderProfileHandler(),
+            (byte)Roles.Admin => new AdminProfileHandler(),
             _ => throw new Exception("Not Supported Role"),
         };
         if (profileHandler != null)

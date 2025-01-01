@@ -19,8 +19,9 @@ public partial class ConstantsController(IDbFactory dbFactory, IUserContext user
         connection.Open();
         string email = "admin@system.kilomart";
         var membershipUser = await Db.GetMembershipUserByEmailAsync(
-            email,
-            connection);
+            connection,
+            email
+        );
         if (membershipUser is not null)
         {
             return Fail("user already exist");
@@ -43,6 +44,7 @@ public partial class ConstantsController(IDbFactory dbFactory, IUserContext user
             newUser.PasswordHash,
             newUser.Role,
             newUser.Party,
+            true,
             newUser.Language);
 
 

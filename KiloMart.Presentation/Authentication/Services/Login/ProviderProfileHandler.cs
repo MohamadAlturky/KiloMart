@@ -220,7 +220,14 @@ public class ProviderProfileHandler : IProfileHandler
         if (profile is null)
         {
             result.Success = false;
-            result.Errors = new[] { "This User Profile needs to be accepted from the admin, these are your profiles." };
+            if (!profiles.Any())
+            {
+                result.Errors = ["No User Profile Available, please fill the profile information."];
+            }
+            else
+            {
+                result.Errors = ["This User Profile needs to be accepted from the admin, these are your profiles."];
+            }
         }
 
         var user = await Db.GetMembershipUserByIdAsync(connection, result.UserId);

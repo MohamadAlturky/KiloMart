@@ -128,6 +128,113 @@ public class UserCommandController(IConfiguration configuration,
     }
     #endregion
 
+    #region sessions
+
+    [HttpPost("session/delete/{id}")]
+    [Guard([Roles.Admin, Roles.Delivery, Roles.Provider, Roles.Customer])]
+    public async Task<IActionResult> DeleteSession([FromRoute] long id)
+    {
+        int membershipUserId = _userContext.Get().Id;
+
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        // Retrieve the session to ensure it belongs to the current user
+        var session = await Db.GetSessionByIdAsync(connection, id);
+        if (session == null)
+        {
+            return DataNotFound("Session not found.");
+        }
+
+        if (session.UserId != membershipUserId)
+        {
+            return Fail("Unauthorized :: You do not have permission to delete this session.");
+        }
+
+        // Delete the session
+        bool deleted = await Db.DeleteSessionAsync(connection, id);
+        if (deleted)
+        {
+            return Success(new { Message = "Session deleted successfully." });
+        }
+        else
+        {
+            return Fail(new string[] { "Failed to delete session." });
+        }
+    }
+
+    [HttpGet("session/mine")]
+    [Guard([Roles.Admin, Roles.Delivery, Roles.Provider, Roles.Customer])]
+    public async Task<IActionResult> GetMySessions()
+    {
+        int membershipUserId = _userContext.Get().Id;
+
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        // Retrieve all active sessions for the current user
+        var sessions = await Db.GetActiveSessionsByUserIdAsync(connection, membershipUserId);
+
+        if (sessions == null || !sessions.Any())
+        {
+            return DataNotFound("No active sessions found.");
+        }
+
+        // Map sessions to SessionsDto if necessary
+        var sessionsDto = sessions.Select(s => new SessionsDto
+        {
+            Id = s.Id,
+            Token = "For Security Issues We Will Not Show The Token",//s.Token,
+            UserId = s.UserId,
+            ExpireDate = s.ExpireDate,
+            CreationDate = s.CreationDate,
+            Code = s.Code
+        }).ToList();
+
+        return Success(sessionsDto);
+    }
+
+    [HttpGet("session/mine/this")]
+    [Guard([Roles.Admin, Roles.Delivery, Roles.Provider, Roles.Customer])]
+    public async Task<IActionResult> GetThisSession()
+    {
+        var code = _userContext.Get().Code;
+
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        Sessions? session = await Db.GetSessionByCodeAsync(connection, code);
+
+        if (session is null)
+        {
+            return DataNotFound("No active sessions found.");
+        }
+
+        return Success(new SessionsDto
+        {
+            Id = session.Id,
+            Token = "For Security Issues We Will Not Show The Token",//s.Token,
+            UserId = session.UserId,
+            ExpireDate = session.ExpireDate,
+            CreationDate = session.CreationDate,
+            Code = session.Code
+        });
+    }
+
+
+    public class SessionsDto
+    {
+        public long Id { get; set; }
+        public string Token { get; set; } = null!;
+        public int UserId { get; set; }
+        public DateTime ExpireDate { get; set; }
+        public DateTime CreationDate { get; set; }
+        public string Code { get; set; } = null!;
+    }
+
+    #endregion
+
+
     #region language
 
     [HttpPost("language/change")]

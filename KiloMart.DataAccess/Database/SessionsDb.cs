@@ -113,6 +113,26 @@ public static partial class Db
             Id = id
         }, transaction);
     }
+    public static async Task<Sessions?> GetSessionByCodeAsync(
+        IDbConnection connection,
+        string code,
+        IDbTransaction? transaction = null)
+    {
+        const string query = @"SELECT 
+                                [Id], 
+                                [Token], 
+                                [UserId], 
+                                [ExpireDate], 
+                                [CreationDate], 
+                                [Code]
+                                FROM [dbo].[Sessions]
+                                WHERE [Code] = @Code";
+
+        return await connection.QueryFirstOrDefaultAsync<Sessions>(query, new
+        {
+            Code = code
+        }, transaction);
+    }
 
 
     // Retrieve sessions by UserId

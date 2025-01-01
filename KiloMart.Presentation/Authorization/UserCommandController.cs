@@ -130,7 +130,7 @@ public class UserCommandController(IConfiguration configuration,
 
     #region sessions
 
-    [HttpPost("session/delete/{id}")]
+    [HttpDelete("session/delete/{id}")]
     [Guard([Roles.Admin, Roles.Delivery, Roles.Provider, Roles.Customer])]
     public async Task<IActionResult> DeleteSession([FromRoute] long id)
     {
@@ -207,7 +207,7 @@ public class UserCommandController(IConfiguration configuration,
 
         if (session is null)
         {
-            return DataNotFound("No active sessions found.");
+            return DataNotFound("");
         }
 
         return Success(new SessionsDto

@@ -140,12 +140,12 @@ public static class AcceptOrderService
                 totalPrice *= discountCode.Value;
             }
 
-            await Db.InsertSystemActivityAsync(
-                connection,
-                DateTime.Now,
-                systemSettings.SystemOrderFee,
-                orderId,
-                transaction);
+            // await Db.InsertSystemActivityAsync(
+            //     connection,
+            //     DateTime.Now,
+            //     systemSettings.SystemOrderFee,
+            //     orderId,
+            //     transaction);
 
             await OrdersDb.UpdateOrderAsync(connection,
                 order.Id,

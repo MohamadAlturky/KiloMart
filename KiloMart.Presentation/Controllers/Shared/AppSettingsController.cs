@@ -143,7 +143,8 @@ public class AppSettingsController : AppController
             request.MaxMinutesToCancelOrderWaitingAProvider ?? settings.MaxMinutesToCancelOrderWaitingAProvider,
             request.MinOrderValue ?? settings.MinOrderValue,
             request.DistanceToAdd ?? settings.DistanceToAdd,
-            request.MaxDistanceToAdd ?? settings.MaxDistanceToAdd);
+            request.MaxDistanceToAdd ?? settings.MaxDistanceToAdd,
+            request.RaduisForGetProducts ?? settings.RaduisForGetProducts);
 
         if (!updated)
         {
@@ -168,4 +169,5 @@ public class SystemSettingsUpdateRequest
     public decimal? MinOrderValue { get; set; }
     public decimal? DistanceToAdd { get; set; }
     public decimal? MaxDistanceToAdd { get; set; }
+    public decimal? RaduisForGetProducts { get; set; }
 }

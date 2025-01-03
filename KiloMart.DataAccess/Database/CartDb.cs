@@ -82,7 +82,7 @@ public static partial class Db
             Id = id
         });
     }
-    public static async Task<Cart?> GetCartByCustomerAndProductIdAsync(int customer,int product, IDbConnection connection)
+    public static async Task<Cart?> GetCartByCustomerAndProductIdAsync(int customer, int product, IDbConnection connection)
     {
         const string query = @"SELECT 
                             [Id], 
@@ -188,6 +188,97 @@ public static partial class Db
         });
     }
 
+
+    public static async Task<IEnumerable<CartItemWithProductWithPricing>> GetCartsByCustomerWithProductsInfoAndPricingWithLocationAsync(
+        int customerId,
+        byte language,
+        decimal distanceInKm,
+        decimal longitude,
+        decimal latitude,
+        IDbConnection connection)
+    {
+        const string query = @"
+        SELECT 
+            c.Id as CartItemId,
+            c.Product as CartItemProduct,
+            c.Quantity as CartItemQuantity,
+            c.Customer as CartItemCustomer,
+            p.[ProductId],
+            p.[ProductImageUrl],
+            p.[ProductIsActive],
+            p.[ProductMeasurementUnit],
+            p.[ProductDescription],
+            p.[ProductName],
+            p.[ProductCategoryId],
+            p.[ProductCategoryIsActive],
+            p.[ProductCategoryName],
+            p.[DealId],
+            p.[DealEndDate],
+            p.[DealStartDate],
+            p.[DealIsActive],
+            p.[DealOffPercentage],
+            p.[InCart],
+            p.[InFavorite],
+            p.MaxPrice, 
+            p.MinPrice
+        FROM 
+        (
+            SELECT 
+                pd.[ProductId],
+                pd.[ProductImageUrl],
+                pd.[ProductIsActive],
+                pd.[ProductMeasurementUnit],
+                pd.[ProductDescription],
+                pd.[ProductName],
+                pd.[ProductCategoryId],
+                pd.[ProductCategoryIsActive],
+                pd.[ProductCategoryName],
+                pd.[DealId],
+                pd.[DealEndDate],
+                pd.[DealStartDate],
+                pd.[DealIsActive],
+                pd.[DealOffPercentage],
+                pd.[InCart],
+                pd.[InFavorite],
+                po.MaxPrice, 
+                po.MinPrice
+            FROM 
+                dbo.GetProductDetailsWithInFavoriteAndInCartFN(@language, @customer) pd
+            INNER JOIN (
+                
+            SELECT 
+                [Product], 
+                MAX([Price]) AS MaxPrice, 
+                MIN([Price]) AS MinPrice,
+                SUM(Quantity) AS Quantity
+            FROM 
+                [ProductOffer] po
+                INNER JOIN [Location] l 
+                ON 
+                    l.[Party] = po.[Provider] AND
+                    l.IsActive = 1 AND
+                    dbo.GetDistanceBetweenPoints(l.[Latitude], l.[Longitude], @Latitude, @Longitude) <= @DistanceInKm
+            WHERE 
+                po.[IsActive] = 1
+            GROUP BY 
+                [Product]
+
+            ) po ON pd.[ProductId] = po.[Product]
+            WHERE 
+                pd.[ProductIsActive] = 1
+        ) p
+        INNER JOIN [dbo].[Cart] c ON p.ProductId = c.Product
+        WHERE c.[Customer] = @customer";
+
+        return await connection.QueryAsync<CartItemWithProductWithPricing>(query, new
+        {
+            Customer = customerId,
+            Language = language,
+            DistanceInKm = distanceInKm,
+            Longitude = longitude,
+            Latitude = latitude
+        });
+    }
     public static async Task<IEnumerable<CartItemWithProduct>> GetCartsByCustomerWithProductsInfoAsync(int customerId, byte language, IDbConnection connection)
     {
         const string query = @"SELECT 
@@ -271,7 +362,7 @@ public class CartItemWithProductWithPricing
     public DateTime? DealStartDate { get; set; }       // p.DealStartDate (nullable)
     public bool DealIsActive { get; set; }             // p.DealIsActive
     public decimal? DealOffPercentage { get; set; }     // p.DealOffPercentage (nullable)
-    
+
     public bool InCart { get; set; }                   // p.InCart
     public bool InFavorite { get; set; }                // p.InFavorite
 

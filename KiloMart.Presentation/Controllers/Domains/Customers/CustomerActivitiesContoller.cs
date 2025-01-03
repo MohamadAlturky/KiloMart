@@ -428,6 +428,38 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
         return Success(result);
 
     }
+
+    [HttpGet("cart/mine-with-info-and-pricing-by-location")]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> CartMinWithInfoWithPricingByLocation(
+    [FromQuery] byte language,
+    [FromQuery] decimal longitude,
+    [FromQuery] decimal latitude
+    )
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open(); // Use await to open the connection asynchronously
+
+
+        var settings = await Db.GetSystemSettingsByIdAsync(0, connection);
+
+        if (settings is null)
+        {
+            return Fail("system settings not found");
+        }
+
+        decimal distanceInKm = settings.RaduisForGetProducts;
+
+        var result = await Db.GetCartsByCustomerWithProductsInfoAndPricingWithLocationAsync(
+            _userContext.Get().Party,
+            language,
+            distanceInKm,
+            longitude,
+            latitude,
+            connection);
+        return Success(result);
+
+    }
     #endregion
 
     #region card

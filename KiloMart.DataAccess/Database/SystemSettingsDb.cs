@@ -15,10 +15,12 @@ public static partial class Db
         decimal minOrderValue,
         decimal distanceToAdd,
         decimal maxDistanceToAdd,
+        decimal raduisForGetProducts,
         IDbTransaction? transaction = null)
     {
         const string query = @"UPDATE [dbo].[SystemSettings]
                                 SET 
+                                [RaduisForGetProducts] = @RaduisForGetProducts,
                                 [DeliveryOrderFee] = @DeliveryOrderFee,
                                 [SystemOrderFee] = @SystemOrderFee,
                                 [CancelOrderWhenNoProviderHasAllProducts] = @CancelOrderWhenNoProviderHasAllProducts,
@@ -41,7 +43,8 @@ public static partial class Db
             MaxMinutesToCancelOrderWaitingAProvider = maxMinutesToCancelOrderWaitingAProvider,
             MinOrderValue = minOrderValue,
             DistanceToAdd = distanceToAdd,
-            MaxDistanceToAdd = maxDistanceToAdd
+            MaxDistanceToAdd = maxDistanceToAdd,
+            RaduisForGetProducts = raduisForGetProducts
         }, transaction);
 
         return updatedRowsCount > 0;
@@ -59,7 +62,8 @@ public static partial class Db
                             [MaxMinutesToCancelOrderWaitingAProvider],
                             [MinOrderValue],
                             [DistanceToAdd],
-                            [MaxDistanceToAdd]
+                            [MaxDistanceToAdd],
+                            [RaduisForGetProducts]
                             FROM [dbo].[SystemSettings]
                             WHERE [Id] = @Id";
 
@@ -82,4 +86,5 @@ public class SystemSettings
     public decimal MinOrderValue { get; set; }
     public decimal DistanceToAdd { get; set; }
     public decimal MaxDistanceToAdd { get; set; }
+    public decimal RaduisForGetProducts { get; set; }
 }

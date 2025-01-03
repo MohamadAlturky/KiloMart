@@ -21,7 +21,7 @@ public partial class SearchController(
         return Ok("demo3");
     }
 
-    
+
     #region Search History
     [HttpPost("search")]
     [Guard([Roles.Customer, Roles.Provider])]
@@ -65,6 +65,68 @@ public partial class SearchController(
         }
         return Fail("Only Provider and Customer can use this api");
     }
+
+
+    [HttpPost("search-by-location")]
+    [Guard([Roles.Customer, Roles.Provider])]
+    public async Task<IActionResult> SearchByLocation(
+        [FromBody] AddSearchTermRequest request,
+        [FromQuery] decimal longitude,
+        [FromQuery] decimal latitude)
+    {
+        var (IsSuccess, Errors) = request.Validate();
+        if (!IsSuccess)
+        {
+            return ValidationError(Errors);
+        }
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        var settings = await Db.GetSystemSettingsByIdAsync(0, connection);
+
+        if (settings is null)
+        {
+            return Fail("system settings not found");
+        }
+
+        decimal distanceInKm = settings.RaduisForGetProducts;
+
+        var partyId = _userContext.Get().Party;
+
+        // Insert the search term into the database
+        var searchId = await Db.InsertSearchHistoryAsync(connection, partyId, request.Term);
+
+
+        if (_userContext.Get().Role == (byte)Roles.Customer)
+        {
+            var products = await Db.SearchProductDetailsForCustomerWithInLocationCircleAsync(
+                        5,
+                        request.Language,
+                        partyId,
+                        request.Term,
+                        distanceInKm,
+                        longitude,
+                        latitude,
+                        connection);
+
+            return Success(new { searchId, products });
+        }
+
+
+        if (_userContext.Get().Role == (byte)Roles.Provider)
+        {
+            var products = await Db.SearchProductDetailsForProviderAsync(
+                        5,
+                        request.Language,
+                        partyId,
+                        request.Term,
+                        connection);
+
+            return Success(new { searchId, products });
+        }
+        return Fail("Only Provider and Customer can use this api");
+    }
+
 
     [HttpGet("get-last-searches/{count}")]
     [Guard([Roles.Customer, Roles.Provider, Roles.Delivery])]

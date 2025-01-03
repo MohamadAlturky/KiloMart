@@ -51,11 +51,11 @@ public class GuardAttribute : Attribute, IAuthorizationFilter
         };
 
 
-        System.Console.WriteLine(userPayLoad.Code);
-        System.Console.WriteLine(userPayLoad.Id);
-        System.Console.WriteLine(userPayLoad.Party);
-        System.Console.WriteLine(userPayLoad.Email);
-        System.Console.WriteLine(userPayLoad.Role);
+        // System.Console.WriteLine(userPayLoad.Code);
+        // System.Console.WriteLine(userPayLoad.Id);
+        // System.Console.WriteLine(userPayLoad.Party);
+        // System.Console.WriteLine(userPayLoad.Email);
+        // System.Console.WriteLine(userPayLoad.Role);
 
 
         using var connection = new SqlConnection(CONNECTION_STRING);

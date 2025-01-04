@@ -10,13 +10,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace KiloMart.Presentation.Controllers;
 
 [ApiController]
-[Route("api/customer-and-provider/location")]
+[Route("api/customer/location")]
 public class LocationController(IDbFactory dbFactory, IUserContext userContext)
     : AppController(dbFactory, userContext)
 {
 
-    [HttpPost("provider-and-customer")]
-    [Guard([Roles.Customer, Roles.Provider])]
+    [HttpPost("add")]
+    [Guard([Roles.Customer])]
     public async Task<IActionResult> Insert(LocationInsertModel model)
     {
         var result = await LocationService.Insert(_dbFactory, _userContext.Get(), model);
@@ -32,7 +32,7 @@ public class LocationController(IDbFactory dbFactory, IUserContext userContext)
     }
 
     [HttpPut("{id}")]
-    [Guard([Roles.Customer, Roles.Provider])]
+    [Guard([Roles.Customer])]
     public async Task<IActionResult> Update(int id, LocationUpdateModel model)
     {
         model.Id = id;
@@ -57,7 +57,7 @@ public class LocationController(IDbFactory dbFactory, IUserContext userContext)
     }
 
     [HttpPut("edit-with-full-details/{id}")]
-    [Guard([Roles.Customer, Roles.Provider])]
+    [Guard([Roles.Customer])]
     public async Task<IActionResult> UpdateWithFullDetails(int id, LocationUpdateWithFullDetailsModel model)
     {
         model.Id = id;
@@ -82,7 +82,7 @@ public class LocationController(IDbFactory dbFactory, IUserContext userContext)
     }
 
     [HttpDelete("{id}")]
-    [Guard([Roles.Customer, Roles.Provider])]
+    [Guard([Roles.Customer])]
     public async Task<IActionResult> Delete(int id)
     {
         var result = await LocationService.DeActivate(_dbFactory, _userContext.Get(), id);
@@ -103,7 +103,7 @@ public class LocationController(IDbFactory dbFactory, IUserContext userContext)
             }
         }
     }
-    [HttpGet("mine")]
+    [HttpGet("customer-and-provider/mine")]
     [Guard([Roles.Customer, Roles.Provider])]
     public async Task<IActionResult> GetMine()
     {
@@ -136,8 +136,8 @@ public class LocationController(IDbFactory dbFactory, IUserContext userContext)
         return Success(result.ToList());
     }
     
-    [HttpPost("provider-and-customer/create-with-full-details")]
-    [Guard([Roles.Customer, Roles.Provider])]
+    [HttpPost("create-with-full-details")]
+    [Guard([Roles.Customer])]
     public async Task<IActionResult> Create(LocationInsertWithDetailsModel model)
     {
         var result = await LocationService.Insert(_dbFactory, _userContext.Get(), new LocationInsertModel()

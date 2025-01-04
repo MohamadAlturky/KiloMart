@@ -120,6 +120,21 @@ public class ProviderActivitiesContoller : AppController
     #endregion
 
     #region orders
+
+    [HttpGet("orders/total-done")]
+    [Guard([Roles.Provider])]
+    public async Task<IActionResult> GetTotalDone()
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+        var result = await OrdersDb.GetTotalDoneOrdersAsync(
+            connection,
+            _userContext.Get().Party,
+            (byte)OrderStatus.COMPLETED);
+
+        return Success(new { TotalCount = result });
+    }
+
     [HttpGet("orders/mine-by-status")]
     [Guard([Roles.Provider])]
     public async Task<IActionResult> GetMineByStatus([FromQuery] byte language,
@@ -152,11 +167,16 @@ public class ProviderActivitiesContoller : AppController
 
         return result.Success ? Success(result.Data) : Fail(result.Errors);
     }
+
+    public class AcceptOrderDto
+    {
+        public long OrderId { get; set; }
+    }
     [HttpPost("orders/accept")]
     [Guard([Roles.Provider])]
-    public async Task<IActionResult> AcceptOrder([FromBody] long orderId)
+    public async Task<IActionResult> AcceptOrder([FromBody] AcceptOrderDto acceptOrderDto)
     {
-        var result = await AcceptOrderService.ProviderAccept(orderId, _userContext.Get(), _dbFactory);
+        var result = await AcceptOrderService.ProviderAccept(acceptOrderDto.OrderId, _userContext.Get(), _dbFactory);
         return result.Success ? Success(result.Data) : Fail(result.Errors);
     }
     [HttpPost("orders/cancel")]

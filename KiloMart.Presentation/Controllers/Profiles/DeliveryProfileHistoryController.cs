@@ -28,7 +28,7 @@ public class DeliveryProfileHistoryController(
 
 
         #region Getting the User 
-            var user = await Db.GetMembershipUserByEmailAsync(connection, request.Email);
+        var user = await Db.GetMembershipUserByEmailAsync(connection, request.Email);
 
         if (user is null)
         {
@@ -176,7 +176,160 @@ public class DeliveryProfileHistoryController(
             return Fail("Failed to insert delivery profile history.");
         }
     }
+    [HttpPost("change-with-token")]
+    public async Task<IActionResult> Change(DeliveryProfileHistoryInsertModelWithToken request)
+    {
+        int userId = _userContext.Get().Id;
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
 
+
+        #region Getting the User
+        var user = await Db.GetMembershipUserByIdAsync(connection, userId);
+
+        if (user is null)
+        {
+            return Fail("User Not Found");
+        }
+
+        #endregion
+
+        try
+        {
+
+
+            #region VehiclePhotoFile
+
+            Guid fileName = Guid.NewGuid();
+            if (request.VehiclePhotoFile is null)
+            {
+                return Fail("VehiclePhotoFile is null");
+            }
+
+            var VehiclePhotoFilePath = await FileService.SaveImageFileAsync(request.VehiclePhotoFile,
+                _environment.WebRootPath,
+                fileName);
+
+            if (string.IsNullOrEmpty(VehiclePhotoFilePath))
+            {
+                return Fail("failed to save VehiclePhoto file");
+            }
+            #endregion
+
+            #region DrivingLicenseFile
+
+            // Save DrivingLicenseFile
+
+            fileName = Guid.NewGuid();
+            if (request.DrivingLicenseFile is null)
+            {
+                return Fail("DrivingLicenseFile is null");
+            }
+            var DrivingLicenseFilePath = await FileService.SaveImageFileAsync(request.DrivingLicenseFile,
+                _environment.WebRootPath,
+                fileName);
+
+            if (string.IsNullOrEmpty(DrivingLicenseFilePath))
+            {
+                return Fail("failed to save DrivingLicense file");
+            }
+            #endregion
+
+            #region NationalIqamaIDFile
+            // Save NationalIqamaIDFile
+
+            fileName = Guid.NewGuid();
+            if (request.NationalIqamaIDFile is null)
+            {
+                return Fail("NationalIqamaIDFile is null");
+            }
+            var NationalIqamaIDFilePath = await FileService.SaveImageFileAsync(request.NationalIqamaIDFile,
+                _environment.WebRootPath,
+                fileName);
+
+            if (string.IsNullOrEmpty(NationalIqamaIDFilePath))
+            {
+                return Fail("failed to save NationalIqamaID file");
+            }
+
+            #endregion
+
+            #region VehicleLicenseFile
+
+            fileName = Guid.NewGuid();
+            if (request.VehicleLicenseFile is null)
+            {
+                return Fail("VehicleLicenseFile is null");
+            }
+            var VehicleLicenseFilePath = await FileService.SaveImageFileAsync(request.VehicleLicenseFile,
+                _environment.WebRootPath,
+                fileName);
+
+            if (string.IsNullOrEmpty(VehicleLicenseFilePath))
+            {
+                return Fail("failed to save VehicleLicense file");
+            }
+            #endregion
+
+            #region Adding the Profile
+            long id = await Db.InsertDeliveryProfileHistoryAsync(
+                connection,
+                request.FirstName,
+                request.SecondName,
+                request.NationalName,
+                request.NationalId,
+                request.LicenseNumber,
+                request.LicenseExpiredDate,
+                request.DrivingLicenseNumber,
+                request.DrivingLicenseExpiredDate,
+                request.VehicleNumber,
+                request.VehicleModel,
+                request.VehicleType,
+                request.VehicleYear,
+                VehiclePhotoFilePath,
+                DrivingLicenseFilePath,
+                VehicleLicenseFilePath,
+                NationalIqamaIDFilePath,
+                DateTime.Now,
+                user.Party,
+                false,
+                false,
+                false);
+            #endregion          
+
+            #region Returning The Response
+            var model = new
+            {
+                request.FirstName,
+                request.SecondName,
+                request.NationalName,
+                request.NationalId,
+                request.LicenseNumber,
+                request.LicenseExpiredDate,
+                request.DrivingLicenseNumber,
+                request.DrivingLicenseExpiredDate,
+                request.VehicleNumber,
+                request.VehicleModel,
+                request.VehicleType,
+                request.VehicleYear,
+                VehiclePhotoFilePath,
+                DrivingLicenseFilePath,
+                VehicleLicenseFilePath,
+                NationalIqamaIDFilePath,
+                SubmitDate = DateTime.Now,
+                DeliveryId = user.Party,
+                IsActive = false,
+                IsRejected = false,
+                IsAccepted = false
+            };
+            return Success(new { id, model });
+            #endregion
+        }
+        catch
+        {
+            return Fail("Failed to insert delivery profile history.");
+        }
+    }
 
 
     [HttpGet("mine")]
@@ -395,6 +548,27 @@ public class DeliveryProfileHistoryInsertModel
 {
     public string Email { get; set; } = null!;
     public string Password { get; set; } = null!;
+    public string FirstName { get; set; } = null!;
+    public string SecondName { get; set; } = null!;
+    public string NationalName { get; set; } = null!;
+    public string NationalId { get; set; } = null!;
+    public string LicenseNumber { get; set; } = null!;
+    public DateTime LicenseExpiredDate { get; set; }
+    public string DrivingLicenseNumber { get; set; } = null!;
+    public DateTime DrivingLicenseExpiredDate { get; set; }
+    public string VehicleNumber { get; set; } = null!;
+    public string VehicleModel { get; set; } = null!;
+    public string VehicleType { get; set; } = null!;
+    public string VehicleYear { get; set; } = null!;
+    public IFormFile? VehiclePhotoFile { get; set; } = null!;
+    public IFormFile? DrivingLicenseFile { get; set; } = null!;
+    public IFormFile? VehicleLicenseFile { get; set; } = null!;
+    public IFormFile? NationalIqamaIDFile { get; set; } = null!;
+}
+
+
+public class DeliveryProfileHistoryInsertModelWithToken
+{
     public string FirstName { get; set; } = null!;
     public string SecondName { get; set; } = null!;
     public string NationalName { get; set; } = null!;

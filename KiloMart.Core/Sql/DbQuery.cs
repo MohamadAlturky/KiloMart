@@ -3,7 +3,7 @@ using Dapper;
 
 namespace KiloMart.Core.Sql;
 
-public class Query<T>(string sql, Dictionary<string, object>? parameters = null)
+public class DbQuery<T>(string sql, Dictionary<string, object>? parameters = null)
 {
     private string _sql = sql;
     private List<string> _whereConditions = [];
@@ -12,7 +12,7 @@ public class Query<T>(string sql, Dictionary<string, object>? parameters = null)
     private long? _offset = null;
     private int? _take = null;
 
-    public Query<T> Where(string condition, object parameter)
+    public DbQuery<T> Where(string condition, object parameter)
     {
         foreach (var prop in parameter.GetType().GetProperties())
         {
@@ -28,19 +28,19 @@ public class Query<T>(string sql, Dictionary<string, object>? parameters = null)
         return this;
     }
 
-    public Query<T> Where(string condition)
+    public DbQuery<T> Where(string condition)
     {
         _whereConditions.Add(condition);
         return this;
     }
 
-    public Query<T> OrderBy(string orderBy)
+    public DbQuery<T> OrderBy(string orderBy)
     {
         _orderBy = orderBy;
         return this;
     }
 
-    public Query<T> Page(long offset, int take)
+    public DbQuery<T> Page(long offset, int take)
     {
         _offset = offset;
         _take = take;

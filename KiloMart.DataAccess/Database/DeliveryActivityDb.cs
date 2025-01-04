@@ -1,5 +1,6 @@
 using Dapper;
 using System.Data;
+using System.Text;
 
 namespace KiloMart.DataAccess.Database;
 
@@ -86,6 +87,52 @@ public static partial class Db
             Id = id
         });
     }
+
+
+    public static async Task<IEnumerable<DeliveryActivity>> GetDeliveryActivityFilteredAsync(
+        IDbConnection connection,
+        int delivery,
+        byte? type = null,
+        DateTime? startdate = null,
+        DateTime? enddate = null)
+    {
+        var sqlBuilder = new StringBuilder();
+        sqlBuilder.AppendLine("SELECT");
+        sqlBuilder.AppendLine("    [Id],");
+        sqlBuilder.AppendLine("    [Date],");
+        sqlBuilder.AppendLine("    [Value],");
+        sqlBuilder.AppendLine("    [Type],");
+        sqlBuilder.AppendLine("    [Delivery]");
+        sqlBuilder.AppendLine("FROM [dbo].[DeliveryActivity]");
+        sqlBuilder.AppendLine("WHERE Delivery = @Delivery");
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@Delivery", delivery);
+
+        if (type.HasValue)
+        {
+            sqlBuilder.AppendLine("AND [Type] = @Type");
+            parameters.Add("@Type", type.Value);
+        }
+
+        if (startdate.HasValue)
+        {
+            sqlBuilder.AppendLine("AND [Date] >= @StartDate");
+            parameters.Add("@StartDate", startdate.Value);
+        }
+
+        if (enddate.HasValue)
+        {
+            sqlBuilder.AppendLine("AND [Date] <= @EndDate");
+            parameters.Add("@EndDate", enddate.Value);
+        }
+
+        return await connection.QueryAsync<DeliveryActivity>(
+            sqlBuilder.ToString(),
+            parameters);
+    }
+
+
 
     public static async Task<IEnumerable<DeliveryActivity>> GetDeliveryActivitiesByDeliveryIdAsync(int deliveryId, IDbConnection connection)
     {

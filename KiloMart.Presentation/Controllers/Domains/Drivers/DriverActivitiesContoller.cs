@@ -83,6 +83,20 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory,
 
         return Success(result.AsList());
     }
+
+    [HttpGet("orders/total-done")]
+    [Guard([Roles.Delivery])]
+    public async Task<IActionResult> GetTotalDone()
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+        var result = await OrdersDb.GetTotalDoneOrdersForDeliveryAsync(
+            connection,
+            _userContext.Get().Party,
+            (byte)OrderStatus.COMPLETED);
+
+        return Success(new { TotalCount = result });
+    }
     #endregion
 
     #region Activities
@@ -113,6 +127,7 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory,
         var activities = await Db.GetDeliveryActivitiesByDateBiggerAndDeliveryAsync(date, deliveryId, connection);
         return Success(activities);
     }
+
     [HttpGet("activities/all")]
     [Guard([Roles.Delivery])]
     public async Task<IActionResult> GetMin()
@@ -124,7 +139,26 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory,
         var activities = await Db.GetDeliveryActivitiesByDeliveryIdAsync(deliveryId, connection);
         return Success(activities);
     }
+    [HttpGet("activities/mine/filtered")]
+    [Guard([Roles.Delivery])]
+    public async Task<IActionResult> GetActivitiesFiltered(
+        [FromQuery] byte? type = null,
+        [FromQuery] DateTime? startdate = null,
+        [FromQuery] DateTime? enddate = null)
+    {
+        int deliveryId = _userContext.Get().Party;
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
 
+        var activities = await Db.GetDeliveryActivityFilteredAsync(
+            connection,
+            deliveryId,
+            type: type,
+            startdate: startdate,
+            enddate: enddate);
+
+        return Success(activities);
+    }
     #endregion
 
     #region Wallets
@@ -146,7 +180,7 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory,
     #endregion
 
     #region orders actions
-    
+
     [HttpGet("orders/shipping")]
     [Guard([Roles.Delivery])]
     public async Task<IActionResult> GetShippingOrders([FromQuery] byte language)

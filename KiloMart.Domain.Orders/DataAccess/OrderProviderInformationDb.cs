@@ -57,6 +57,31 @@ public static partial class OrdersDb
             Provider = providerId
         }, transaction);
     }
+    public static async Task<long?> GetTotalDoneOrdersForDeliveryAsync(
+            IDbConnection connection,
+            int deliveryId,
+            byte status,
+            IDbTransaction? transaction = null)
+    {
+        const string query = @"
+                    SELECT
+                        COUNT(o.Id)
+                    FROM
+                        [dbo].[Order] o 
+                    LEFT JOIN 
+                        [dbo].[OrderDeliveryInformation] odi 
+                    ON o.Id = odi.[Order]
+                    WHERE 
+                        odi.[Delivery] = @Delivery 
+                        AND 
+                        o.OrderStatus = @Status;";
+
+        return await connection.QueryFirstOrDefaultAsync<long>(query, new
+        {
+            Status = status,
+            Delivery = deliveryId
+        }, transaction);
+    }
 
     public static async Task<bool> UpdateOrderProviderInfoAsync(IDbConnection connection,
         long id,

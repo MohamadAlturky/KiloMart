@@ -1,6 +1,7 @@
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Database;
+using KiloMart.Domain.Delivery.Activity;
 using KiloMart.Domain.Orders.Common;
 using KiloMart.Domain.Orders.DataAccess;
 using KiloMart.Domain.Orders.Services;
@@ -202,6 +203,84 @@ public class ProviderActivitiesContoller : AppController
 
 
     #region Activities
+    // [HttpGet("activities/by-date-range")]
+    // [Guard([Roles.Provider])]
+    // public async Task<IActionResult> GetByDateRange(
+    //             [FromQuery] DateTime startDate,
+    //             [FromQuery] DateTime endDate)
+    // {
+    //     int providerId = _userContext.Get().Party;
+    //     using var connection = _dbFactory.CreateDbConnection();
+    //     connection.Open();
+
+    //     var activities = await Db.GetProviderActivitiesByDateBetweenAndProviderAsync(startDate, endDate, providerId, connection);
+    //     return Ok(activities);
+    // }
+
+    // [HttpGet("activities/by-date-bigger")]
+    // [Guard([Roles.Provider])]
+    // public async Task<IActionResult> GetByDateBigger(
+    //     [FromQuery] DateTime date)
+    // {
+    //     int providerId = _userContext.Get().Party;
+    //     using var connection = _dbFactory.CreateDbConnection();
+    //     connection.Open();
+
+    //     var activities = await Db.GetProviderActivitiesByDateBiggerAndProviderAsync(date, providerId, connection);
+    //     return Ok(activities);
+    // }
+
+    // [HttpGet("activities/all")]
+    // [Guard([Roles.Provider])]
+    // public async Task<IActionResult> GetAll()
+    // {
+    //     int providerId = _userContext.Get().Party;
+    //     using var connection = _dbFactory.CreateDbConnection();
+    //     connection.Open();
+
+    //     var activities = await Db.GetProviderActivitiesByProviderIdAsync(providerId, connection);
+    //     return Ok(activities);
+    // }
+
+    [HttpGet("activities/filtered")]
+    [Guard([Roles.Provider])]
+    public async Task<IActionResult> GetActivitiesFiltered(
+        [FromQuery] byte? type = null,
+        [FromQuery] DateTime? startdate = null,
+        [FromQuery] DateTime? enddate = null)
+    {
+        int providerId = _userContext.Get().Party;
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        var activities = await Db.GetProviderActivityFilteredAsync(
+            connection,
+            providerId,
+            type: type,
+            startdate: startdate,
+            enddate: enddate);
+
+        return Success(activities);
+    }
+
+    [HttpGet("activities/balance")]
+    [Guard([Roles.Provider])]
+    public async Task<IActionResult> GetProviderWallet()
+    {
+        int providerId = _userContext.Get().Party;
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+        byte receives = (byte)DeliveryActivityType.Receives;
+        byte deductions = (byte)DeliveryActivityType.Deductions;
+
+        var wallet = await Db.GetProviderActivityTotalValueByProviderAsync(
+            providerId,
+            receives,
+            deductions,
+            connection);
+
+        return Success(wallet);
+    }
 
     // [HttpGet("activities/by-date-range")]
     // [Guard([Roles.Provider])]

@@ -1,8 +1,10 @@
+using Dapper;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Database;
 using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Authorization;
+using KiloMart.Queries.Views.Sql;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KiloMart.Presentation.Controllers.Domains.Common;
@@ -16,10 +18,48 @@ public partial class SearchController(
 {
 
     [HttpPost("demo33")]
-    public IActionResult Demo()
+    public async Task<IActionResult> Demo()
     {
-        return Ok("demo3");
+        // Create a database connection
+        using var connection = _dbFactory.CreateDbConnection();
+
+        // Open the connection
+        connection.Open();
+
+        // Define the SQL query
+        var query = @$"
+        SELECT 
+            m.*,
+            p.*
+        FROM ({Sql.MembershipUserSql}) m
+        INNER JOIN ({Sql.PartySql}) p 
+        ON p.Id = m.Party";
+
+        // Execute the query and map results to the specified response types
+        var results = await connection.QueryAsync<MembershipUserSqlResponse, PartySqlResponse, PartyMembershipUserSqlResponse>(
+            query,
+            (membershipUser, party) =>
+            {
+                return new PartyMembershipUserSqlResponse
+                {
+                    MembershipUser = membershipUser,
+                    Party = party
+                };
+            }
+            // ,
+            // splitOn: "p.Id" // Specify the column to split on if necessary
+        );
+
+        // Return the results as an OK response
+        return Ok(new { results });
     }
+
+    // Define a combined response model if needed
+
+
+
+
+
 
 
     #region Search History

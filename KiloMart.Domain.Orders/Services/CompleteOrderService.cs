@@ -76,7 +76,19 @@ public class CompleteOrderService
                 (byte)DeliveryActivityType.Receives,
                 userPayLoad.Party,
                 transaction);
-
+            
+            if(!order.Provider.HasValue)
+            {
+                throw new Exception("Provider Not Found");
+            }
+            await Db.InsertProviderActivityAsync(
+                connection,
+                DateTime.Now,
+                order.ItemsPrice,
+                order.Provider.Value,
+                (byte)DeliveryActivityType.Receives,
+                transaction);
+                
             DeliveryWallet? wallet = await Db.GetDeliveryWalletByDeliveryIdAsync(userPayLoad.Party,
              readConnection);
 

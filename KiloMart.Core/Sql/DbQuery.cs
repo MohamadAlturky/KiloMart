@@ -5,12 +5,12 @@ namespace KiloMart.Core.Sql;
 
 public class DbQuery<T>(string sql, Dictionary<string, object>? parameters = null)
 {
-    private string _sql = sql;
-    private List<string> _whereConditions = [];
-    private Dictionary<string, object> _parameters = parameters ?? [];
-    private string? _orderBy = null;
-    private long? _offset = null;
-    private int? _take = null;
+    protected string _sql = sql;
+    protected List<string> _whereConditions = [];
+    protected Dictionary<string, object> _parameters = parameters ?? [];
+    protected string? _orderBy = null;
+    protected long? _offset = null;
+    protected int? _take = null;
 
     public DbQuery<T> Where(string condition, object parameter)
     {
@@ -40,7 +40,7 @@ public class DbQuery<T>(string sql, Dictionary<string, object>? parameters = nul
         return this;
     }
 
-    public DbQuery<T> Page(long offset, int take)
+    public DbQuery<T> Page(long? offset, int? take)
     {
         _offset = offset;
         _take = take;
@@ -48,21 +48,23 @@ public class DbQuery<T>(string sql, Dictionary<string, object>? parameters = nul
         return this;
     }
 
-    public List<T> ToList(IDbConnection connection, IDbTransaction? transaction = null)
+    #region Virtual
+
+    public virtual List<T> ToList(IDbConnection connection, IDbTransaction? transaction = null)
     {
         var sql = BuildSql();
         System.Console.WriteLine(sql);
         return connection.Query<T>(sql, _parameters, transaction: transaction).ToList();
     }
 
-    public T? FirstOrDefault(IDbConnection connection, IDbTransaction? transaction = null)
+    public virtual T? FirstOrDefault(IDbConnection connection, IDbTransaction? transaction = null)
     {
         var sql = BuildSql();
         System.Console.WriteLine(sql);
         return connection.QueryFirstOrDefault<T>(sql, _parameters, transaction: transaction);
     }
 
-    public async Task<List<T>> ToListAsync(IDbConnection connection, IDbTransaction? transaction = null)
+    public virtual async Task<List<T>> ToListAsync(IDbConnection connection, IDbTransaction? transaction = null)
     {
         var sql = BuildSql();
         System.Console.WriteLine(sql);
@@ -70,13 +72,15 @@ public class DbQuery<T>(string sql, Dictionary<string, object>? parameters = nul
         return result.ToList();
     }
 
-    public async Task<T?> FirstOrDefaultAsync(IDbConnection connection, IDbTransaction? transaction = null)
+    public virtual async Task<T?> FirstOrDefaultAsync(IDbConnection connection, IDbTransaction? transaction = null)
     {
         var sql = BuildSql();
         System.Console.WriteLine(sql);
         return await connection.QueryFirstOrDefaultAsync<T>(sql, _parameters, transaction: transaction);
     }
+    #endregion 
 
+    #region Count
 
     public async Task<long?> CountAsync(IDbConnection connection, IDbTransaction? transaction = null)
     {
@@ -92,7 +96,9 @@ public class DbQuery<T>(string sql, Dictionary<string, object>? parameters = nul
 
         return connection.ExecuteScalar<long>(sql, _parameters, transaction: transaction);
     }
-
+    #endregion
+    
+    #region old
     // public string BuildSql()
     // {
     //     var whereClause = string.Empty;
@@ -122,7 +128,10 @@ public class DbQuery<T>(string sql, Dictionary<string, object>? parameters = nul
 
     //     return pagedSql;
     // }
+    #endregion
 
+
+    #region SQL
     public string BuildSql()
     {
         var whereClause = string.Empty;
@@ -167,4 +176,17 @@ public class DbQuery<T>(string sql, Dictionary<string, object>? parameters = nul
 
         return countSql;
     }
+    #endregion
 }
+
+// public class DbQuery<TFirst, TSecond, TResult>
+//     (string sql, Func<TFirst, TSecond, TResult> map ,Dictionary<string, object>? parameters = null) 
+//         : DbQuery<TResult>(sql, parameters)
+// {
+//     public override TResult? FirstOrDefault(IDbConnection connection, IDbTransaction? transaction = null)
+//     {
+//          var sql = BuildSql();
+//         System.Console.WriteLine(sql);
+//         return connection.QueryFirstOrDefault<TFirst,TSecond,TResult>(sql, _parameters, transaction: transaction,map);
+//     }
+// }

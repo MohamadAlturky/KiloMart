@@ -3,19 +3,6 @@ using System.Data;
 
 namespace KiloMart.DataAccess.Database;
 
-/// <summary>
-/// Table Specification
-//  CREATE TABLE [dbo].[Card](
-// 	[Id] [int] IDENTITY(1,1) NOT NULL,
-// 	[HolderName] [varchar](100) NOT NULL,
-// 	[Number] [varchar](100) NOT NULL,
-// 	[SecurityCode] [varchar](100) NOT NULL,
-// 	[ExpireDate] [date] NOT NULL,
-// 	[Customer] [int] NOT NULL,
-// 	[IsActive] [bit] NOT NULL) 
-/// </summary>
-/// 
-
 public static partial class Db
 {
     public static async Task<long> InsertWithdrawAsync(IDbConnection connection,

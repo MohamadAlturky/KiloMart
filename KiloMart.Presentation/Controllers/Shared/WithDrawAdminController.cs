@@ -4,7 +4,6 @@ using KiloMart.DataAccess.Database;
 using KiloMart.Domain.Delivery.Activity;
 using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Authorization;
-using KiloMart.Requests.Queries;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KiloMart.Presentation.Controllers;

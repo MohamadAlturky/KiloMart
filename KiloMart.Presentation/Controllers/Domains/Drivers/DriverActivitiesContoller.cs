@@ -24,17 +24,6 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory,
 
     #region Orders reading
 
-    // [HttpGet("orders/ready-to-deliver")]
-    // [Guard([Roles.Delivery])]
-    // public async Task<IActionResult> GetReadyForDeliver()
-    // {
-    //     var result = await ReadOrderService.GetReadyForDeliverAsync(
-    //         _userContext,
-    //         _dbFactory);
-
-    //     return result.Success ? Success(result.Data) : Fail(result.Errors);
-    // }
-
     [HttpGet("orders/ready-to-deliver")]
     [Guard([Roles.Delivery])]
     public async Task<IActionResult> GetReadyForDeliver(

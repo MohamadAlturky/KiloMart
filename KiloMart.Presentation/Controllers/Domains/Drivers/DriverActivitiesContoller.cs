@@ -281,7 +281,7 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory,
         {
             return DataNotFound();
         }
-        if (withdraw.Delivery != deliveryID)
+        if (withdraw.Party != deliveryID)
         {
             return Fail("Un Authorized this withdraw isn't for you");
         }
@@ -292,7 +292,7 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory,
         var success = await Db.UpdateWithdrawAsync(
             connection,
             id,
-            withdraw.Delivery,
+            withdraw.Party,
             request.BankAccountNumber ?? withdraw.BankAccountNumber,
             request.IbanNumber ?? withdraw.IBanNumber,
             withdraw.Date,
@@ -314,7 +314,7 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory,
         {
             return DataNotFound();
         }
-        if (withdraw.Delivery != deliveryID)
+        if (withdraw.Party != deliveryID)
         {
             return Fail("Un Authorized this withdraw isn't for you");
         }
@@ -341,7 +341,20 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory,
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
 
-        var withdraws = await Db.GetWithdrawsByDeliveryAsync(deliveryId, connection);
+        var withdraws = await Db.GetWithdrawsByPartyAsync(deliveryId, connection);
+        return Success(withdraws);
+    }
+
+    [HttpGet("Withdraw/mine/by-done")]
+    [Guard([Roles.Delivery])]
+    public async Task<IActionResult> GetWithdrawsByDeliveryAsync([FromQuery] bool done)
+    {
+        int deliveryId = _userContext.Get().Party;
+
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        var withdraws = await Db.GetWithdrawsByPartyAndDoneAsync(deliveryId, done, connection);
         return Success(withdraws);
     }
     #endregion

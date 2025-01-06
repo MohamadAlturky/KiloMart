@@ -154,6 +154,29 @@ namespace KiloMart.DataAccess.Database
                 Id = id
             }, transaction);
         }
+        public static async Task<MembershipUser?> GetMembershipUserByPartyAsync(
+                    IDbConnection connection,
+                    int id,
+                    IDbTransaction? transaction = null)
+        {
+            const string query = @"SELECT 
+                                [Id], 
+                                [Email], 
+                                [EmailConfirmed], 
+                                [PasswordHash], 
+                                [Role], 
+                                [Party], 
+                                [IsActive], 
+                                [Language], 
+                                [IsDeleted]
+                                FROM [dbo].[MembershipUser]
+                                WHERE [Party] = @Id";
+
+            return await connection.QueryFirstOrDefaultAsync<MembershipUser>(query, new
+            {
+                Id = id
+            }, transaction);
+        }
 
         // Get MembershipUser by Email
         public static async Task<MembershipUser?> GetMembershipUserByEmailAsync(

@@ -6,7 +6,7 @@ namespace KiloMart.DataAccess.Database;
 public static partial class Db
 {
     public static async Task<long> InsertWithdrawAsync(IDbConnection connection,
-        int delivery,
+        int Party,
         string bankAccountNumber,
         string ibanNumber,
         DateTime date,
@@ -14,13 +14,13 @@ public static partial class Db
         IDbTransaction? transaction = null)
     {
         const string query = @"INSERT INTO [dbo].[Withdraw]
-                            ([Delivery], [BankAccountNumber], [IBanNumber], [Date], [Done])
-                            VALUES (@Delivery, @BankAccountNumber, @IBanNumber, @Date, @Done)
+                            ([Party], [BankAccountNumber], [IBanNumber], [Date], [Done])
+                            VALUES (@Party, @BankAccountNumber, @IBanNumber, @Date, @Done)
                             SELECT CAST(SCOPE_IDENTITY() AS BIGINT)";
 
         return await connection.ExecuteScalarAsync<long>(query, new
         {
-            Delivery = delivery,
+            Party = Party,
             BankAccountNumber = bankAccountNumber,
             IBanNumber = ibanNumber,
             Date = date,
@@ -30,7 +30,7 @@ public static partial class Db
 
     public static async Task<bool> UpdateWithdrawAsync(IDbConnection connection,
         long id, 
-        int delivery, 
+        int Party, 
         string bankAccountNumber, 
         string ibanNumber, 
         DateTime date,
@@ -39,7 +39,7 @@ public static partial class Db
     {
         const string query = @"UPDATE [dbo].[Withdraw]
                                 SET 
-                                [Delivery] = @Delivery,
+                                [Party] = @Party,
                                 [BankAccountNumber] = @BankAccountNumber,
                                 [IBanNumber] = @IBanNumber,
                                 [Date] = @Date,
@@ -49,7 +49,7 @@ public static partial class Db
         var updatedRowsCount = await connection.ExecuteAsync(query, new
         {
             Id = id,
-            Delivery = delivery,
+            Party = Party,
             BankAccountNumber = bankAccountNumber,
             IBanNumber = ibanNumber,
             Date = date,
@@ -76,7 +76,7 @@ public static partial class Db
     {
         const string query = @"SELECT 
                             [Id], 
-                            [Delivery], 
+                            [Party], 
                             [BankAccountNumber], 
                             [IBanNumber], 
                             [Date], 
@@ -90,22 +90,23 @@ public static partial class Db
         });
     }
        /// <summary>
-    /// Retrieves a list of Withdraw records filtered by Delivery.
+    /// Retrieves a list of Withdraw records filtered by Party.
     /// </summary>
-    public static async Task<IEnumerable<Withdraw>> GetWithdrawsByDeliveryAsync(int delivery, IDbConnection connection)
+    public static async Task<IEnumerable<Withdraw>> GetWithdrawsByPartyAsync(int Party, IDbConnection connection)
     {
         const string query = @"SELECT 
                             [Id], 
-                            [Delivery], 
+                            [Party], 
                             [BankAccountNumber], 
                             [IBanNumber], 
                             [Date], 
                             [Done]
                             FROM [dbo].[Withdraw]
-                            WHERE [Delivery] = @Delivery";
+                            WHERE [Party] = @Party";
 
-        return await connection.QueryAsync<Withdraw>(query, new { Delivery = delivery });
+        return await connection.QueryAsync<Withdraw>(query, new { Party = Party });
     }
+    
 
     /// <summary>
     /// Retrieves a list of Withdraw records filtered by Done status.
@@ -114,7 +115,7 @@ public static partial class Db
     {
         const string query = @"SELECT 
                             [Id], 
-                            [Delivery], 
+                            [Party], 
                             [BankAccountNumber], 
                             [IBanNumber], 
                             [Date], 
@@ -126,53 +127,53 @@ public static partial class Db
     }
 
     /// <summary>
-    /// Retrieves a list of Withdraw records filtered by both Delivery and Done status.
+    /// Retrieves a list of Withdraw records filtered by both Party and Done status.
     /// </summary>
-    public static async Task<IEnumerable<Withdraw>> GetWithdrawsByDeliveryAndDoneAsync(int delivery, bool done, IDbConnection connection)
+    public static async Task<IEnumerable<Withdraw>> GetWithdrawsByPartyAndDoneAsync(int Party, bool done, IDbConnection connection)
     {
         const string query = @"SELECT 
                             [Id], 
-                            [Delivery], 
+                            [Party], 
                             [BankAccountNumber], 
                             [IBanNumber], 
                             [Date], 
                             [Done]
                             FROM [dbo].[Withdraw]
-                            WHERE [Delivery] = @Delivery AND [Done] = @Done";
+                            WHERE [Party] = @Party AND [Done] = @Done";
 
-        return await connection.QueryAsync<Withdraw>(query, new { Delivery = delivery, Done = done });
+        return await connection.QueryAsync<Withdraw>(query, new { Party = Party, Done = done });
     }
 
 
     /// <summary>
-    /// Retrieves a paginated list of Withdraw records filtered by Delivery along with the total count.
+    /// Retrieves a paginated list of Withdraw records filtered by Party along with the total count.
     /// </summary>
-    public static async Task<(IEnumerable<Withdraw> Withdraws, int TotalCount)> GetPaginatedWithdrawsByDeliveryAsync(int delivery, int pageNumber, int pageSize, IDbConnection connection)
+    public static async Task<(IEnumerable<Withdraw> Withdraws, int TotalCount)> GetPaginatedWithdrawsByPartyAsync(int Party, int pageNumber, int pageSize, IDbConnection connection)
     {
         const string withdrawQuery = @"SELECT 
                                         [Id], 
-                                        [Delivery], 
+                                        [Party], 
                                         [BankAccountNumber], 
                                         [IBanNumber], 
                                         [Date], 
                                         [Done]
                                         FROM [dbo].[Withdraw]
-                                        WHERE [Delivery] = @Delivery
+                                        WHERE [Party] = @Party
                                         ORDER BY [Id]  DESC
                                         OFFSET @Offset ROWS
                                         FETCH NEXT @PageSize ROWS ONLY";
 
-        const string countQuery = @"SELECT COUNT(*) FROM [dbo].[Withdraw] WHERE [Delivery] = @Delivery";
+        const string countQuery = @"SELECT COUNT(*) FROM [dbo].[Withdraw] WHERE [Party] = @Party";
 
         var parameters = new
         {
-            Delivery = delivery,
+            Party = Party,
             Offset = (pageNumber - 1) * pageSize,
             PageSize = pageSize
         };
 
         var withdraws = await connection.QueryAsync<Withdraw>(withdrawQuery, parameters);
-        var totalCount = await connection.ExecuteScalarAsync<int>(countQuery, new { Delivery = delivery });
+        var totalCount = await connection.ExecuteScalarAsync<int>(countQuery, new { Party = Party });
 
         return (withdraws, totalCount);
     }
@@ -184,7 +185,7 @@ public static partial class Db
     {
         const string withdrawQuery = @"SELECT 
                                         [Id], 
-                                        [Delivery], 
+                                        [Party], 
                                         [BankAccountNumber], 
                                         [IBanNumber], 
                                         [Date], 
@@ -211,35 +212,35 @@ public static partial class Db
     }
 
     /// <summary>
-    /// Retrieves a paginated list of Withdraw records filtered by both Delivery and Done status along with the total count.
+    /// Retrieves a paginated list of Withdraw records filtered by both Party and Done status along with the total count.
     /// </summary>
-    public static async Task<(IEnumerable<Withdraw> Withdraws, int TotalCount)> GetPaginatedWithdrawsByDeliveryAndDoneAsync(int delivery, bool done, int pageNumber, int pageSize, IDbConnection connection)
+    public static async Task<(IEnumerable<Withdraw> Withdraws, int TotalCount)> GetPaginatedWithdrawsByPartyAndDoneAsync(int Party, bool done, int pageNumber, int pageSize, IDbConnection connection)
     {
         const string withdrawQuery = @"SELECT 
                                         [Id], 
-                                        [Delivery], 
+                                        [Party], 
                                         [BankAccountNumber], 
                                         [IBanNumber], 
                                         [Date], 
                                         [Done]
                                         FROM [dbo].[Withdraw]
-                                        WHERE [Delivery] = @Delivery AND [Done] = @Done
+                                        WHERE [Party] = @Party AND [Done] = @Done
                                         ORDER BY [Id] DESC
                                         OFFSET @Offset ROWS
                                         FETCH NEXT @PageSize ROWS ONLY";
 
-        const string countQuery = @"SELECT COUNT(*) FROM [dbo].[Withdraw] WHERE [Delivery] = @Delivery AND [Done] = @Done";
+        const string countQuery = @"SELECT COUNT(*) FROM [dbo].[Withdraw] WHERE [Party] = @Party AND [Done] = @Done";
 
         var parameters = new
         {
-            Delivery = delivery,
+            Party = Party,
             Done = done,
             Offset = (pageNumber - 1) * pageSize,
             PageSize = pageSize
         };
 
         var withdraws = await connection.QueryAsync<Withdraw>(withdrawQuery, parameters);
-        var totalCount = await connection.ExecuteScalarAsync<int>(countQuery, new { Delivery = delivery, Done = done });
+        var totalCount = await connection.ExecuteScalarAsync<int>(countQuery, new { Party = Party, Done = done });
 
         return (withdraws, totalCount);
     }
@@ -249,7 +250,7 @@ public static partial class Db
 public class Withdraw
 {
     public long Id { get; set; }
-    public int Delivery { get; set; }
+    public int Party { get; set; }
     public string BankAccountNumber { get; set; } = null!;
     public string IBanNumber { get; set; } = null!;
     public DateTime Date { get; set; }

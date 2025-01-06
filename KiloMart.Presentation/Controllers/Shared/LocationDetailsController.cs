@@ -10,12 +10,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace KiloMart.Presentation.Controllers;
 
 [ApiController]
-[Route("api/customer-and-provider/location-details")]
+[Route("api/customer/location-details")]
 public class LocationDetailsController(IDbFactory dbFactory, IUserContext userContext)
     : AppController(dbFactory, userContext)
 {
     [HttpPost]
-    [Guard([Roles.Customer, Roles.Provider])]
+    [Guard([Roles.Customer])]
     public async Task<IActionResult> Insert(LocationDetailsInsertModel model)
     {
         var result = await LocationDetailsService.Insert(_dbFactory, _userContext.Get(), model);
@@ -31,7 +31,7 @@ public class LocationDetailsController(IDbFactory dbFactory, IUserContext userCo
     }
 
     [HttpPut("{id}")]
-    [Guard([Roles.Customer, Roles.Provider])]
+    [Guard([Roles.Customer])]
     public async Task<IActionResult> Update(LocationDetailsUpdateModel model)
     {
 
@@ -55,7 +55,7 @@ public class LocationDetailsController(IDbFactory dbFactory, IUserContext userCo
     }
 
     [HttpGet("{locationId}")]
-    [Guard([Roles.Customer, Roles.Provider])]
+    [Guard([Roles.Customer])]
     public async Task<IActionResult> GetDetails(int locationId)
     {
         using var connection = _dbFactory.CreateDbConnection();

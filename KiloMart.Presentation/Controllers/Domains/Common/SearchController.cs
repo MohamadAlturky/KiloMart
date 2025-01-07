@@ -17,44 +17,44 @@ public partial class SearchController(
     : AppController(dbFactory, userContext)
 {
 
-    [HttpPost("demo33")]
-    public async Task<IActionResult> Demo()
-    {
-        // Create a database connection
-        using var connection = _dbFactory.CreateDbConnection();
+    // [HttpPost("demo33")]
+    // public async Task<IActionResult> Demo()
+    // {
+    //     // Create a database connection
+    //     using var connection = _dbFactory.CreateDbConnection();
 
-        // Open the connection
-        connection.Open();
+    //     // Open the connection
+    //     connection.Open();
 
-        // Define the SQL query
-        var query = @$"
-        SELECT 
-            m.*,
-            p.*
-        FROM ({Sql.MembershipUserSql}) m
-        INNER JOIN ({Sql.PartySql}) p 
-        ON p.Id = m.Party";
+    //     // Define the SQL query
+    //     var query = @$"
+    //     SELECT 
+    //         m.*,
+    //         p.*
+    //     FROM ({Sql.MembershipUserSql}) m
+    //     INNER JOIN ({Sql.PartySql}) p 
+    //     ON p.Id = m.Party";
 
-        // Execute the query and map results to the specified response types
-        var results = await connection.QueryAsync<MembershipUserSqlResponse, PartySqlResponse, PartyMembershipUserSqlResponse>(
-            query,
-            (membershipUser, party) =>
-            {
-                return new PartyMembershipUserSqlResponse
-                {
-                    MembershipUser = membershipUser,
-                    Party = party
-                };
-            }
-            // ,
-            // splitOn: "p.Id" // Specify the column to split on if necessary
-        );
+    //     // Execute the query and map results to the specified response types
+    //     var results = await connection.QueryAsync<MembershipUserSqlResponse, PartySqlResponse, PartyMembershipUserSqlResponse>(
+    //         query,
+    //         (membershipUser, party) =>
+    //         {
+    //             return new PartyMembershipUserSqlResponse
+    //             {
+    //                 MembershipUser = membershipUser,
+    //                 Party = party
+    //             };
+    //         }
+    //         // ,
+    //         // splitOn: "p.Id" // Specify the column to split on if necessary
+    //     );
 
-        // Return the results as an OK response
-        return Ok(new { results });
-    }
+    //     // Return the results as an OK response
+    //     return Ok(new { results });
+    // }
 
-    // Define a combined response model if needed
+    // // Define a combined response model if needed
 
 
 
@@ -63,9 +63,56 @@ public partial class SearchController(
 
 
     #region Search History
-    [HttpPost("search")]
+    // [HttpPost("search")]
+    // [Guard([Roles.Customer, Roles.Provider])]
+    // public async Task<IActionResult> Search([FromBody] AddSearchTermRequest request)
+    // {
+    //     var (IsSuccess, Errors) = request.Validate();
+    //     if (!IsSuccess)
+    //     {
+    //         return ValidationError(Errors);
+    //     }
+    //     using var connection = _dbFactory.CreateDbConnection();
+    //     var partyId = _userContext.Get().Party;
+
+    //     // Insert the search term into the database
+    //     var searchId = await Db.InsertSearchHistoryAsync(connection, partyId, request.Term);
+
+
+    //     if (_userContext.Get().Role == (byte)Roles.Customer)
+    //     {
+    //         var products = await Db.SearchProductDetailsForCustomerAsync(
+    //                     5,
+    //                     request.Language,
+    //                     partyId,
+    //                     request.Term,
+    //                     connection);
+
+    //         return Success(new { searchId, products });
+    //     }
+
+
+    //     if (_userContext.Get().Role == (byte)Roles.Provider)
+    //     {
+    //         var products = await Db.SearchProductDetailsForProviderAsync(
+    //                     5,
+    //                     request.Language,
+    //                     partyId,
+    //                     request.Term,
+    //                     connection);
+
+    //         return Success(new { searchId, products });
+    //     }
+    //     return Fail("Only Provider and Customer can use this api");
+    // }
+
+
+    [HttpPost("search-by-location")]
     [Guard([Roles.Customer, Roles.Provider])]
-    public async Task<IActionResult> Search([FromBody] AddSearchTermRequest request)
+    public async Task<IActionResult> SearchByLocation(
+        [FromBody] AddSearchTermRequest request,
+        [FromQuery] decimal? longitude,
+        [FromQuery] decimal? latitude)
     {
         var (IsSuccess, Errors) = request.Validate();
         if (!IsSuccess)
@@ -73,6 +120,17 @@ public partial class SearchController(
             return ValidationError(Errors);
         }
         using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        var settings = await Db.GetSystemSettingsByIdAsync(0, connection);
+
+        if (settings is null)
+        {
+            return Fail("system settings not found");
+        }
+
+        decimal distanceInKm = settings.RaduisForGetProducts;
+
         var partyId = _userContext.Get().Party;
 
         // Insert the search term into the database
@@ -81,11 +139,14 @@ public partial class SearchController(
 
         if (_userContext.Get().Role == (byte)Roles.Customer)
         {
-            var products = await Db.SearchProductDetailsForCustomerAsync(
+            var products = await Db.SearchProductDetailsForCustomerWithInLocationCircleAsync(
                         5,
                         request.Language,
                         partyId,
                         request.Term,
+                        distanceInKm,
+                        longitude,
+                        latitude,
                         connection);
 
             return Success(new { searchId, products });
@@ -106,13 +167,11 @@ public partial class SearchController(
         return Fail("Only Provider and Customer can use this api");
     }
 
-
-    [HttpPost("search-by-location")]
+    [HttpPost("search-by-location-id")]
     [Guard([Roles.Customer, Roles.Provider])]
-    public async Task<IActionResult> SearchByLocation(
-        [FromBody] AddSearchTermRequest request,
-        [FromQuery] decimal longitude,
-        [FromQuery] decimal latitude)
+    public async Task<IActionResult> SearchByLocationId(
+      [FromBody] AddSearchTermRequest request,
+        [FromQuery] int? locationId)
     {
         var (IsSuccess, Errors) = request.Validate();
         if (!IsSuccess)
@@ -127,6 +186,18 @@ public partial class SearchController(
         if (settings is null)
         {
             return Fail("system settings not found");
+        }
+
+        decimal? longitude = null;
+        decimal? latitude = null;
+        if (locationId.HasValue)
+        {
+            var location = await Db.GetLocationByIdAsync(locationId.Value, connection);
+            if (location is not null)
+            {
+                longitude = location.Longitude;
+                latitude = location.Latitude;
+            }
         }
 
         decimal distanceInKm = settings.RaduisForGetProducts;

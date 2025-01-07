@@ -397,44 +397,44 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
         return Success(new { priceSummary, systemSettings.DeliveryOrderFee });
     }
 
-    [HttpGet("cart/mine")]
-    [Guard([Roles.Customer])]
-    public async Task<IActionResult> Min()
-    {
-        using var connection = _dbFactory.CreateDbConnection();
-        connection.Open(); // Use await to open the connection asynchronously
-        var result = await Db.GetCartsByCustomerAsync(_userContext.Get().Party, connection);
-        return Success(result);
+    // [HttpGet("cart/mine")]
+    // [Guard([Roles.Customer])]
+    // public async Task<IActionResult> Min()
+    // {
+    //     using var connection = _dbFactory.CreateDbConnection();
+    //     connection.Open(); // Use await to open the connection asynchronously
+    //     var result = await Db.GetCartsByCustomerAsync(_userContext.Get().Party, connection);
+    //     return Success(result);
 
-    }
+    // }
 
-    [HttpGet("cart/mine-with-info")]
-    [Guard([Roles.Customer])]
-    public async Task<IActionResult> CartMinWithInfo([FromQuery] byte language)
-    {
-        using var connection = _dbFactory.CreateDbConnection();
-        connection.Open(); // Use await to open the connection asynchronously
-        var result = await Db.GetCartsByCustomerWithProductsInfoAsync(_userContext.Get().Party, language, connection);
-        return Success(result);
+    // [HttpGet("cart/mine-with-info")]
+    // [Guard([Roles.Customer])]
+    // public async Task<IActionResult> CartMinWithInfo([FromQuery] byte language)
+    // {
+    //     using var connection = _dbFactory.CreateDbConnection();
+    //     connection.Open(); // Use await to open the connection asynchronously
+    //     var result = await Db.GetCartsByCustomerWithProductsInfoAsync(_userContext.Get().Party, language, connection);
+    //     return Success(result);
 
-    }
-    [HttpGet("cart/mine-with-info-and-pricing")]
-    [Guard([Roles.Customer])]
-    public async Task<IActionResult> CartMinWithInfoWithPricing([FromQuery] byte language)
-    {
-        using var connection = _dbFactory.CreateDbConnection();
-        connection.Open(); // Use await to open the connection asynchronously
-        var result = await Db.GetCartsByCustomerWithProductsInfoAndPricingAsync(_userContext.Get().Party, language, connection);
-        return Success(result);
+    // }
+    // [HttpGet("cart/mine-with-info-and-pricing")]
+    // [Guard([Roles.Customer])]
+    // public async Task<IActionResult> CartMinWithInfoWithPricing([FromQuery] byte language)
+    // {
+    //     using var connection = _dbFactory.CreateDbConnection();
+    //     connection.Open(); // Use await to open the connection asynchronously
+    //     var result = await Db.GetCartsByCustomerWithProductsInfoAndPricingAsync(_userContext.Get().Party, language, connection);
+    //     return Success(result);
 
-    }
+    // }
 
     [HttpGet("cart/mine-with-info-and-pricing-by-location")]
     [Guard([Roles.Customer])]
     public async Task<IActionResult> CartMinWithInfoWithPricingByLocation(
     [FromQuery] byte language,
-    [FromQuery] decimal longitude,
-    [FromQuery] decimal latitude
+    [FromQuery] decimal? longitude,
+    [FromQuery] decimal? latitude
     )
     {
         using var connection = _dbFactory.CreateDbConnection();
@@ -446,6 +446,47 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
         if (settings is null)
         {
             return Fail("system settings not found");
+        }
+
+        decimal distanceInKm = settings.RaduisForGetProducts;
+
+        var result = await Db.GetCartsByCustomerWithProductsInfoAndPricingWithLocationAsync(
+            _userContext.Get().Party,
+            language,
+            distanceInKm,
+            longitude,
+            latitude,
+            connection);
+        return Success(result);
+
+    }
+    [HttpGet("cart/mine-with-info-and-pricing-by-location-id")]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> CartMinWithInfoWithPricingByLocationId(
+        [FromQuery] byte language,
+        [FromQuery] int? locationId
+    )
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open(); // Use await to open the connection asynchronously
+
+
+        var settings = await Db.GetSystemSettingsByIdAsync(0, connection);
+
+        if (settings is null)
+        {
+            return Fail("system settings not found");
+        }
+        decimal? longitude = null;
+        decimal? latitude = null;
+        if (locationId.HasValue)
+        {
+            var location = await Db.GetLocationByIdAsync(locationId.Value, connection);
+            if (location is not null)
+            {
+                longitude = location.Longitude;
+                latitude = location.Latitude;
+            }
         }
 
         decimal distanceInKm = settings.RaduisForGetProducts;

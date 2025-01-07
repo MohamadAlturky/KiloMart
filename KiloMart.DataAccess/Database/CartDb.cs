@@ -193,8 +193,8 @@ public static partial class Db
         int customerId,
         byte language,
         decimal distanceInKm,
-        decimal longitude,
-        decimal latitude,
+        decimal? longitude,
+        decimal? latitude,
         IDbConnection connection)
     {
         const string query = @"
@@ -257,7 +257,7 @@ public static partial class Db
                 ON 
                     l.[Party] = po.[Provider] AND
                     l.IsActive = 1 AND
-                    dbo.GetDistanceBetweenPoints(l.[Latitude], l.[Longitude], @Latitude, @Longitude) <= @DistanceInKm
+                    (dbo.GetDistanceBetweenPoints(l.[Latitude], l.[Longitude], @Latitude, @Longitude) <= @DistanceInKm OR (@Longitude IS NULL OR @Latitude IS NULL))
             WHERE 
                 po.[IsActive] = 1
             GROUP BY 

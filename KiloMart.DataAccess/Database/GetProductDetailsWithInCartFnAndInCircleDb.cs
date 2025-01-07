@@ -15,8 +15,8 @@ public static partial class Db
         int totalCount,
         int customer,
         decimal distanceInKm,
-        decimal longitude,
-        decimal latitude,
+        decimal? longitude,
+        decimal? latitude,
         IDbConnection connection)
     {
         const string query = @"
@@ -57,7 +57,7 @@ public static partial class Db
                 ON 
                     l.[Party] = po.[Provider] AND
                     l.IsActive = 1 AND
-                    dbo.GetDistanceBetweenPoints(l.[Latitude], l.[Longitude], @Latitude, @Longitude) <= @DistanceInKm
+                    (dbo.GetDistanceBetweenPoints(l.[Latitude], l.[Longitude], @Latitude, @Longitude) <= @DistanceInKm OR (@Longitude IS NULL OR @Latitude IS NULL))
             WHERE 
                 po.[IsActive] = 1
             GROUP BY 
@@ -93,8 +93,8 @@ public static partial class Db
         int customer,
         int count,
         decimal distanceInKm,
-        decimal longitude,
-        decimal latitude,
+        decimal? longitude,
+        decimal? latitude,
         IDbConnection connection)
     {
         const string query = @"
@@ -136,7 +136,7 @@ public static partial class Db
                 ON 
                     l.[Party] = po.[Provider] AND
                     l.IsActive = 1 AND
-                    dbo.GetDistanceBetweenPoints(l.[Latitude], l.[Longitude], @Latitude, @Longitude) <= @DistanceInKm
+                    (dbo.GetDistanceBetweenPoints(l.[Latitude], l.[Longitude], @Latitude, @Longitude) <= @DistanceInKm OR (@Longitude IS NULL OR @Latitude IS NULL))
             WHERE 
                 po.[IsActive] = 1
             GROUP BY 
@@ -162,8 +162,8 @@ public static partial class Db
         int pageSize,
         int customer,
         decimal distanceInKm,
-        decimal longitude,
-        decimal latitude,
+        decimal? longitude,
+        decimal? latitude,
         IDbConnection connection)
     {
         const string query = @"
@@ -203,7 +203,7 @@ public static partial class Db
                 ON 
                     l.[Party] = po.[Provider] AND
                     l.IsActive = 1 AND
-                    dbo.GetDistanceBetweenPoints(l.[Latitude], l.[Longitude], @Latitude, @Longitude) <= @DistanceInKm
+                    (dbo.GetDistanceBetweenPoints(l.[Latitude], l.[Longitude], @Latitude, @Longitude) <= @DistanceInKm OR (@Longitude IS NULL OR @Latitude IS NULL))
             WHERE 
                 po.[IsActive] = 1
             GROUP BY 
@@ -232,7 +232,7 @@ public static partial class Db
                 ON 
                     l.[Party] = po.[Provider] AND
                     l.IsActive = 1 AND
-                    dbo.GetDistanceBetweenPoints(l.[Latitude], l.[Longitude], @Latitude, @Longitude) <= @DistanceInKm
+                    (dbo.GetDistanceBetweenPoints(l.[Latitude], l.[Longitude], @Latitude, @Longitude) <= @DistanceInKm OR (@Longitude IS NULL OR @Latitude IS NULL))
             WHERE 
                 po.[IsActive] = 1
             GROUP BY 
@@ -273,11 +273,11 @@ public static partial class Db
         byte language,
         int pageNumber,
         int pageSize,
-        int categoryId,
+        int? categoryId,
         int customer,
         decimal distanceInKm,
-        decimal longitude,
-        decimal latitude,
+        decimal? longitude,
+        decimal? latitude,
         IDbConnection connection)
     {
         const string query = @"
@@ -319,7 +319,7 @@ public static partial class Db
                 ON 
                     l.[Party] = po.[Provider] AND
                     l.IsActive = 1 AND
-                    dbo.GetDistanceBetweenPoints(l.[Latitude], l.[Longitude], @Latitude, @Longitude) <= @DistanceInKm
+                    (dbo.GetDistanceBetweenPoints(l.[Latitude], l.[Longitude], @Latitude, @Longitude) <= @DistanceInKm OR (@Longitude IS NULL OR @Latitude IS NULL))
             WHERE 
                 po.[IsActive] = 1
             GROUP BY 
@@ -332,7 +332,7 @@ public static partial class Db
         WHERE 
             pd.[ProductIsActive] = 1 AND 
             po.Quantity > 0 AND 
-            pd.[ProductCategoryId] = @CategoryId 
+            (pd.[ProductCategoryId] = @CategoryId OR @CategoryId IS NULL)
     ) AS ProductDetails
     WHERE RowNum BETWEEN @StartRow AND @EndRow;
 
@@ -356,7 +356,7 @@ public static partial class Db
                 ON 
                     l.[Party] = po.[Provider] AND
                     l.IsActive = 1 AND
-                    dbo.GetDistanceBetweenPoints(l.[Latitude], l.[Longitude], @Latitude, @Longitude) <= @DistanceInKm
+                    (dbo.GetDistanceBetweenPoints(l.[Latitude], l.[Longitude], @Latitude, @Longitude) <= @DistanceInKm OR (@Longitude IS NULL OR @Latitude IS NULL))
             WHERE 
                 po.[IsActive] = 1
             GROUP BY 
@@ -367,7 +367,7 @@ public static partial class Db
         WHERE 
             pd.[ProductIsActive] = 1 AND 
             po.Quantity > 0 AND 
-            pd.[ProductCategoryId] = @CategoryId
+            (pd.[ProductCategoryId] = @CategoryId OR @CategoryId IS NULL)
     ) AS ProductCount;";
 
         var startRow = (pageNumber - 1) * pageSize + 1;
@@ -403,10 +403,10 @@ public static partial class Db
         int top,
         byte language,
         int customer,
-        string searchTerm,
+        string? searchTerm,
         decimal distanceInKm,
-        decimal longitude,
-        decimal latitude,
+        decimal? longitude,
+        decimal? latitude,
         IDbConnection connection)
     {
         const string query = @"
@@ -445,7 +445,7 @@ public static partial class Db
                 ON 
                     l.[Party] = po.[Provider] AND
                     l.IsActive = 1 AND
-                    dbo.GetDistanceBetweenPoints(l.[Latitude], l.[Longitude], @Latitude, @Longitude) <= @DistanceInKm
+                    (dbo.GetDistanceBetweenPoints(l.[Latitude], l.[Longitude], @Latitude, @Longitude) <= @DistanceInKm OR (@Longitude IS NULL OR @Latitude IS NULL))
             WHERE 
                 po.[IsActive] = 1
             GROUP BY 
@@ -455,7 +455,7 @@ public static partial class Db
         WHERE 
             pd.[ProductIsActive] = 1 AND 
             po.Quantity > 0 AND 
-            pd.ProductName LIKE '%' + @SearchTerm + '%'";
+            (pd.ProductName LIKE '%' + @SearchTerm + '%' OR @SearchTerm IS NULL)";
 
         return await connection.QueryAsync<ProductDetailWithPricingWithInFavoriteAndOnCart>(query, new
         {

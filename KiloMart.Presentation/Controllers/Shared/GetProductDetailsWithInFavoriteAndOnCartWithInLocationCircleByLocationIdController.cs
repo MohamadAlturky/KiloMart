@@ -6,10 +6,10 @@ using KiloMart.Core.Authentication;
 namespace KiloMart.Presentation.Controllers.Shared;
 
 [ApiController]
-[Route("api/products-with-in-favorite-and-in-cart-with-location-circle")]
-public class GetProductDetailsWithInFavoriteAndOnCartWithInLocationCircleController : AppController
+[Route("api/products-with-in-favorite-and-in-cart-with-location-circle-by-location-id")]
+public class GetProductDetailsWithInFavoriteAndOnCartWithInLocationCircleByLocationIdController : AppController
 {
-    public GetProductDetailsWithInFavoriteAndOnCartWithInLocationCircleController(IDbFactory dbFactory, IUserContext userContext)
+    public GetProductDetailsWithInFavoriteAndOnCartWithInLocationCircleByLocationIdController(IDbFactory dbFactory, IUserContext userContext)
         : base(dbFactory, userContext)
     {
     }
@@ -18,8 +18,7 @@ public class GetProductDetailsWithInFavoriteAndOnCartWithInLocationCircleControl
     public async Task<IActionResult> GetBestDealsWithInFavoriteAndOnCartAsync(
         [FromQuery] byte language,
         [FromQuery] int totalCount,
-        [FromQuery] decimal? longitude,
-        [FromQuery] decimal? latitude)
+        [FromQuery] int? locationId)
     {
         var customer = _userContext.Get().Party;
 
@@ -31,6 +30,17 @@ public class GetProductDetailsWithInFavoriteAndOnCartWithInLocationCircleControl
         if (settings is null)
         {
             return Fail("system settings not found");
+        }
+        decimal? longitude = null;
+        decimal? latitude = null;
+        if (locationId.HasValue)
+        {
+            var location = await Db.GetLocationByIdAsync(locationId.Value, connection);
+            if (location is not null)
+            {
+                longitude = location.Longitude;
+                latitude = location.Latitude;
+            }
         }
 
         decimal distanceInKm = settings.RaduisForGetProducts;
@@ -51,8 +61,7 @@ public class GetProductDetailsWithInFavoriteAndOnCartWithInLocationCircleControl
     public async Task<IActionResult> GetTopSellingProductDetailsWithInFavoriteAndOnCartAsync(
         [FromQuery] byte language,
         [FromQuery] int count,
-        [FromQuery] decimal? longitude,
-        [FromQuery] decimal? latitude)
+        [FromQuery] int? locationId)
     {
         var customer = _userContext.Get().Party;
 
@@ -65,6 +74,18 @@ public class GetProductDetailsWithInFavoriteAndOnCartWithInLocationCircleControl
         if (settings is null)
         {
             return Fail("system settings not found");
+        }
+
+        decimal? longitude = null;
+        decimal? latitude = null;
+        if (locationId.HasValue)
+        {
+            var location = await Db.GetLocationByIdAsync(locationId.Value, connection);
+            if (location is not null)
+            {
+                longitude = location.Longitude;
+                latitude = location.Latitude;
+            }
         }
 
         decimal distanceInKm = settings.RaduisForGetProducts;
@@ -86,8 +107,7 @@ public class GetProductDetailsWithInFavoriteAndOnCartWithInLocationCircleControl
         [FromQuery] byte language,
         [FromQuery] int pageNumber,
         [FromQuery] int pageSize,
-        [FromQuery] decimal? longitude,
-        [FromQuery] decimal? latitude)
+        [FromQuery] int? locationId)
     {
         var customer = _userContext.Get().Party;
 
@@ -101,6 +121,17 @@ public class GetProductDetailsWithInFavoriteAndOnCartWithInLocationCircleControl
         if (settings is null)
         {
             return Fail("system settings not found");
+        }
+        decimal? longitude = null;
+        decimal? latitude = null;
+        if (locationId.HasValue)
+        {
+            var location = await Db.GetLocationByIdAsync(locationId.Value, connection);
+            if (location is not null)
+            {
+                longitude = location.Longitude;
+                latitude = location.Latitude;
+            }
         }
 
         decimal distanceInKm = settings.RaduisForGetProducts;
@@ -131,8 +162,7 @@ public class GetProductDetailsWithInFavoriteAndOnCartWithInLocationCircleControl
         [FromQuery] int pageNumber,
         [FromQuery] int pageSize,
         [FromQuery] int? categoryId,
-        [FromQuery] decimal? longitude,
-        [FromQuery] decimal? latitude)
+        [FromQuery] int? locationId)
     {
         var customer = _userContext.Get().Party;
 
@@ -148,6 +178,17 @@ public class GetProductDetailsWithInFavoriteAndOnCartWithInLocationCircleControl
             return Fail("system settings not found");
         }
 
+        decimal? longitude = null;
+        decimal? latitude = null;
+        if (locationId.HasValue)
+        {
+            var location = await Db.GetLocationByIdAsync(locationId.Value, connection);
+            if (location is not null)
+            {
+                longitude = location.Longitude;
+                latitude = location.Latitude;
+            }
+        }
         decimal distanceInKm = settings.RaduisForGetProducts;
 
         var result = await Db.GetProductDetailsWithPricingByCategoryWithInFavoriteAndOnCartWithInLocationCircleAsync(
@@ -176,8 +217,7 @@ public class GetProductDetailsWithInFavoriteAndOnCartWithInLocationCircleControl
         [FromQuery] int top,
         [FromQuery] byte language,
         [FromQuery] string? searchTerm,
-        [FromQuery] decimal? longitude,
-        [FromQuery] decimal? latitude)
+        [FromQuery] int? locationId)
     {
         var customer = _userContext.Get().Party;
 
@@ -191,7 +231,18 @@ public class GetProductDetailsWithInFavoriteAndOnCartWithInLocationCircleControl
         {
             return Fail("system settings not found");
         }
-
+        
+        decimal? longitude = null;
+        decimal? latitude = null;
+        if (locationId.HasValue)
+        {
+            var location = await Db.GetLocationByIdAsync(locationId.Value, connection);
+            if (location is not null)
+            {
+                longitude = location.Longitude;
+                latitude = location.Latitude;
+            }
+        }
         decimal distanceInKm = settings.RaduisForGetProducts;
 
 

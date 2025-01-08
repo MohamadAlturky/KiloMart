@@ -243,7 +243,7 @@ public class OrderCancelService
             ////////////////////
             var ordersOffers = await OrderRepository
             .GetAllOrderProductOffersByOrderIdAsync(
-                connection,
+                readConnection,
                 order.Id);
 
             foreach (var item in ordersOffers)

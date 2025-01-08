@@ -196,7 +196,7 @@ public class OrderCancelService
         {
             return Result<CancelOrderResponse>.Fail(["Order Not Found"]);
         }
-        if (order.Provider != userPayLoad.Party)
+        if (order.Delivery != userPayLoad.Party)
         {
             return Result<CancelOrderResponse>.Fail(["Un Authorized"]);
         }

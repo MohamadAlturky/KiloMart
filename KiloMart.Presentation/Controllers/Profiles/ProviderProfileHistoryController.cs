@@ -329,13 +329,16 @@ namespace KiloMart.Presentation.Controllers.Profiles
                 submitDateTo,
                 reviewDateFrom,
                 reviewDateTo);
-
+            var user = await Db.GetMembershipUserByIdAsync(connection, _userContext.Get().Id);
+            var party = await Db.GetPartyByIdAsync(providerId, connection);
             return Success(new
             {
                 Items = histories,
                 TotalCount = total,
                 PageNumber = pageNumber,
-                PageSize = pageSize
+                PageSize = pageSize,
+                User = user,
+                Provider = party
             });
         }
 

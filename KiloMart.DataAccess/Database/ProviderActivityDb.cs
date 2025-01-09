@@ -131,6 +131,10 @@ public static partial class Db
             parameters);
     }
 
+    public class BalanceValueResponse
+    {
+        public decimal ValueSum { get; set; }
+    }
     public static async Task<ProviderActivityWallet> GetProviderActivityTotalValueByProviderAsync(
         int provider,
         byte receives,
@@ -138,25 +142,26 @@ public static partial class Db
         IDbConnection connection)
     {
         const string query = @"SELECT  
-                            SUM([Value])
+                            SUM([Value]) AS ValueSum
                             FROM [dbo].[ProviderActivity]
                             WHERE [Provider] = @Provider AND Type = @Type";
 
 
-        var deductionsValue = await connection.QueryFirstOrDefaultAsync<decimal>(query, new
+        var deductionsValue = await connection.QueryFirstOrDefaultAsync<BalanceValueResponse>(query, new
         {
             Provider = provider,
             Type = deductions
         });
-        var receivesValue = await connection.QueryFirstOrDefaultAsync<decimal>(query, new
+        var receivesValue = await connection.QueryFirstOrDefaultAsync<BalanceValueResponse>(query, new
         {
             Provider = provider,
             Type = receives
         });
+        
         return new ProviderActivityWallet
         {
-            Deductions = deductionsValue,
-            Receives = receivesValue
+            Deductions = deductionsValue?.ValueSum,
+            Receives = receivesValue?.ValueSum
         };
     }
 

@@ -130,7 +130,7 @@ namespace KiloMart.Presentation.Controllers.Domains.Admin
                 Profit = totalSystemFees
             });
         }
-        [HttpGet("order-yearly-stats-summary")]
+        [HttpGet("order-yearly-stats-summary-by-year")]
         public async Task<IActionResult> GetOrderSummaryAsync(
             [FromQuery] int year
         )
@@ -143,6 +143,48 @@ namespace KiloMart.Presentation.Controllers.Domains.Admin
                 true,
                 (byte)PaymentType.Cash,
                 year);
+            
+            var orderThatPaidByElcetronicStats = await Stats.GetOrderSummaryAsync(
+                connection,
+                true,
+                (byte)PaymentType.Elcetronic,
+                year);
+
+             var orderThatNotPaidByCashStats = await Stats.GetOrderSummaryAsync(
+                connection,
+                false,
+                (byte)PaymentType.Cash,
+                year);
+            
+            var orderThatNotPaidByElcetronicStats = await Stats.GetOrderSummaryAsync(
+                connection,
+                false,
+                (byte)PaymentType.Elcetronic,
+                year);
+
+            return Success(new
+            {
+                orderThatNotPaidByElcetronicStats,
+                orderThatNotPaidByCashStats,
+                orderThatPaidByElcetronicStats,
+                orderThatPaidByCashStats
+            });
+        }
+        [HttpGet("order-yearly-stats-summary-by-month")]
+        public async Task<IActionResult> GetOrderSummaryMonthlyAsync(
+            [FromQuery] int year,
+            [FromQuery] int month
+        )
+        {
+
+            using var connection = _dbFactory.CreateDbConnection();
+
+            var orderThatPaidByCashStats = await Stats.GetOrderSummaryAsync(
+                connection,
+                true,
+                (byte)PaymentType.Cash,
+                year,
+                month);
             
             var orderThatPaidByElcetronicStats = await Stats.GetOrderSummaryAsync(
                 connection,

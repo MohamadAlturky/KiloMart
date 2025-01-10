@@ -41,6 +41,45 @@ public static partial class Stats
 
         return result.ToList();
     }
+    public static async Task<List<OrderYearlySummary>> GetOrderSummaryAsync(
+              IDbConnection connection,
+              bool isPaid,
+              byte paymentType,
+              int orderYear,
+              int orderMonth,
+              IDbTransaction? transaction = null)
+    {
+        const string query = @"
+                    SELECT 
+                        p.OrderYear, 
+                        p.OrderMonth, 
+                        SUM(DeliveryFee) AS DeliveryFeeSum,
+                        SUM(SystemFee) AS SystemFeeSum,
+                        SUM(ItemsPrice) AS ItemsPriceSum,
+                        SUM(TotalPrice) AS TotalPriceSum
+                    FROM
+                    (
+                        SELECT YEAR([Date]) AS OrderYear, MONTH([Date]) AS OrderMonth, IsPaid, PaymentType, DeliveryFee, SystemFee, ItemsPrice, TotalPrice
+                        FROM [dbo].[Order]
+                    ) p
+                    WHERE p.IsPaid = @IsPaid 
+                        AND p.PaymentType = @PaymentType 
+                        AND p.OrderYear = @OrderYear
+                        AND p.OrderMonth = @OrderMonth
+                    GROUP BY p.OrderYear, p.OrderMonth";
+
+        var parameters = new
+        {
+            IsPaid = isPaid,
+            PaymentType = paymentType,
+            OrderYear = orderYear,
+            OrderMonth = orderMonth
+        };
+
+        var result = await connection.QueryAsync<OrderYearlySummary>(query, parameters, transaction);
+
+        return result.ToList();
+    }
 }
 
 public class OrderYearlySummary

@@ -455,6 +455,47 @@ public partial class Db
             ProviderId = providerId,
         });
     }
+    public static async Task<ProviderProfileHistory?> GetLatestProviderProfileHistoryAsync(
+        IDbConnection connection,
+        int providerId)
+    {
+        const string query = @"
+            SELECT  Top(1)
+                [Id],
+                [FirstName],
+                [SecondName],
+                [NationalApprovalId],
+                [CompanyName],
+                [OwnerName],
+                [OwnerNationalId],
+                [OwnershipDocumentFileUrl],
+                [OwnerNationalApprovalFileUrl],
+                [LocationName],
+                [Longitude],
+                [Latitude],
+                [BuildingType],
+                [BuildingNumber],
+                [FloorNumber],
+                [ApartmentNumber],
+                [StreetNumber],
+                [PhoneNumber],
+                [IsAccepted],
+                [IsRejected],
+                [SubmitDate],
+                [ReviewDate],
+                [ProviderId],
+                [IsActive],
+                [ReviewDescription]
+            FROM [dbo].[ProviderProfileHistory]
+            WHERE
+                [ProviderId] = @ProviderId 
+                ORDER BY [Id] DESC;";
+
+        return await connection.QueryFirstOrDefaultAsync<ProviderProfileHistory>(query, new
+        {
+            ProviderId = providerId,
+        });
+    }
 }
 
 

@@ -240,6 +240,47 @@ public static partial class Db
             DeliveryId = deliveryId,
         });
     }
+     public static async Task<DeliveryProfileHistory?> GetLastDeliveryProfileHistoryAsync(
+            IDbConnection connection,
+            int deliveryId)
+    {
+        const string query = @"
+        SELECT Top(1)
+            [Id],
+            [FirstName],
+            [SecondName],
+            [NationalName],
+            [NationalId],
+            [LicenseNumber],
+            [LicenseExpiredDate],
+            [DrivingLicenseNumber],
+            [DrivingLicenseExpiredDate],
+            [VehicleNumber],
+            [VehicleModel],
+            [VehicleType],
+            [VehicleYear],
+            [VehiclePhotoFileUrl],
+            [DrivingLicenseFileUrl],
+            [VehicleLicenseFileUrl],
+            [NationalIqamaIDFileUrl],
+            [SubmitDate],
+            [ReviewDate],
+            [DeliveryId],
+            [IsActive],
+            [IsRejected],
+            [IsAccepted],
+            [ReviewDescription]
+        FROM [dbo].[DeliveryProfileHistory]
+        WHERE
+            [DeliveryId] = @DeliveryId
+            ORDER BY [Id] DESC;";
+
+
+        return await connection.QueryFirstOrDefaultAsync<DeliveryProfileHistory>(query, new
+        {
+            DeliveryId = deliveryId,
+        });
+    }
     public static async Task<IEnumerable<DeliveryProfileHistory>> GetDeliveryAllProfileHistoryAsync(
             IDbConnection connection,
             int deliveryId)

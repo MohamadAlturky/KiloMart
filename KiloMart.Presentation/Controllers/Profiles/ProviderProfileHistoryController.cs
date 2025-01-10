@@ -166,38 +166,46 @@ namespace KiloMart.Presentation.Controllers.Profiles
             {
                 return Fail("User Not Found");
             }
-            
+
             #endregion
             try
             {
+
+                string? ownershipDocumentFilePath = null;
+                string? ownerNationalApprovalFilePath = null;
+
+                var oldProfile = await Db.GetLatestProviderProfileHistoryAsync(connection, user.Party);
+                if (oldProfile is null)
+                {
+                    return Fail("No Old Profile Found");
+                }
                 #region File Uploads
 
                 // OwnershipDocumentFile
-                if (request.OwnershipDocumentFile == null)
+                if (request.OwnershipDocumentFile is not null)
                 {
-                    return Fail("OwnershipDocumentFile is null");
-                }
-                var ownershipDocumentFilePath = await FileService.SaveImageFileAsync(
-                    request.OwnershipDocumentFile,
-                    _environment.WebRootPath,
-                    Guid.NewGuid());
-                if (string.IsNullOrEmpty(ownershipDocumentFilePath))
-                {
-                    return Fail("Failed to save OwnershipDocumentFile");
+
+                    ownershipDocumentFilePath = await FileService.SaveImageFileAsync(
+                        request.OwnershipDocumentFile,
+                        _environment.WebRootPath,
+                        Guid.NewGuid());
+                    if (string.IsNullOrEmpty(ownershipDocumentFilePath))
+                    {
+                        return Fail("Failed to save OwnershipDocumentFile");
+                    }
                 }
 
                 // OwnerNationalApprovalFile
-                if (request.OwnerNationalApprovalFile == null)
+                if (request.OwnerNationalApprovalFile is not null)
                 {
-                    return Fail("OwnerNationalApprovalFile is null");
-                }
-                var ownerNationalApprovalFilePath = await FileService.SaveImageFileAsync(
-                    request.OwnerNationalApprovalFile,
-                    _environment.WebRootPath,
-                    Guid.NewGuid());
-                if (string.IsNullOrEmpty(ownerNationalApprovalFilePath))
-                {
-                    return Fail("Failed to save OwnerNationalApprovalFile");
+                    ownerNationalApprovalFilePath = await FileService.SaveImageFileAsync(
+                        request.OwnerNationalApprovalFile,
+                        _environment.WebRootPath,
+                        Guid.NewGuid());
+                    if (string.IsNullOrEmpty(ownerNationalApprovalFilePath))
+                    {
+                        return Fail("Failed to save OwnerNationalApprovalFile");
+                    }
                 }
 
                 #endregion
@@ -205,23 +213,23 @@ namespace KiloMart.Presentation.Controllers.Profiles
                 #region Insert into Database
                 long id = await Db.InsertProviderProfileHistoryAsync(
                     connection,
-                    request.FirstName,
-                    request.SecondName,
-                    request.NationalApprovalId,
-                    request.CompanyName,
-                    request.OwnerName,
-                    request.OwnerNationalId,
-                    ownershipDocumentFilePath,
-                    ownerNationalApprovalFilePath,
-                    request.LocationName,
-                    request.Longitude,
-                    request.Latitude,
-                    request.BuildingType,
-                    request.BuildingNumber,
-                    request.FloorNumber,
-                    request.ApartmentNumber,
-                    request.StreetNumber,
-                    request.PhoneNumber,
+                    request.FirstName??oldProfile.FirstName,
+                    request.SecondName??oldProfile.SecondName,
+                    request.NationalApprovalId??oldProfile.NationalApprovalId,
+                    request.CompanyName??oldProfile.CompanyName,
+                    request.OwnerName??oldProfile.OwnerName,
+                    request.OwnerNationalId??oldProfile.OwnerNationalId,
+                    ownershipDocumentFilePath??oldProfile.OwnershipDocumentFileUrl,
+                    ownerNationalApprovalFilePath??oldProfile.OwnerNationalApprovalFileUrl,
+                    request.LocationName??oldProfile.LocationName,
+                    request.Longitude??oldProfile.Longitude,
+                    request.Latitude??oldProfile.Latitude,
+                    request.BuildingType??oldProfile.BuildingType,
+                    request.BuildingNumber??oldProfile.BuildingNumber,
+                    request.FloorNumber??oldProfile.FloorNumber,
+                    request.ApartmentNumber??oldProfile.ApartmentNumber,
+                    request.StreetNumber??oldProfile.StreetNumber,
+                    request.PhoneNumber??oldProfile.PhoneNumber,
                     false, // isAccepted
                     false, // isRejected
                     DateTime.Now, // submitDate
@@ -234,23 +242,23 @@ namespace KiloMart.Presentation.Controllers.Profiles
                 #region Returning The Response
                 var model = new
                 {
-                    request.FirstName,
-                    request.SecondName,
-                    request.NationalApprovalId,
-                    request.CompanyName,
-                    request.OwnerName,
-                    request.OwnerNationalId,
-                    OwnershipDocumentFileUrl = ownershipDocumentFilePath,
-                    OwnerNationalApprovalFileUrl = ownerNationalApprovalFilePath,
-                    request.LocationName,
-                    request.Longitude,
-                    request.Latitude,
-                    request.BuildingType,
-                    request.BuildingNumber,
-                    request.FloorNumber,
-                    request.ApartmentNumber,
-                    request.StreetNumber,
-                    request.PhoneNumber,
+                    FirstName = request.FirstName??oldProfile.FirstName,
+                    SecondName = request.SecondName??oldProfile.SecondName,
+                    NationalApprovalId = request.NationalApprovalId??oldProfile.NationalApprovalId,
+                    CompanyName = request.CompanyName??oldProfile.CompanyName,
+                    OwnerName = request.OwnerName??oldProfile.OwnerName,
+                    OwnerNationalId = request.OwnerNationalId??oldProfile.OwnerNationalId,
+                    ownershipDocumentFileUrl = ownershipDocumentFilePath??oldProfile.OwnershipDocumentFileUrl,
+                    ownerNationalApprovalFileUrl = ownerNationalApprovalFilePath??oldProfile.OwnerNationalApprovalFileUrl,
+                    LocationName = request.LocationName??oldProfile.LocationName,
+                    Longitude = request.Longitude??oldProfile.Longitude,
+                    Latitude = request.Latitude??oldProfile.Latitude,
+                    BuildingType = request.BuildingType??oldProfile.BuildingType,
+                    BuildingNumber = request.BuildingNumber??oldProfile.BuildingNumber,
+                    FloorNumber = request.FloorNumber??oldProfile.FloorNumber,
+                    ApartmentNumber = request.ApartmentNumber??oldProfile.ApartmentNumber,
+                    StreetNumber = request.StreetNumber??oldProfile.StreetNumber,
+                    PhoneNumber = request.PhoneNumber??oldProfile.PhoneNumber,
                     IsAccepted = false,
                     IsRejected = false,
                     SubmitDate = DateTime.Now,
@@ -444,17 +452,17 @@ namespace KiloMart.Presentation.Controllers.Profiles
 
 
             await Db.DeactivateLocationByPartyAsync(
-                connection, 
-                profileHistory.ProviderId, 
-                transaction);
-            
-           var locationId =  await Db.InsertLocationAsync(
                 connection,
-                profileHistory.Longitude,
-                profileHistory.Latitude,
-                profileHistory.LocationName,
                 profileHistory.ProviderId,
                 transaction);
+
+            var locationId = await Db.InsertLocationAsync(
+                 connection,
+                 profileHistory.Longitude,
+                 profileHistory.Latitude,
+                 profileHistory.LocationName,
+                 profileHistory.ProviderId,
+                 transaction);
 
             await Db.InsertLocationDetailsAsync(
                 connection,
@@ -548,23 +556,23 @@ public class ProviderProfileHistoryInsertModel
 
 public class ProviderProfileHistoryInsertModelByToken
 {
-    public string FirstName { get; set; } = null!;
-    public string SecondName { get; set; } = null!;
-    public string NationalApprovalId { get; set; } = null!;
-    public string CompanyName { get; set; } = null!;
-    public string OwnerName { get; set; } = null!;
-    public string OwnerNationalId { get; set; } = null!;
+    public string? FirstName { get; set; } = null!;
+    public string? SecondName { get; set; } = null!;
+    public string? NationalApprovalId { get; set; } = null!;
+    public string? CompanyName { get; set; } = null!;
+    public string? OwnerName { get; set; } = null!;
+    public string? OwnerNationalId { get; set; } = null!;
     public IFormFile? OwnershipDocumentFile { get; set; }
     public IFormFile? OwnerNationalApprovalFile { get; set; }
-    public string LocationName { get; set; } = null!;
-    public decimal Longitude { get; set; }
-    public decimal Latitude { get; set; }
-    public string BuildingType { get; set; } = null!;
-    public string BuildingNumber { get; set; } = null!;
-    public string FloorNumber { get; set; } = null!;
-    public string ApartmentNumber { get; set; } = null!;
-    public string StreetNumber { get; set; } = null!;
-    public string PhoneNumber { get; set; } = null!;
+    public string? LocationName { get; set; } = null!;
+    public decimal? Longitude { get; set; }
+    public decimal? Latitude { get; set; }
+    public string? BuildingType { get; set; } = null!;
+    public string? BuildingNumber { get; set; } = null!;
+    public string? FloorNumber { get; set; } = null!;
+    public string? ApartmentNumber { get; set; } = null!;
+    public string? StreetNumber { get; set; } = null!;
+    public string? PhoneNumber { get; set; } = null!;
 }
 
 

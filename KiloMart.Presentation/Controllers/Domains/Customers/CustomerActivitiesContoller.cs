@@ -161,7 +161,11 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
     {
         using var connection = _dbFactory.CreateDbConnection();
         var customerId = _userContext.Get().Party;
-
+        var exists = await Db.GetFavoriteProductsByCustomerAndProductAsync(customerId, request.ProductId, connection);
+        if (exists is not null)
+        {
+            return Success(new { id = 0, message = "Product already exists in favorites" });
+        }
         var favoriteProductId = await Db.InsertFavoriteProductAsync(connection, customerId, request.ProductId);
         return Success(new { id = favoriteProductId });
     }

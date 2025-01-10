@@ -66,6 +66,21 @@ public static partial class Db
             id = id
         });
     }
+  public static async Task<FavoriteProduct?> GetFavoriteProductsByCustomerAndProductAsync(int customer, int product, IDbConnection connection)
+    {
+        const string query = @"SELECT 
+                            [Id], 
+                            [Customer], 
+                            [Product]
+                            FROM [dbo].[FavoriteProducts]
+                            WHERE [Product] = @Product AND [Customer] = @Customer";
+
+        return await connection.QueryFirstOrDefaultAsync<FavoriteProduct>(query, new
+        {
+            Customer = customer,
+            Product = product
+        });
+    }
     public static async Task<IEnumerable<FavoriteProductDetails>> GetFavoriteProductDetailsByCustomerIdAsync(int customerId, byte language, IDbConnection connection)
     {
         const string query = @"

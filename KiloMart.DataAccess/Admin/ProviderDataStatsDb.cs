@@ -28,7 +28,7 @@ namespace KiloMart.DataAccess.Admin
                 WITH ProviderData AS (
                     SELECT 
                         pp.ProviderId,
-                        pp.CompanyName AS DisplayName,
+                        party.DisplayName AS DisplayName,
                         m.Email,
                         pp.PhoneNumber AS PhoneNumber,
                         pp.IsActive,
@@ -53,7 +53,7 @@ namespace KiloMart.DataAccess.Admin
                     WHERE pp.IsActive = 1
                     GROUP BY 
                         pp.ProviderId, 
-                        pp.CompanyName, 
+                        party.DisplayName, 
                         m.Email, 
                         pp.PhoneNumber, 
                         pp.IsActive, 
@@ -87,7 +87,83 @@ namespace KiloMart.DataAccess.Admin
                 Data = data.ToList()
             };
         }
+
+
+        public static async Task<IEnumerable<ProviderDataDto>> GetPaginatedProvidersDataAsync(
+            IDbConnection connection,
+            int page,
+            int pageSize,
+            string? searchTerm = null)
+        {
+            const string dataQuery = @"
+        WITH ProviderData AS (
+            SELECT 
+                pp.ProviderId,
+                party.DisplayName AS DisplayName,
+                m.Email,
+                pp.PhoneNumber AS PhoneNumber,
+                pp.IsActive,
+                COUNT(DISTINCT o.Id) AS TotalOrders,
+                COUNT(DISTINCT po.Id) AS TotalProducts,
+                SUM(pa.Value)/(COUNT(DISTINCT po.Id) * COUNT(DISTINCT o.Id)) AS ReceivedBalance,
+                SUM(paall.Value)/(COUNT(DISTINCT po.Id) * COUNT(DISTINCT o.Id)) AS WithdrawalBalance,
+                pp.Longitude AS Long,
+                pp.Latitude AS Lat,
+                pp.LocationName AS City,
+                pp.BuildingNumber,
+                pp.ApartmentNumber,
+                pp.FloorNumber,
+                pp.StreetNumber
+            FROM dbo.ProviderProfileHistory pp
+            INNER JOIN MembershipUser m ON m.Party = pp.ProviderId
+            INNER JOIN Party party ON party.Id = pp.ProviderId
+            LEFT JOIN dbo.OrderProviderInformation o ON o.Provider = pp.ProviderId
+            LEFT JOIN dbo.ProductOffer po ON po.Provider = pp.ProviderId AND po.IsActive = 1
+            LEFT JOIN dbo.ProviderActivity pa ON pa.Provider = pp.ProviderId AND pa.[Type] = 1
+            LEFT JOIN dbo.ProviderActivity paall ON paall.Provider = pp.ProviderId AND paall.[Type] = 2
+            WHERE pp.IsActive = 1
+            AND (@SearchTerm IS NULL OR 
+                 party.DisplayName LIKE '%' + @SearchTerm + '%' OR 
+                 m.Email LIKE '%' + @SearchTerm + '%')
+            GROUP BY 
+                pp.ProviderId, 
+                party.DisplayName, 
+                m.Email, 
+                pp.PhoneNumber, 
+                pp.IsActive, 
+                pp.Longitude, 
+                pp.Latitude, 
+                pp.LocationName, 
+                pp.BuildingNumber, 
+                pp.ApartmentNumber, 
+                pp.FloorNumber, 
+                pp.StreetNumber
+        )
+        SELECT 
+            pd.*
+        FROM ProviderData pd
+        ORDER BY pd.ProviderId
+        OFFSET (@Page - 1) * @PageSize ROWS
+        FETCH NEXT @PageSize ROWS ONLY;";
+
+            return await connection.QueryAsync<ProviderDataDto>(dataQuery, new { Page = page, PageSize = pageSize, SearchTerm = searchTerm });
+        }
+        public static async Task<int> GetActiveFilteredProvidersProfilesCountAsync(IDbConnection connection, string? searchTerm = null)
+        {
+            const string countQuery = @"
+            SELECT COUNT(*) 
+                FROM ProviderProfileHistory pp
+                    INNER JOIN MembershipUser m ON m.Party = pp.ProviderId
+                    INNER JOIN Party party ON party.Id = pp.ProviderId
+            WHERE pp.IsActive = 1 AND (@SearchTerm IS NULL OR 
+                 party.DisplayName LIKE '%' + @SearchTerm + '%' OR 
+                 m.Email LIKE '%' + @SearchTerm + '%');";
+                 
+            return await connection.ExecuteScalarAsync<int>(countQuery, new { SearchTerm = searchTerm });
+        }
+
     }
+
 }
 
 public class ProviderDataDto

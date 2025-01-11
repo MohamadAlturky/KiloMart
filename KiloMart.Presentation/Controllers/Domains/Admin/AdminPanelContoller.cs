@@ -382,4 +382,49 @@ public class AdminPanelController : AppController
             }).ToList()
         }); // Return a successful response with the paginated data
     }
+    [HttpGet("providers/paginated-by-search-term")]
+    public async Task<IActionResult> GetPaginatedProvidersByTermAsync(
+        [FromQuery] string? term, 
+        [FromQuery] int page = 1, 
+        [FromQuery] int pageSize = 10)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+
+        // Fetch paginated providers data
+        var result = await Stats.GetPaginatedProvidersDataAsync(connection, page, pageSize,term);
+        var count = await Stats.GetActiveFilteredProvidersProfilesCountAsync(connection, term);
+
+        return Ok(new
+        {
+            TotalCount = count,
+            providers = result.Select(e =>
+            {
+                return
+                new
+                {
+                    e.ProviderId,
+                    e.DisplayName,
+                    e.Email,
+                    e.PhoneNumber,
+                    e.IsActive,
+                    e.TotalOrders,
+                    e.TotalProducts,
+                    e.WithdrawalBalance,
+                    e.ReceivedBalance,
+                    TotalBalnace = e.ReceivedBalance,
+                    AvailableBalnace = e.ReceivedBalance - e.WithdrawalBalance,
+                    locationDetails = new
+                    {
+                        e.Long,
+                        e.Lat,
+                        e.City,
+                        e.BuildingNumber,
+                        e.ApartmentNumber,
+                        e.FloorNumber,
+                        e.StreetNumber,
+                    }
+                };
+            }).ToList()
+        }); // Return a successful response with the paginated data
+    }
 }

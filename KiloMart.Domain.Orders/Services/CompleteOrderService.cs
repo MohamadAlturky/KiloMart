@@ -60,24 +60,28 @@ public class CompleteOrderService
             }
 
             #region Insert Delivery  And Provider Activity
-            decimal value = 0;
             if (order.PaymentType == ((byte)PaymentType.Elcetronic))
             {
-                value = order.DeliveryFee;
+                await Db.InsertDeliveryActivityAsync(
+                    connection,
+                    DateTime.Now,
+                    order.DeliveryFee,
+                    (byte)DeliveryActivityType.Receives,
+                    userPayLoad.Party,
+                    transaction);
             }
             else
             {
-                value = order.TotalPrice;
+                await Db.InsertDeliveryActivityAsync(
+                    connection,
+                    DateTime.Now,
+                    order.TotalPrice - order.DeliveryFee,
+                    (byte)DeliveryActivityType.Deductions,
+                    userPayLoad.Party,
+                    transaction);
             }
-            await Db.InsertDeliveryActivityAsync(
-                connection,
-                DateTime.Now,
-                value,
-                (byte)DeliveryActivityType.Receives,
-                userPayLoad.Party,
-                transaction);
-            
-            if(!order.Provider.HasValue)
+
+            if (!order.Provider.HasValue)
             {
                 throw new Exception("Provider Not Found");
             }
@@ -88,27 +92,8 @@ public class CompleteOrderService
                 order.Provider.Value,
                 (byte)DeliveryActivityType.Receives,
                 transaction);
-                
-            DeliveryWallet? wallet = await Db.GetDeliveryWalletByDeliveryIdAsync(userPayLoad.Party,
-             readConnection);
 
-            if (wallet is null)
-            {
-                await Db.InsertDeliveryWalletAsync(
-                    connection,
-                    systemSettings.DeliveryOrderFee,
-                    userPayLoad.Party,
-                    transaction);
-            }
-            else
-            {
-                await Db.UpdateDeliveryWalletAsync(
-                                connection,
-                                wallet.Id,
-                                wallet.Value + systemSettings.DeliveryOrderFee,
-                                userPayLoad.Party,
-                                transaction);
-            }
+
             #endregion
 
             // Update order status to completed

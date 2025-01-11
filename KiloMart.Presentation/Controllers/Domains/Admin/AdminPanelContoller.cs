@@ -364,7 +364,10 @@ public class AdminPanelController : AppController
                     e.IsActive,
                     e.TotalOrders,
                     e.TotalProducts,
-                    e.TotalBalance,
+                    e.WithdrawalBalance,
+                    e.ReceivedBalance,
+                    TotalBalnace = e.ReceivedBalance,
+                    AvailableBalnace = e.ReceivedBalance - e.WithdrawalBalance,
                     locationDetails = new
                     {
                         e.Long,

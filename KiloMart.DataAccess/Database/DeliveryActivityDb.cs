@@ -198,6 +198,35 @@ public static partial class Db
             DeliveryId = deliveryId
         });
     }
+     public static async Task<ProviderActivityWallet> GetDeliveryActivityTotalValueByDeliveryAsync(
+        int delivery,
+        byte receives,
+        byte deductions,
+        IDbConnection connection)
+    {
+        const string query = @"SELECT  
+                            SUM([Value]) AS ValueSum
+                            FROM [dbo].[DeliveryActivity]
+                            WHERE [Delivery] = @Delivery AND Type = @Type";
+
+
+        var deductionsValue = await connection.QueryFirstOrDefaultAsync<BalanceValueResponse>(query, new
+        {
+            Delivery = delivery,
+            Type = deductions
+        });
+        var receivesValue = await connection.QueryFirstOrDefaultAsync<BalanceValueResponse>(query, new
+        {
+            Delivery = delivery,
+            Type = receives
+        });
+        
+        return new ProviderActivityWallet
+        {
+            Deductions = deductionsValue?.ValueSum,
+            Receives = receivesValue?.ValueSum
+        };
+    }
 }
 
 public class DeliveryActivity
@@ -207,4 +236,9 @@ public class DeliveryActivity
     public float Value { get; set; }
     public byte Type { get; set; }
     public int Delivery { get; set; }
+}
+public class DeliveryActivityWallet
+{
+    public decimal? Deductions { get; set; }
+    public decimal? Receives { get; set; }
 }

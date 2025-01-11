@@ -34,7 +34,8 @@ namespace KiloMart.DataAccess.Admin
                         pp.IsActive,
                         COUNT(o.Id) AS TotalOrders,
                         COUNT(po.Id) AS TotalProducts,
-                        SUM(pa.Value) AS TotalBalance,
+                        SUM(pa.Value) AS ReceivedBalance,
+                        SUM(paall.Value) AS WithdrawalBalance,
                         pp.Longitude AS Long,
                         pp.Latitude AS Lat,
                         pp.LocationName AS City,
@@ -47,7 +48,8 @@ namespace KiloMart.DataAccess.Admin
                     INNER JOIN Party party ON party.Id = pp.ProviderId
                     LEFT JOIN dbo.OrderProviderInformation o ON o.Provider = pp.ProviderId
                     LEFT JOIN dbo.ProductOffer po ON po.Provider = pp.ProviderId AND po.IsActive = 1
-                    LEFT JOIN dbo.ProviderActivity pa ON pa.Provider = pp.ProviderId
+                    LEFT JOIN dbo.ProviderActivity pa ON pa.Provider = pp.ProviderId AND pa.[Type] = 1
+                    LEFT JOIN dbo.ProviderActivity paall ON pa.Provider = pp.ProviderId AND paall.[Type] = 2
                     WHERE pp.IsActive = 1
                     GROUP BY 
                         pp.ProviderId, 
@@ -96,8 +98,9 @@ public class ProviderDataDto
     public string PhoneNumber { get; set; }
     public bool IsActive { get; set; }
     public int TotalOrders { get; set; }
-    public int TotalProducts { get; set; }
-    public decimal TotalBalance { get; set; }
+    public int TotalProducts { get; set; }  
+    public decimal ReceivedBalance { get; set; }
+    public decimal WithdrawalBalance { get; set; }
     public double Long { get; set; }
     public double Lat { get; set; }
     public string City { get; set; }

@@ -108,17 +108,11 @@ public class WithDrawAdminController(IDbFactory dbFactory, IUserContext userCont
         var user = await Db.GetMembershipUserByPartyAsync(ReadConnection, withdraw.Party);
         if (user is null)
         {
-            return DataNotFound("withdraw not found");
+            return DataNotFound("user not found");
         }
 
         if (user.Role == (byte)Roles.Delivery)
         {
-            var wallet = await Db.GetDeliveryWalletByDeliveryIdAsync(withdraw.Party, ReadConnection);
-            if (wallet is null)
-            {
-                return DataNotFound("wallet not found");
-            }
-
             using var connection = _dbFactory.CreateDbConnection();
             connection.Open();
             using var transaction = connection.BeginTransaction();
@@ -141,14 +135,14 @@ public class WithDrawAdminController(IDbFactory dbFactory, IUserContext userCont
                     (byte)DeliveryActivityType.Deductions,
                     withdraw.Party,
                     transaction);
-                wallet.Value -= request.TotalValue;
-                await Db.UpdateDeliveryWalletAsync(connection,
-                    wallet.Id,
-                    wallet.Value - request.TotalValue,
-                    wallet.Delivery,
-                    transaction);
 
                 transaction.Commit();
+
+                var wallet = await Db.GetDeliveryActivityTotalValueByDeliveryAsync(
+                    withdraw.Party,
+                    ((byte)DeliveryActivityType.Receives),
+                    ((byte)DeliveryActivityType.Deductions),
+                    ReadConnection);
                 return Success(new { deliverywallet = wallet });
             }
             catch (Exception e)

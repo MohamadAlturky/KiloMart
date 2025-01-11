@@ -2,6 +2,7 @@ using Dapper;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Database;
+using KiloMart.Domain.Delivery.Activity;
 using KiloMart.Domain.Orders.Common;
 using KiloMart.Domain.Orders.DataAccess;
 using KiloMart.Domain.Orders.Repositories;
@@ -159,7 +160,11 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory,
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
 
-        var wallet = await Db.GetDeliveryWalletByDeliveryIdAsync(deliveryId, connection);
+        var wallet = await Db.GetDeliveryActivityTotalValueByDeliveryAsync(
+                            deliveryId,
+                            (byte)DeliveryActivityType.Receives,
+                            (byte)DeliveryActivityType.Deductions,
+                            connection); 
         if (wallet == null)
         {
             return DataNotFound("No Wallet For This Delivery");

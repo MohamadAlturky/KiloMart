@@ -2,7 +2,11 @@ using System.Data;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Admin;
+using KiloMart.DataAccess.Database;
 using KiloMart.Domain.Orders.Common;
+using KiloMart.Domain.Register.Provider.Services;
+using KiloMart.Domain.Register.Utils;
+using KiloMart.Presentation.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KiloMart.Presentation.Controllers.Domains.Admin;
@@ -384,14 +388,14 @@ public class AdminPanelController : AppController
     }
     [HttpGet("providers/paginated-by-search-term")]
     public async Task<IActionResult> GetPaginatedProvidersByTermAsync(
-        [FromQuery] string? term, 
-        [FromQuery] int page = 1, 
+        [FromQuery] string? term,
+        [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10)
     {
         using var connection = _dbFactory.CreateDbConnection();
 
         // Fetch paginated providers data
-        var result = await Stats.GetPaginatedProvidersDataAsync(connection, page, pageSize,term);
+        var result = await Stats.GetPaginatedProvidersDataAsync(connection, page, pageSize, term);
         var count = await Stats.GetActiveFilteredProvidersProfilesCountAsync(connection, term);
 
         return Ok(new
@@ -427,4 +431,177 @@ public class AdminPanelController : AppController
             }).ToList()
         }); // Return a successful response with the paginated data
     }
+
+    [HttpPost("create-provider-directly")]
+    public async Task<IActionResult> Insert(AdminInsertProviderModel request)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+        using var transaction = connection.BeginTransaction();
+
+        #region 
+        var result = await new RegisterProviderService().RegisterDirectly(
+            connection,
+            transaction,
+            request.Email,
+            request.Password,
+            request.DisplayName,
+            request.Language);
+        #endregion
+
+        if (!result.IsSuccess)
+        {
+            return Fail("can't create user info");
+        }
+        if (!result.PartyId.HasValue)
+        {
+            return Fail("can't create user info");
+        }
+        try
+        {
+            #region File Uploads
+
+            // OwnershipDocumentFile
+            if (request.OwnershipDocumentFile == null)
+            {
+                return Fail("OwnershipDocumentFile is null");
+            }
+            var ownershipDocumentFilePath = await FileService.SaveImageFileAsync(
+                request.OwnershipDocumentFile,
+                _environment.WebRootPath,
+                Guid.NewGuid());
+            if (string.IsNullOrEmpty(ownershipDocumentFilePath))
+            {
+                return Fail("Failed to save OwnershipDocumentFile");
+            }
+
+            // OwnerNationalApprovalFile
+            if (request.OwnerNationalApprovalFile == null)
+            {
+                return Fail("OwnerNationalApprovalFile is null");
+            }
+            var ownerNationalApprovalFilePath = await FileService.SaveImageFileAsync(
+                request.OwnerNationalApprovalFile,
+                _environment.WebRootPath,
+                Guid.NewGuid());
+            if (string.IsNullOrEmpty(ownerNationalApprovalFilePath))
+            {
+                return Fail("Failed to save OwnerNationalApprovalFile");
+            }
+
+            #endregion
+
+            #region Insert into Database
+            var now = DateTime.Now;
+            long id = await Db.InsertProviderProfileHistoryAsync(
+                connection,
+                request.FirstName,
+                request.SecondName,
+                request.NationalApprovalId,
+                request.CompanyName,
+                request.OwnerName,
+                request.OwnerNationalId,
+                ownershipDocumentFilePath,
+                ownerNationalApprovalFilePath,
+                request.LocationName,
+                request.Longitude,
+                request.Latitude,
+                request.BuildingType,
+                request.BuildingNumber,
+                request.FloorNumber,
+                request.ApartmentNumber,
+                request.StreetNumber,
+                request.PhoneNumber,
+                true, // isAccepted
+                false, // isRejected
+                now, // submitDate
+                now, // reviewDate
+                result.PartyId.Value, // providerId
+                true); // isActive
+
+            #endregion
+
+            #region Returning The Response
+            var model = new
+            {
+                request.FirstName,
+                request.SecondName,
+                request.NationalApprovalId,
+                request.CompanyName,
+                request.OwnerName,
+                request.OwnerNationalId,
+                OwnershipDocumentFileUrl = ownershipDocumentFilePath,
+                OwnerNationalApprovalFileUrl = ownerNationalApprovalFilePath,
+                request.LocationName,
+                request.Longitude,
+                request.Latitude,
+                request.BuildingType,
+                request.BuildingNumber,
+                request.FloorNumber,
+                request.ApartmentNumber,
+                request.StreetNumber,
+                request.PhoneNumber,
+                IsAccepted = false,
+                IsRejected = false,
+                SubmitDate = now,
+                ReviewDate = now,
+                ProviderId = result.PartyId.Value,
+                IsActive = true,
+                request.DisplayName,
+                request.Language
+            };
+
+
+            var locationId = await Db.InsertLocationAsync(
+             connection,
+             request.Longitude,
+             request.Latitude,
+             request.LocationName,
+             result.PartyId.Value,
+             transaction);
+
+            await Db.InsertLocationDetailsAsync(
+                connection,
+                request.BuildingType,
+                request.BuildingNumber,
+                request.FloorNumber,
+                request.ApartmentNumber,
+                request.StreetNumber,
+                request.PhoneNumber,
+                locationId,
+                transaction);
+            return Success(new { id, request });
+            #endregion
+        }
+        catch (Exception ex)
+        {
+            return Fail($"Failed to insert provider profile history: {ex.Message}");
+        }
+    }
+}
+
+
+public class AdminInsertProviderModel
+{
+    public string Email { get; set; } = null!;
+    public string DisplayName { get; set; } = null!;
+    public string Password { get; set; } = null!;
+    public byte Language { get; set; }
+    public string FirstName { get; set; } = null!;
+    public string SecondName { get; set; } = null!;
+    public string NationalApprovalId { get; set; } = null!;
+    public string CompanyName { get; set; } = null!;
+    public string OwnerName { get; set; } = null!;
+    public string OwnerNationalId { get; set; } = null!;
+    public IFormFile? OwnershipDocumentFile { get; set; }
+    public IFormFile? OwnerNationalApprovalFile { get; set; }
+    public string LocationName { get; set; } = null!;
+    public decimal Longitude { get; set; }
+    public decimal Latitude { get; set; }
+    public string BuildingType { get; set; } = null!;
+    public string BuildingNumber { get; set; } = null!;
+    public string FloorNumber { get; set; } = null!;
+    public string ApartmentNumber { get; set; } = null!;
+    public string StreetNumber { get; set; } = null!;
+    public string PhoneNumber { get; set; } = null!;
 }

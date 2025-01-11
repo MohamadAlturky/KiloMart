@@ -45,6 +45,34 @@ public abstract class BaseRegisterService
         }
     }
 
+    public async Task<RegisterResult> RegisterDirectly(
+        IDbConnection connection,
+        IDbTransaction transaction,
+        string email,
+        string password,
+        string displayName,
+        byte language)
+    {
+        try
+        {
+            if (await UserExists(connection, email, transaction))
+            {
+                return new RegisterResult { IsSuccess = false, ErrorMessage = "User already exists" };
+            }
+
+            var partyId = await CreateParty(connection, displayName, transaction);
+            await CreatePartyType(connection, partyId, transaction);
+            var membershipUserId = await CreateMembershipUserDirectly(connection, email, password, UserRole, partyId, language, transaction);
+            transaction.Commit();
+            return new RegisterResult { IsSuccess = true, UserId = membershipUserId, PartyId = partyId };
+        }
+        catch (Exception ex)
+        {
+            transaction.Rollback();
+            return new RegisterResult { IsSuccess = false, ErrorMessage = ex.Message };
+        }
+    }
+
     private static async Task<bool> UserExists(IDbConnection connection, string email, IDbTransaction transaction)
     {
         var user = await connection.QueryFirstOrDefaultAsync<MembershipUserIdDto>(
@@ -76,14 +104,25 @@ public abstract class BaseRegisterService
     }
 
 
-    private static async Task<int> CreateMembershipUser(IDbConnection connection, string email, string password, Roles role, int partyId,byte language, IDbTransaction transaction)
+    private static async Task<int> CreateMembershipUser(IDbConnection connection, string email, string password, Roles role, int partyId, byte language, IDbTransaction transaction)
     {
         var passwordHash = HashHandler.GetHash(password);
         return await connection.QuerySingleAsync<int>(
             @"INSERT INTO MembershipUser (Email, EmailConfirmed, PasswordHash, Role, Party,IsActive, Language) 
             OUTPUT INSERTED.Id 
             VALUES (@Email, @EmailConfirmed, @PasswordHash, @Role, @Party, @IsActive,@Language)",
-            new { Email = email, EmailConfirmed = false, PasswordHash = passwordHash, Role = (byte)role, Party = partyId, IsActive = false,Language = language },
+            new { Email = email, EmailConfirmed = false, PasswordHash = passwordHash, Role = (byte)role, Party = partyId, IsActive = false, Language = language },
+            transaction
+        );
+    }
+    private static async Task<int> CreateMembershipUserDirectly(IDbConnection connection, string email, string password, Roles role, int partyId, byte language, IDbTransaction transaction)
+    {
+        var passwordHash = HashHandler.GetHash(password);
+        return await connection.QuerySingleAsync<int>(
+            @"INSERT INTO MembershipUser (Email, EmailConfirmed, PasswordHash, Role, Party,IsActive, Language) 
+            OUTPUT INSERTED.Id 
+            VALUES (@Email, @EmailConfirmed, @PasswordHash, @Role, @Party, @IsActive,@Language)",
+            new { Email = email, EmailConfirmed = true, PasswordHash = passwordHash, Role = (byte)role, Party = partyId, IsActive = true, Language = language },
             transaction
         );
     }

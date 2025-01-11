@@ -9,6 +9,7 @@ using KiloMart.Domain.Register.Provider.Services;
 using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Services;
 using KiloMart.Presentation.Tracking;
+using KiloMart.Requests.Queries;
 using Microsoft.AspNetCore.Mvc;
 using static KiloMart.Presentation.Tracking.DriversTrackerService;
 
@@ -692,6 +693,34 @@ public class AdminPanelController : AppController
         // Return null if the number does not match any OrderStatus
         return null;
     }
+
+    [HttpGet("products-for-provider")]
+    public async Task<IActionResult> GetMineByCategory(
+           [FromQuery] byte language,
+           [FromQuery] int providerId,
+           [FromQuery] int? categoryId = null,
+           [FromQuery] int pageNumber = 1,
+           [FromQuery] int pageSize = 10)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        // Get paginated products
+        var products = await Query.GetProviderPaginatedProducts(connection, providerId, language, pageNumber, pageSize, categoryId);
+
+        // Get total count of products for pagination
+        var totalCount = await Query.GetCountProviderPaginatedProducts(connection, providerId, language, categoryId);
+
+        // Create a response object containing products and total count
+        var response = new
+        {
+            TotalCount = totalCount,
+            Products = products
+        };
+
+        return Success(response); // Return success response with products and count
+    }
+
 
 }
 

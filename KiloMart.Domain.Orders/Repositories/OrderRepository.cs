@@ -37,7 +37,11 @@ public static partial class OrderRepository
                 cl.[Longitude] AS CustomerLocationLongitude,
                 pl.[Name] AS ProviderLocationName,
                 pl.[Latitude] AS ProviderLocationLatitude,
-                pl.[Longitude] AS ProviderLocationLongitude
+                pl.[Longitude] AS ProviderLocationLongitude,
+                               
+                mc.DisplayName CustomerDisplayName,
+				mp.DisplayName ProviderDisplayName,
+				md.DisplayName DeliveryDisplayName
             FROM 
                 dbo.[Order] o
             LEFT JOIN 
@@ -46,7 +50,9 @@ public static partial class OrderRepository
                 dbo.[OrderDeliveryInformation] odi ON odi.[Order] = o.Id
             LEFT JOIN 
                 dbo.[OrderProviderInformation] opi ON opi.[Order] = o.Id
-
+			LEFT JOIN dbo.Party mc ON oci.Customer = mc.Id
+			LEFT JOIN dbo.Party mp ON opi.Provider = mp.Id
+			LEFT JOIN dbo.Party md ON odi.Delivery = md.Id
             LEFT JOIN 
                 dbo.[Location] cl ON cl.Id = oci.[Location]
             LEFT JOIN 
@@ -58,6 +64,7 @@ public static partial class OrderRepository
 
         return await connection.QueryAsync<OrderDetailsDto>(sql, parameters);
     }
+
     public static async Task<OrderDetailsDto?> GetOrderDetailsFirstOrDefaultAsync(IDbConnection connection,
      string whereClause,
      object parameters)
@@ -89,7 +96,11 @@ public static partial class OrderRepository
                 cl.[Longitude] AS CustomerLocationLongitude,
                 pl.[Name] AS ProviderLocationName,
                 pl.[Latitude] AS ProviderLocationLatitude,
-                pl.[Longitude] AS ProviderLocationLongitude
+                pl.[Longitude] AS ProviderLocationLongitude,
+
+                mc.DisplayName CustomerDisplayName,
+				mp.DisplayName ProviderDisplayName,
+				md.DisplayName DeliveryDisplayName
             FROM 
                 dbo.[Order] o
             LEFT JOIN 
@@ -98,7 +109,9 @@ public static partial class OrderRepository
                 dbo.[OrderDeliveryInformation] odi ON odi.[Order] = o.Id
             LEFT JOIN 
                 dbo.[OrderProviderInformation] opi ON opi.[Order] = o.Id
-
+			LEFT JOIN dbo.Party mc ON oci.Customer = mc.Id
+			LEFT JOIN dbo.Party mp ON opi.Provider = mp.Id
+			LEFT JOIN dbo.Party md ON odi.Delivery = md.Id
             LEFT JOIN 
                 dbo.[Location] cl ON cl.Id = oci.[Location]
             LEFT JOIN 
@@ -142,6 +155,11 @@ public class OrderDetailsDto
     public string? ProviderLocationName { get; set; }
     public decimal? ProviderLocationLatitude { get; set; }
     public decimal? ProviderLocationLongitude { get; set; }
+
+
+    public string? CustomerDisplayName { get; set; }
+    public string? ProviderDisplayName { get; set; }
+    public string? DeliveryDisplayName { get; set; }
 }
 #endregion
 

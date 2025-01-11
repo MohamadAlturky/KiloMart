@@ -4,10 +4,13 @@ using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Admin;
 using KiloMart.DataAccess.Database;
 using KiloMart.Domain.Orders.Common;
+using KiloMart.Domain.Orders.Services;
 using KiloMart.Domain.Register.Provider.Services;
 using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Services;
+using KiloMart.Presentation.Tracking;
 using Microsoft.AspNetCore.Mvc;
+using static KiloMart.Presentation.Tracking.DriversTrackerService;
 
 namespace KiloMart.Presentation.Controllers.Domains.Admin;
 
@@ -16,10 +19,12 @@ namespace KiloMart.Presentation.Controllers.Domains.Admin;
 public class AdminPanelController : AppController
 {
     private readonly IWebHostEnvironment _environment;
+    private readonly DriversTrackerService _driversTrackerService;
 
-    public AdminPanelController(IDbFactory dbFactory, IUserContext userContext, IWebHostEnvironment environment) : base(dbFactory, userContext)
+    public AdminPanelController(DriversTrackerService driversTrackerService, IDbFactory dbFactory, IUserContext userContext, IWebHostEnvironment environment) : base(dbFactory, userContext)
     {
         _environment = environment;
+        _driversTrackerService = driversTrackerService;
     }
 
     [HttpGet("order-count")]
@@ -578,6 +583,116 @@ public class AdminPanelController : AppController
             return Fail($"Failed to insert provider profile history: {ex.Message}");
         }
     }
+
+
+    [HttpGet("provider-by-id")]
+    public async Task<IActionResult> GetProviderById(
+        [FromQuery] int providerId
+    )
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        var user = await Db.GetMembershipUserByPartyAsync(connection, providerId);
+        var party = await Db.GetPartyByIdAsync(providerId, connection);
+        var profile = await Db.GetActiveProviderProfileHistoryAsync(connection, providerId);
+        var statistics = await Stats.GetProviderStatisticsAsync(connection, providerId);
+        return Success(new
+        {
+            displayName = party?.DisplayName,
+            firstName = profile?.FirstName,
+            secondName = profile?.SecondName,
+            companyName = profile?.CompanyName,
+            providerId = providerId,
+            userId = user?.Id,
+            nationalApprovalId = profile?.NationalApprovalId,
+            ownerName = profile?.OwnerName,
+            ownerNationalId = profile?.OwnerNationalId,
+            email = user?.Email,
+            isActive = user?.IsActive,
+            totalOrders = statistics is not null ? statistics.TotalOrders : 0,
+            totalProducts = statistics is not null ? statistics.TotalProducts : 0,
+            ReceivedBalance = statistics is not null ? statistics.ReceivedBalance : 0,
+            WithdrawalBalance = statistics is not null ? statistics.WithdrawalBalance : 0,
+            availableBalance = (statistics is not null ? statistics.ReceivedBalance : 0) - (statistics is not null ? statistics.WithdrawalBalance : 0),
+            totalBalance = statistics is not null ? statistics.ReceivedBalance : 0,
+            ownerNationalApprovalFile = profile?.OwnerNationalApprovalFileUrl,
+            ownershipDocumentFile = profile?.OwnershipDocumentFileUrl,
+            isEmailVerified = user?.EmailConfirmed
+        });
+    }
+    [HttpGet("provider-orders-by-id")]
+    public async Task<IActionResult> GetProviderOrdersById(
+       [FromQuery] int providerId,
+       [FromQuery] byte language
+       )
+    {
+        var result = await ReadOrderService.GeteForProviderAsync(language, providerId, _dbFactory);
+
+        return Success(result.Data.Select(
+            e =>
+            {
+                DriverLocation? location = null;
+                if (e.OrderDetails.Delivery.HasValue && e.OrderDetails.OrderStatus == (byte)OrderStatus.SHIPPED)
+                {
+                    location = _driversTrackerService.GetByKey(e.OrderDetails.Delivery.Value);
+                }
+                return new
+                {
+                    OrderDetails = new
+                    {
+                        e.OrderDetails.Id,
+                        OrderStatus = GetOrderStatusFromNumber(e.OrderDetails.OrderStatus).ToString(),
+                        e.OrderDetails.TotalPrice,
+                        e.OrderDetails.TransactionId,
+                        e.OrderDetails.Date,
+                        e.OrderDetails.PaymentType,
+                        e.OrderDetails.IsPaid,
+                        e.OrderDetails.ItemsPrice,
+                        e.OrderDetails.SystemFee,
+                        e.OrderDetails.DeliveryFee,
+                        e.OrderDetails.SpecialRequest,
+
+                        e.OrderDetails.Customer,
+                        e.OrderDetails.CustomerLocation,
+                        e.OrderDetails.CustomerInformationId,
+
+                        e.OrderDetails.Provider,
+                        e.OrderDetails.ProviderLocation,
+                        e.OrderDetails.ProviderInformationId,
+
+                        e.OrderDetails.Delivery,
+                        e.OrderDetails.DeliveryInformationId,
+
+                        e.OrderDetails.CustomerLocationName,
+                        e.OrderDetails.CustomerLocationLatitude,
+                        e.OrderDetails.CustomerLocationLongitude,
+                        e.OrderDetails.ProviderLocationName,
+                        e.OrderDetails.ProviderLocationLatitude,
+                        e.OrderDetails.ProviderLocationLongitude,
+
+
+                        e.OrderDetails.CustomerDisplayName,
+                        e.OrderDetails.ProviderDisplayName,
+                        e.OrderDetails.DeliveryDisplayName,
+                    },
+                    e.OrderProductOfferDetails,
+                    e.OrderProductDetails,
+                    DriverLocation = location
+                };
+            }
+        ).ToList());
+    }
+    public static OrderStatus? GetOrderStatusFromNumber(int statusNumber)
+    {
+        // Check if the number corresponds to a valid OrderStatus
+        if (Enum.IsDefined(typeof(OrderStatus), statusNumber))
+        {
+            return (OrderStatus)statusNumber;
+        }
+
+        // Return null if the number does not match any OrderStatus
+        return null;
+    }
+
 }
 
 

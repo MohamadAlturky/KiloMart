@@ -158,12 +158,40 @@ namespace KiloMart.DataAccess.Admin
             WHERE pp.IsActive = 1 AND (@SearchTerm IS NULL OR 
                  party.DisplayName LIKE '%' + @SearchTerm + '%' OR 
                  m.Email LIKE '%' + @SearchTerm + '%');";
-                 
+
             return await connection.ExecuteScalarAsync<int>(countQuery, new { SearchTerm = searchTerm });
+        }
+        public static async Task<ProviderStatisticsDto?> GetProviderStatisticsAsync(IDbConnection connection, int providerId)
+        {
+            const string query = @"
+                    SELECT 
+                        COUNT(DISTINCT o.Id) AS TotalOrders,
+                        COUNT(DISTINCT po.Id) AS TotalProducts,
+                        SUM(pa.Value) / NULLIF(COUNT(DISTINCT po.Id) * COUNT(DISTINCT o.Id), 0) AS ReceivedBalance,
+                        SUM(paall.Value) / NULLIF(COUNT(DISTINCT po.Id) * COUNT(DISTINCT o.Id), 0) AS WithdrawalBalance
+                    FROM dbo.[Provider] ProviderParty 
+                    LEFT JOIN dbo.OrderProviderInformation o ON o.Provider = ProviderParty.Party
+                    LEFT JOIN dbo.ProductOffer po ON po.Provider = ProviderParty.Party AND po.IsActive = 1
+                    LEFT JOIN dbo.ProviderActivity pa ON pa.Provider = ProviderParty.Party AND pa.[Type] = 1
+                    LEFT JOIN dbo.ProviderActivity paall ON paall.Provider = ProviderParty.Party AND paall.[Type] = 2
+                    WHERE ProviderParty.Party = @Provider
+                    GROUP BY 
+                        ProviderParty.Party;";
+
+            var result = await connection.QuerySingleOrDefaultAsync<ProviderStatisticsDto>(query, new { Provider = providerId });
+
+            return result;
+        }
+
+        public class ProviderStatisticsDto
+        {
+            public int TotalOrders { get; set; }
+            public int TotalProducts { get; set; }
+            public decimal? ReceivedBalance { get; set; } // Use nullable to handle division by zero
+            public decimal? WithdrawalBalance { get; set; } // Use nullable to handle division by zero
         }
 
     }
-
 }
 
 public class ProviderDataDto

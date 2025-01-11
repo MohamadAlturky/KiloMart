@@ -32,10 +32,10 @@ namespace KiloMart.DataAccess.Admin
                         m.Email,
                         pp.PhoneNumber AS PhoneNumber,
                         pp.IsActive,
-                        COUNT(o.Id) AS TotalOrders,
-                        COUNT(po.Id) AS TotalProducts,
-                        SUM(pa.Value) AS ReceivedBalance,
-                        SUM(paall.Value) AS WithdrawalBalance,
+                        COUNT(DISTINCT o.Id) AS TotalOrders,
+                        COUNT(DISTINCT po.Id) AS TotalProducts,
+                        SUM(pa.Value)/(COUNT(DISTINCT po.Id) * COUNT(DISTINCT o.Id)) AS ReceivedBalance,
+                        SUM(paall.Value)/(COUNT(DISTINCT po.Id) * COUNT(DISTINCT o.Id)) AS WithdrawalBalance,
                         pp.Longitude AS Long,
                         pp.Latitude AS Lat,
                         pp.LocationName AS City,
@@ -98,7 +98,7 @@ public class ProviderDataDto
     public string PhoneNumber { get; set; }
     public bool IsActive { get; set; }
     public int TotalOrders { get; set; }
-    public int TotalProducts { get; set; }  
+    public int TotalProducts { get; set; }
     public decimal ReceivedBalance { get; set; }
     public decimal WithdrawalBalance { get; set; }
     public double Long { get; set; }

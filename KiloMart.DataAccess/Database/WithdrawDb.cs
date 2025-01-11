@@ -11,11 +11,13 @@ public static partial class Db
         string ibanNumber,
         DateTime date,
         bool done,
+        bool accepted,
+        bool rejected,
         IDbTransaction? transaction = null)
     {
         const string query = @"INSERT INTO [dbo].[Withdraw]
-                            ([Party], [BankAccountNumber], [IBanNumber], [Date], [Done])
-                            VALUES (@Party, @BankAccountNumber, @IBanNumber, @Date, @Done)
+                            ([Party], [BankAccountNumber], [IBanNumber], [Date], [Done],[Rejected],[Accepted])
+                            VALUES (@Party, @BankAccountNumber, @IBanNumber, @Date, @Done,@Rejected,@Accepted)
                             SELECT CAST(SCOPE_IDENTITY() AS BIGINT)";
 
         return await connection.ExecuteScalarAsync<long>(query, new
@@ -24,17 +26,21 @@ public static partial class Db
             BankAccountNumber = bankAccountNumber,
             IBanNumber = ibanNumber,
             Date = date,
-            Done = done
+            Done = done,
+            Accepted = accepted,
+            Rejected = rejected
         }, transaction);
     }
 
     public static async Task<bool> UpdateWithdrawAsync(IDbConnection connection,
-        long id, 
-        int Party, 
-        string bankAccountNumber, 
-        string ibanNumber, 
+        long id,
+        int Party,
+        string bankAccountNumber,
+        string ibanNumber,
         DateTime date,
-        bool done, 
+        bool done,
+                bool accepted,
+        bool rejected,
         IDbTransaction? transaction = null)
     {
         const string query = @"UPDATE [dbo].[Withdraw]
@@ -43,6 +49,8 @@ public static partial class Db
                                 [BankAccountNumber] = @BankAccountNumber,
                                 [IBanNumber] = @IBanNumber,
                                 [Date] = @Date,
+                                [Rejected] = @Rejected,
+                                [Accepted] = @Accepted,
                                 [Done] = @Done
                                 WHERE [Id] = @Id";
 
@@ -53,7 +61,9 @@ public static partial class Db
             BankAccountNumber = bankAccountNumber,
             IBanNumber = ibanNumber,
             Date = date,
-            Done = done
+            Done = done,
+            Accepted = accepted,
+            Rejected = rejected
         }, transaction);
 
         return updatedRowsCount > 0;
@@ -80,7 +90,9 @@ public static partial class Db
                             [BankAccountNumber], 
                             [IBanNumber], 
                             [Date], 
-                            [Done]
+                            [Done],
+                            [Accepted],
+                            [Rejected]
                             FROM [dbo].[Withdraw]
                             WHERE [Id] = @Id";
 
@@ -89,7 +101,7 @@ public static partial class Db
             Id = id
         });
     }
-       /// <summary>
+    /// <summary>
     /// Retrieves a list of Withdraw records filtered by Party.
     /// </summary>
     public static async Task<IEnumerable<Withdraw>> GetWithdrawsByPartyAsync(int Party, IDbConnection connection)
@@ -100,13 +112,15 @@ public static partial class Db
                             [BankAccountNumber], 
                             [IBanNumber], 
                             [Date], 
-                            [Done]
+                            [Done],
+                            [Accepted],
+                            [Rejected]
                             FROM [dbo].[Withdraw]
                             WHERE [Party] = @Party";
 
         return await connection.QueryAsync<Withdraw>(query, new { Party = Party });
     }
-    
+
 
     /// <summary>
     /// Retrieves a list of Withdraw records filtered by Done status.
@@ -119,13 +133,30 @@ public static partial class Db
                             [BankAccountNumber], 
                             [IBanNumber], 
                             [Date], 
-                            [Done]
+                            [Done],
+                            [Accepted],
+                            [Rejected]
                             FROM [dbo].[Withdraw]
                             WHERE [Done] = @Done";
 
         return await connection.QueryAsync<Withdraw>(query, new { Done = done });
     }
+    public static async Task<IEnumerable<Withdraw>> GetWithdrawsByRejectedAsync(bool Rejected, IDbConnection connection)
+    {
+        const string query = @"SELECT 
+                            [Id], 
+                            [Party], 
+                            [BankAccountNumber], 
+                            [IBanNumber], 
+                            [Date], 
+                            [Done],
+                            [Accepted],
+                            [Rejected]
+                            FROM [dbo].[Withdraw]
+                            WHERE [Rejected] = @Rejected";
 
+        return await connection.QueryAsync<Withdraw>(query, new { Rejected = Rejected });
+    }
     /// <summary>
     /// Retrieves a list of Withdraw records filtered by both Party and Done status.
     /// </summary>
@@ -137,7 +168,9 @@ public static partial class Db
                             [BankAccountNumber], 
                             [IBanNumber], 
                             [Date], 
-                            [Done]
+                            [Done],
+                            [Accepted],
+                            [Rejected]
                             FROM [dbo].[Withdraw]
                             WHERE [Party] = @Party AND [Done] = @Done";
 
@@ -156,7 +189,9 @@ public static partial class Db
                                         [BankAccountNumber], 
                                         [IBanNumber], 
                                         [Date], 
-                                        [Done]
+                                        [Done],
+                                        [Accepted],
+                                        [Rejected]
                                         FROM [dbo].[Withdraw]
                                         WHERE [Party] = @Party
                                         ORDER BY [Id]  DESC
@@ -189,7 +224,9 @@ public static partial class Db
                                         [BankAccountNumber], 
                                         [IBanNumber], 
                                         [Date], 
-                                        [Done]
+                                        [Done],
+                                        [Accepted],
+                                        [Rejected]
                                         FROM [dbo].[Withdraw]
                                         WHERE [Done] = @Done
                                         ORDER BY [Id]  DESC
@@ -222,7 +259,9 @@ public static partial class Db
                                         [BankAccountNumber], 
                                         [IBanNumber], 
                                         [Date], 
-                                        [Done]
+                                        [Done],
+                                        [Accepted],
+                                        [Rejected]
                                         FROM [dbo].[Withdraw]
                                         WHERE [Party] = @Party AND [Done] = @Done
                                         ORDER BY [Id] DESC
@@ -255,4 +294,6 @@ public class Withdraw
     public string IBanNumber { get; set; } = null!;
     public DateTime Date { get; set; }
     public bool Done { get; set; }
+    public bool Accepted { get; set; }
+    public bool Rejected { get; set; }
 }

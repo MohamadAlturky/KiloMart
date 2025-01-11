@@ -127,6 +127,8 @@ public class WithDrawAdminController(IDbFactory dbFactory, IUserContext userCont
                     withdraw.IBanNumber,
                     withdraw.Date,
                     true,
+                    true,
+                    false,
                     transaction);
 
                 await Db.InsertDeliveryActivityAsync(connection,
@@ -166,6 +168,8 @@ public class WithDrawAdminController(IDbFactory dbFactory, IUserContext userCont
                         withdraw.IBanNumber,
                         withdraw.Date,
                         true,
+                        true,
+                        false,
                         transaction);
 
                 await Db.InsertProviderActivityAsync(connection,
@@ -188,6 +192,53 @@ public class WithDrawAdminController(IDbFactory dbFactory, IUserContext userCont
                 transaction.Rollback();
                 return Fail(new List<string> { e.Message });
             }
+        }
+    }
+    [HttpPost("reject/withdraw")]
+    [Guard([Roles.Admin])]
+    public async Task<IActionResult> RejectWithDraw([FromQuery] long WithdrawId)
+    {
+        using var ReadConnection = _dbFactory.CreateDbConnection();
+
+        ReadConnection.Open();
+
+        var withdraw = await Db.GetWithdrawByIdAsync(WithdrawId, ReadConnection);
+        if (withdraw is null)
+        {
+            return DataNotFound("withdraw not found");
+        }
+        var user = await Db.GetMembershipUserByPartyAsync(ReadConnection, withdraw.Party);
+        if (user is null)
+        {
+            return DataNotFound("user not found");
+        }
+
+
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+        using var transaction = connection.BeginTransaction();
+
+        try
+        {
+            await Db.UpdateWithdrawAsync(connection,
+                withdraw.Id,
+                withdraw.Party,
+                withdraw.BankAccountNumber,
+                withdraw.IBanNumber,
+                withdraw.Date,
+                true,
+                false,
+                true,
+                transaction);
+
+
+            transaction.Commit();
+            return Success();
+        }
+        catch (Exception e)
+        {
+            transaction.Rollback();
+            return Fail(new List<string> { e.Message });
         }
     }
 }

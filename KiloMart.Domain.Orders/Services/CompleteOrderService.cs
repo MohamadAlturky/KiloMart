@@ -59,9 +59,9 @@ public class CompleteOrderService
                 return Result<CompleteOrderResponseModel>.Fail(["the order is not paid"]);
             }
 
-            #region InsertDeliveryActivity
+            #region Insert Delivery  And Provider Activity
             decimal value = 0;
-            if (order.PaymentType == ((byte)PaymentType.Cash))
+            if (order.PaymentType == ((byte)PaymentType.Elcetronic))
             {
                 value = order.DeliveryFee;
             }

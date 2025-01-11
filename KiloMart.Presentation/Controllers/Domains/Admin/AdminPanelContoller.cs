@@ -321,5 +321,62 @@ public class AdminPanelController : AppController
 
         return Success(orderSummary);
     }
+    [HttpGet("providers-summary")]
+    public async Task<IActionResult> GetProvidersSummaryAsync()
+    {
+        using var connection = _dbFactory.CreateDbConnection();
 
+        // Fetching provider statistics
+        var stats = await Stats.GetStatisticsAsync(connection);
+
+        // Create a summary object to hold the results
+        var providersSummary = new
+        {
+            TotalProviders = stats.TotalProviders,
+            TotalProvidersBalance = stats.TotalProvidersBalance,
+            TotalProductOffers = stats.TotalProductOffers,
+            TotalActiveProviders = stats.ActiveProviders
+        };
+
+        return Ok(providersSummary); // Return a successful response with the summary
+    }
+    [HttpGet("providers/paginated")]
+    public async Task<IActionResult> GetPaginatedProvidersAsync(
+        [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+
+        // Fetch paginated providers data
+        var result = await Stats.GetPaginatedProvidersAsync(connection, page, pageSize);
+
+        return Ok(new
+        {
+            result.TotalCount,
+            providers = result.Data.Select(e =>
+            {
+                return
+                new
+                {
+                    e.ProviderId,
+                    e.DisplayName,
+                    e.Email,
+                    e.PhoneNumber,
+                    e.IsActive,
+                    e.TotalOrders,
+                    e.TotalProducts,
+                    e.TotalBalance,
+                    locationDetails = new
+                    {
+                        e.Long,
+                        e.Lat,
+                        e.City,
+                        e.BuildingNumber,
+                        e.ApartmentNumber,
+                        e.FloorNumber,
+                        e.StreetNumber,
+                    }
+                };
+            }).ToList()
+        }); // Return a successful response with the paginated data
+    }
 }

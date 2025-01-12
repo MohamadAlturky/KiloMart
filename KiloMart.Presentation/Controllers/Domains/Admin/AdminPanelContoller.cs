@@ -27,7 +27,7 @@ public class AdminPanelController : AppController
         _environment = environment;
         _driversTrackerService = driversTrackerService;
     }
-
+    #region some stats
     [HttpGet("order-count")]
     public async Task<IActionResult> GetOrderCount()
     {
@@ -331,6 +331,9 @@ public class AdminPanelController : AppController
 
         return Success(orderSummary);
     }
+    #endregion
+
+    #region provider
     [HttpGet("providers-summary")]
     public async Task<IActionResult> GetProvidersSummaryAsync()
     {
@@ -720,7 +723,66 @@ public class AdminPanelController : AppController
 
         return Success(response); // Return success response with products and count
     }
+    #endregion
 
+
+
+    #region delivery
+    [HttpGet("delivery-statistics")]
+    public async Task<IActionResult> GetDeliveryStatistics()
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        // Get delivery statistics
+        var (activeDeliveryCount, deliveryType1Sum, deliveryType2Sum) = await Stats.GetDeliveryStatisticsAsync(connection);
+
+        // Create a response object containing the statistics
+        var response = new
+        {
+            ActiveDeliveryCount = activeDeliveryCount,
+            DeliveryType1Sum = deliveryType1Sum,
+            DeliveryType2Sum = deliveryType2Sum
+        };
+
+        return Ok(response); // Return success response with statistics
+    }
+
+
+
+
+
+    [HttpGet("deliveries/paginated")]
+    public async Task<IActionResult> GetPaginatedDeliveriesAsync(
+            [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+
+        // Fetch paginated providers data
+        var result = await Stats.GetPaginatedDeliveriesAsync(connection, page, pageSize);
+
+        return Ok(new
+        {
+            result.TotalCount,
+            providers = result.Data.ToList()
+        }); // Return a successful response with the paginated data
+    }
+    [HttpGet("deliveries/paginated-by-term")]
+    public async Task<IActionResult> GetPaginatedDeliveriesAsync(
+            [FromQuery] int page = 1, [FromQuery] int pageSize = 10, string? searchTerm =  null)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+
+        // Fetch paginated providers data
+        var result = await Stats.GetPaginatedDeliveriesFilteredAsync(connection, page, pageSize, searchTerm);
+
+        return Ok(new
+        {
+            result.TotalCount,
+            providers = result.Data.ToList()
+        }); // Return a successful response with the paginated data
+    }
+    #endregion
 
 }
 

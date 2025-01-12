@@ -577,6 +577,8 @@ public class ProviderActivitiesContoller : AppController
             request.BankAccountNumber,
             request.IbanNumber,
             DateTime.Now,
+            false,
+            false,
             false);
 
         return Success(new { Id = id });
@@ -609,7 +611,9 @@ public class ProviderActivitiesContoller : AppController
             request.BankAccountNumber ?? withdraw.BankAccountNumber,
             request.IbanNumber ?? withdraw.IBanNumber,
             withdraw.Date,
-            withdraw.Done);
+            withdraw.Done,
+            withdraw.Accepted,
+            withdraw.Rejected);
 
         return success ? Success() : Fail("Update failed.");
     }

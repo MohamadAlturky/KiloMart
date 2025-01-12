@@ -34,12 +34,19 @@ public class ProductCategoryController(IDbFactory dbFactory,
             ProductCategory.[Name], 
             ProductCategory.[IsActive], 
             ProductCategoryLocalized.[Name] AS LocalizedName, 
-            ProductCategoryLocalized.[Language]
+            ProductCategoryLocalized.[Language],
+			COUNT(p.[Id]) ProductsCount
         FROM ProductCategory WITH (NOLOCK)
         LEFT JOIN ProductCategoryLocalized WITH (NOLOCK)
             ON ProductCategory.Id = ProductCategoryLocalized.ProductCategory 
             AND ProductCategoryLocalized.Language = @language
+        LEFT JOIN Product p ON p.ProductCategory = ProductCategory.[Id]
             WHERE ProductCategory.IsActive = @isActive
+        GROUP BY ProductCategory.[Id], 
+            ProductCategory.[Name], 
+            ProductCategory.[IsActive], 
+            ProductCategoryLocalized.[Name],
+            ProductCategoryLocalized.[Language]
         ORDER BY ProductCategory.[Id]
         OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
 
@@ -57,6 +64,7 @@ public class ProductCategoryController(IDbFactory dbFactory,
                 Id = category.Id,
                 Name = category.LocalizedName ?? category.Name,
                 IsActive = category.IsActive,
+                ProductsCount = category.ProductsCount
             });
         }
 
@@ -72,10 +80,13 @@ public class ProductCategoryApiResponseDto
     public int Id { get; set; }
     public string Name { get; set; } = null!;
     public bool IsActive { get; set; }
+        public int ProductsCount { get; set; }
+
 }
 public class ProductCategoryApiResponse
 {
     public int Id { get; set; }
+    public int ProductsCount { get; set; }
     public string Name { get; set; } = string.Empty;
     public bool IsActive { get; set; }
     // Localized properties

@@ -269,6 +269,8 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory,
             request.BankAccountNumber,
             request.IbanNumber,
             DateTime.Now,
+            false,
+            false,
             false);
 
         return Success(new { Id = id });
@@ -301,7 +303,9 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory,
             request.BankAccountNumber ?? withdraw.BankAccountNumber,
             request.IbanNumber ?? withdraw.IBanNumber,
             withdraw.Date,
-            withdraw.Done);
+            withdraw.Done,
+            withdraw.Accepted,
+            withdraw.Rejected);
 
         return success ? Success() : Fail("Update failed.");
     }

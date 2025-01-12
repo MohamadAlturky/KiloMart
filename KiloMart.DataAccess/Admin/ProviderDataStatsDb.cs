@@ -31,8 +31,8 @@ namespace KiloMart.DataAccess.Admin
                         pp.IsActive,
                         COUNT(DISTINCT o.Id) AS TotalOrders,
                         COUNT(DISTINCT po.Id) AS TotalProducts,
-                        SUM(pa.Value)/(COUNT(DISTINCT po.Id) * COUNT(DISTINCT o.Id)) AS ReceivedBalance,
-                        SUM(paall.Value)/(COUNT(DISTINCT po.Id) * COUNT(DISTINCT o.Id)) AS WithdrawalBalance,
+                        SUM(pa.Value)  AS ReceivedBalance,
+                        SUM(paall.Value) AS WithdrawalBalance,
                         pp.Longitude AS Long,
                         pp.Latitude AS Lat,
                         pp.LocationName AS City,
@@ -100,10 +100,10 @@ namespace KiloMart.DataAccess.Admin
                 m.Email,
                 pp.PhoneNumber AS PhoneNumber,
                 pp.IsActive,
-                COUNT(DISTINCT o.Id) AS TotalOrders,
+                COUNT(DISTINCT o.Id)  AS TotalOrders,
                 COUNT(DISTINCT po.Id) AS TotalProducts,
-                SUM(pa.Value)/(COUNT(DISTINCT po.Id) * COUNT(DISTINCT o.Id)) AS ReceivedBalance,
-                SUM(paall.Value)/(COUNT(DISTINCT po.Id) * COUNT(DISTINCT o.Id)) AS WithdrawalBalance,
+                SUM(pa.Value)  AS ReceivedBalance,
+                SUM(paall.Value)  AS WithdrawalBalance,
                 pp.Longitude AS Long,
                 pp.Latitude AS Lat,
                 pp.LocationName AS City,
@@ -164,8 +164,8 @@ namespace KiloMart.DataAccess.Admin
                     SELECT 
                         COUNT(DISTINCT o.Id) AS TotalOrders,
                         COUNT(DISTINCT po.Id) AS TotalProducts,
-                        SUM(pa.Value) / NULLIF(COUNT(DISTINCT po.Id) * COUNT(DISTINCT o.Id), 0) AS ReceivedBalance,
-                        SUM(paall.Value) / NULLIF(COUNT(DISTINCT po.Id) * COUNT(DISTINCT o.Id), 0) AS WithdrawalBalance
+                        SUM(pa.Value) AS ReceivedBalance,
+                        SUM(paall.Value) AS WithdrawalBalance
                     FROM dbo.[Provider] ProviderParty 
                     LEFT JOIN dbo.OrderProviderInformation o ON o.Provider = ProviderParty.Party
                     LEFT JOIN dbo.ProductOffer po ON po.Provider = ProviderParty.Party AND po.IsActive = 1

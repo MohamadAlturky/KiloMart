@@ -300,3 +300,5 @@ public class PaginatedDeliveriesResult
     public int TotalCount { get; set; }
     public IEnumerable<DeliveryDataDto> Data { get; set; }
 }
+
+

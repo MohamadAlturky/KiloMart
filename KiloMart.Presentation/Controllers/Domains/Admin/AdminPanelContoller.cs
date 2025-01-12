@@ -351,7 +351,7 @@ public class AdminPanelController : AppController
             TotalActiveProviders = stats.ActiveProviders
         };
 
-        return Ok(providersSummary); // Return a successful response with the summary
+        return Success(providersSummary); // Return a successful response with the summary
     }
     [HttpGet("providers/paginated")]
     public async Task<IActionResult> GetPaginatedProvidersAsync(
@@ -362,11 +362,17 @@ public class AdminPanelController : AppController
         // Fetch paginated providers data
         var result = await Stats.GetPaginatedProvidersAsync(connection, page, pageSize);
 
-        return Ok(new
+        return Success(new
         {
             result.TotalCount,
             providers = result.Data.Select(e =>
             {
+                long TotalOrdersValue = e.TotalOrders;
+                TotalOrdersValue = TotalOrdersValue != 0 ? TotalOrdersValue : 1;
+
+                long TotalProductsValue = e.TotalProducts;
+                TotalProductsValue = TotalProductsValue != 0 ? TotalProductsValue : 1;
+
                 return
                 new
                 {
@@ -377,10 +383,10 @@ public class AdminPanelController : AppController
                     e.IsActive,
                     e.TotalOrders,
                     e.TotalProducts,
-                    e.WithdrawalBalance,
-                    e.ReceivedBalance,
-                    TotalBalnace = e.ReceivedBalance,
-                    AvailableBalnace = e.ReceivedBalance - e.WithdrawalBalance,
+                    WithdrawalBalance = e.WithdrawalBalance / (TotalProductsValue * TotalOrdersValue),
+                    ReceivedBalance = e.ReceivedBalance / (TotalProductsValue * TotalOrdersValue),
+                    TotalBalnace = e.ReceivedBalance / (TotalProductsValue * TotalOrdersValue),
+                    AvailableBalnace = (e.ReceivedBalance - e.WithdrawalBalance) / (TotalProductsValue * TotalOrdersValue),
                     locationDetails = new
                     {
                         e.Long,
@@ -407,11 +413,15 @@ public class AdminPanelController : AppController
         var result = await Stats.GetPaginatedProvidersDataAsync(connection, page, pageSize, term);
         var count = await Stats.GetActiveFilteredProvidersProfilesCountAsync(connection, term);
 
-        return Ok(new
+        return Success(new
         {
             TotalCount = count,
             providers = result.Select(e =>
             {
+                long TotalOrdersValue = e.TotalOrders;
+                TotalOrdersValue = TotalOrdersValue != 0 ? TotalOrdersValue : 1;
+                long TotalProductsValue = e.TotalProducts;
+                TotalProductsValue = TotalProductsValue != 0 ? TotalProductsValue : 1;
                 return
                 new
                 {
@@ -422,10 +432,10 @@ public class AdminPanelController : AppController
                     e.IsActive,
                     e.TotalOrders,
                     e.TotalProducts,
-                    e.WithdrawalBalance,
-                    e.ReceivedBalance,
-                    TotalBalnace = e.ReceivedBalance,
-                    AvailableBalnace = e.ReceivedBalance - e.WithdrawalBalance,
+                    WithdrawalBalance = e.WithdrawalBalance / (TotalProductsValue * TotalOrdersValue),
+                    ReceivedBalance = e.ReceivedBalance / (TotalProductsValue * TotalOrdersValue),
+                    TotalBalnace = e.ReceivedBalance / (TotalProductsValue * TotalOrdersValue),
+                    AvailableBalnace = (e.ReceivedBalance - e.WithdrawalBalance) / (TotalProductsValue * TotalOrdersValue),
                     locationDetails = new
                     {
                         e.Long,
@@ -599,6 +609,14 @@ public class AdminPanelController : AppController
         var party = await Db.GetPartyByIdAsync(providerId, connection);
         var profile = await Db.GetActiveProviderProfileHistoryAsync(connection, providerId);
         var statistics = await Stats.GetProviderStatisticsAsync(connection, providerId);
+
+
+        long TotalOrdersValue = statistics is not null ? statistics.TotalOrders : 0;
+        TotalOrdersValue = TotalOrdersValue != 0 ? TotalOrdersValue : 1;
+
+        long TotalProductsValue = statistics is not null ? statistics.TotalProducts : 0;
+        TotalProductsValue = TotalProductsValue != 0 ? TotalProductsValue : 1;
+
         return Success(new
         {
             displayName = party?.DisplayName,
@@ -614,10 +632,10 @@ public class AdminPanelController : AppController
             isActive = user?.IsActive,
             totalOrders = statistics is not null ? statistics.TotalOrders : 0,
             totalProducts = statistics is not null ? statistics.TotalProducts : 0,
-            ReceivedBalance = statistics is not null ? statistics.ReceivedBalance : 0,
-            WithdrawalBalance = statistics is not null ? statistics.WithdrawalBalance : 0,
-            availableBalance = (statistics is not null ? statistics.ReceivedBalance : 0) - (statistics is not null ? statistics.WithdrawalBalance : 0),
-            totalBalance = statistics is not null ? statistics.ReceivedBalance : 0,
+            ReceivedBalance = (statistics is not null ? statistics.ReceivedBalance : 0)/ (TotalProductsValue * TotalOrdersValue),
+            WithdrawalBalance = (statistics is not null ? statistics.WithdrawalBalance : 0) / (TotalProductsValue * TotalOrdersValue),
+            availableBalance = ((statistics is not null ? statistics.ReceivedBalance : 0) - (statistics is not null ? statistics.WithdrawalBalance : 0)) / (TotalProductsValue * TotalOrdersValue),
+            totalBalance = (statistics is not null ? statistics.ReceivedBalance : 0) / (TotalProductsValue * TotalOrdersValue),
             ownerNationalApprovalFile = profile?.OwnerNationalApprovalFileUrl,
             ownershipDocumentFile = profile?.OwnershipDocumentFileUrl,
             isEmailVerified = user?.EmailConfirmed
@@ -745,7 +763,7 @@ public class AdminPanelController : AppController
             DeliveryType2Sum = deliveryType2Sum
         };
 
-        return Ok(response); // Return success response with statistics
+        return Success(response); // Return success response with statistics
     }
 
 
@@ -761,25 +779,98 @@ public class AdminPanelController : AppController
         // Fetch paginated providers data
         var result = await Stats.GetPaginatedDeliveriesAsync(connection, page, pageSize);
 
-        return Ok(new
+        return Success(new
         {
             result.TotalCount,
-            providers = result.Data.ToList()
+            deliveries = result.Data.Select(e =>
+            {
+                long value = e.TotalOrders;
+                value = value != 0 ? value : 1;
+                return new
+                {
+                    e.Id,
+                    e.FirstName,
+                    e.SecondName,
+                    e.NationalName,
+                    e.NationalId,
+                    e.LicenseNumber,
+                    e.LicenseExpiredDate,
+                    e.DrivingLicenseNumber,
+                    e.DrivingLicenseExpiredDate,
+                    e.VehicleNumber,
+                    e.VehicleModel,
+                    e.VehicleType,
+                    e.VehicleYear,
+                    e.VehiclePhotoFileUrl,
+                    e.DrivingLicenseFileUrl,
+                    e.VehicleLicenseFileUrl,
+                    e.NationalIqamaIDFileUrl,
+                    e.SubmitDate,
+                    e.ReviewDate,
+                    e.DeliveryId,
+                    e.IsActive,
+                    e.IsRejected,
+                    e.IsAccepted,
+                    e.ReviewDescription,
+                    e.Email,
+                    e.DisplayName,
+                    TotalOrders = e.TotalOrders,
+                    ReceivedBalance = e.ReceivedBalance / value,
+                    WithdrawalBalance = e.WithdrawalBalance / value
+                };
+            }).ToList()
         }); // Return a successful response with the paginated data
     }
     [HttpGet("deliveries/paginated-by-term")]
     public async Task<IActionResult> GetPaginatedDeliveriesAsync(
-            [FromQuery] int page = 1, [FromQuery] int pageSize = 10, string? searchTerm =  null)
+            [FromQuery] int page = 1, [FromQuery] int pageSize = 10, string? searchTerm = null)
     {
         using var connection = _dbFactory.CreateDbConnection();
 
         // Fetch paginated providers data
         var result = await Stats.GetPaginatedDeliveriesFilteredAsync(connection, page, pageSize, searchTerm);
 
-        return Ok(new
+        return Success(new
         {
             result.TotalCount,
-            providers = result.Data.ToList()
+            deliveries = result.Data.Select(e =>
+            {
+                long value = e.TotalOrders;
+                value = value != 0 ? value : 1;
+
+                return new
+                {
+                    e.Id,
+                    e.FirstName,
+                    e.SecondName,
+                    e.NationalName,
+                    e.NationalId,
+                    e.LicenseNumber,
+                    e.LicenseExpiredDate,
+                    e.DrivingLicenseNumber,
+                    e.DrivingLicenseExpiredDate,
+                    e.VehicleNumber,
+                    e.VehicleModel,
+                    e.VehicleType,
+                    e.VehicleYear,
+                    e.VehiclePhotoFileUrl,
+                    e.DrivingLicenseFileUrl,
+                    e.VehicleLicenseFileUrl,
+                    e.NationalIqamaIDFileUrl,
+                    e.SubmitDate,
+                    e.ReviewDate,
+                    e.DeliveryId,
+                    e.IsActive,
+                    e.IsRejected,
+                    e.IsAccepted,
+                    e.ReviewDescription,
+                    e.Email,
+                    e.DisplayName,
+                    TotalOrders = e.TotalOrders,
+                    ReceivedBalance = e.ReceivedBalance / value,
+                    WithdrawalBalance = e.WithdrawalBalance / value
+                };
+            }).ToList()
         }); // Return a successful response with the paginated data
     }
     #endregion

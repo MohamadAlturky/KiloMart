@@ -244,7 +244,7 @@ public static partial class Stats
         FETCH NEXT @PageSize ROWS ONLY;
     ";
 
-        return await connection.QueryAsync<DeliveryDataDto>(dataQuery, new { Page = page, PageSize = pageSize, SearchTerm = searchTerm  });
+        return await connection.QueryAsync<DeliveryDataDto>(dataQuery, new { Page = page, PageSize = pageSize, SearchTerm = searchTerm });
     }
 
     // Combined method to get paginated deliveries result with total count
@@ -259,6 +259,34 @@ public static partial class Stats
             Data = data.ToList()
         };
     }
+
+    public static async Task<DeliveryStatisticsDto?> GetDeliveryStatisticsAsync(IDbConnection connection, int deliveryId)
+    {
+        const string query = @"
+        SELECT 
+            COUNT(DISTINCT o.Id) AS TotalOrders,
+            SUM(pa.Value) AS ReceivedBalance,
+            SUM(paall.Value) AS WithdrawalBalance
+        FROM dbo.[Delivery] DeliveryParty 
+        LEFT JOIN dbo.OrderDeliveryInformation o ON o.Delivery = DeliveryParty.Party
+        LEFT JOIN dbo.DeliveryActivity pa ON pa.Delivery = DeliveryParty.Party AND pa.[Type] = 1
+        LEFT JOIN dbo.DeliveryActivity paall ON paall.Delivery = DeliveryParty.Party AND paall.[Type] = 2
+        WHERE DeliveryParty.Party = @Delivery
+        GROUP BY 
+            DeliveryParty.Party;";
+
+        var result = await connection.QuerySingleOrDefaultAsync<DeliveryStatisticsDto>(query, new { Delivery = deliveryId });
+
+        return result;
+    }
+
+}
+
+public class DeliveryStatisticsDto
+{
+    public int TotalOrders { get; set; }
+    public decimal? ReceivedBalance { get; set; } // Nullable to handle potential null results
+    public decimal? WithdrawalBalance { get; set; } // Nullable to handle potential null results
 }
 
 public class DeliveryDataDto

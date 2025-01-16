@@ -560,7 +560,7 @@ public class AdminPanelController : AppController
                 request.ApartmentNumber,
                 request.StreetNumber,
                 request.PhoneNumber,
-                IsAccepted = false,
+                IsAccepted = true,
                 IsRejected = false,
                 SubmitDate = now,
                 ReviewDate = now,
@@ -632,7 +632,7 @@ public class AdminPanelController : AppController
             isActive = user?.IsActive,
             totalOrders = statistics is not null ? statistics.TotalOrders : 0,
             totalProducts = statistics is not null ? statistics.TotalProducts : 0,
-            ReceivedBalance = (statistics is not null ? statistics.ReceivedBalance : 0)/ (TotalProductsValue * TotalOrdersValue),
+            ReceivedBalance = (statistics is not null ? statistics.ReceivedBalance : 0) / (TotalProductsValue * TotalOrdersValue),
             WithdrawalBalance = (statistics is not null ? statistics.WithdrawalBalance : 0) / (TotalProductsValue * TotalOrdersValue),
             availableBalance = ((statistics is not null ? statistics.ReceivedBalance : 0) - (statistics is not null ? statistics.WithdrawalBalance : 0)) / (TotalProductsValue * TotalOrdersValue),
             totalBalance = (statistics is not null ? statistics.ReceivedBalance : 0) / (TotalProductsValue * TotalOrdersValue),
@@ -873,6 +873,292 @@ public class AdminPanelController : AppController
             }).ToList()
         }); // Return a successful response with the paginated data
     }
+
+    [HttpPost("create-delivery-directly")]
+    public async Task<IActionResult> InsertDelivery(AdminInsertDeliveryModel request)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+        using var transaction = connection.BeginTransaction();
+
+        #region 
+        var result = await new RegisterProviderService().RegisterDirectly(
+            connection,
+            transaction,
+            request.Email,
+            request.Password,
+            request.DisplayName,
+            request.Language);
+        #endregion
+
+        if (!result.IsSuccess)
+        {
+            return Fail("can't create user info");
+        }
+        if (!result.PartyId.HasValue)
+        {
+            return Fail("can't create user info");
+        }
+
+        try
+        {
+
+
+            #region VehiclePhotoFile
+
+            Guid fileName = Guid.NewGuid();
+            if (request.VehiclePhotoFile is null)
+            {
+                return Fail("VehiclePhotoFile is null");
+            }
+
+            var VehiclePhotoFilePath = await FileService.SaveImageFileAsync(request.VehiclePhotoFile,
+                _environment.WebRootPath,
+                fileName);
+
+            if (string.IsNullOrEmpty(VehiclePhotoFilePath))
+            {
+                return Fail("failed to save VehiclePhoto file");
+            }
+            #endregion
+
+            #region DrivingLicenseFile
+
+            // Save DrivingLicenseFile
+
+            fileName = Guid.NewGuid();
+            if (request.DrivingLicenseFile is null)
+            {
+                return Fail("DrivingLicenseFile is null");
+            }
+            var DrivingLicenseFilePath = await FileService.SaveImageFileAsync(request.DrivingLicenseFile,
+                _environment.WebRootPath,
+                fileName);
+
+            if (string.IsNullOrEmpty(DrivingLicenseFilePath))
+            {
+                return Fail("failed to save DrivingLicense file");
+            }
+            #endregion
+
+            #region NationalIqamaIDFile
+            // Save NationalIqamaIDFile
+
+            fileName = Guid.NewGuid();
+            if (request.NationalIqamaIDFile is null)
+            {
+                return Fail("NationalIqamaIDFile is null");
+            }
+            var NationalIqamaIDFilePath = await FileService.SaveImageFileAsync(request.NationalIqamaIDFile,
+                _environment.WebRootPath,
+                fileName);
+
+            if (string.IsNullOrEmpty(NationalIqamaIDFilePath))
+            {
+                return Fail("failed to save NationalIqamaID file");
+            }
+
+            #endregion
+
+            #region VehicleLicenseFile
+
+            fileName = Guid.NewGuid();
+            if (request.VehicleLicenseFile is null)
+            {
+                return Fail("VehicleLicenseFile is null");
+            }
+            var VehicleLicenseFilePath = await FileService.SaveImageFileAsync(request.VehicleLicenseFile,
+                _environment.WebRootPath,
+                fileName);
+
+            if (string.IsNullOrEmpty(VehicleLicenseFilePath))
+            {
+                return Fail("failed to save VehicleLicense file");
+            }
+            #endregion
+            var now = DateTime.Now;
+            #region Adding the Profile
+            long id = await Db.InsertDeliveryProfileHistoryAsync(
+                connection,
+                request.FirstName,
+                request.SecondName,
+                request.NationalName,
+                request.NationalId,
+                request.LicenseNumber,
+                request.LicenseExpiredDate,
+                request.DrivingLicenseNumber,
+                request.DrivingLicenseExpiredDate,
+                request.VehicleNumber,
+                request.VehicleModel,
+                request.VehicleType,
+                request.VehicleYear,
+                VehiclePhotoFilePath,
+                DrivingLicenseFilePath,
+                VehicleLicenseFilePath,
+                NationalIqamaIDFilePath,
+                now,
+                now,
+                result.PartyId.Value,
+                true,
+                false,
+                true,
+                transaction);
+            #endregion          
+
+            #region Returning The Response
+            var model = new
+            {
+                request.FirstName,
+                request.SecondName,
+                request.NationalName,
+                request.NationalId,
+                request.LicenseNumber,
+                request.LicenseExpiredDate,
+                request.DrivingLicenseNumber,
+                request.DrivingLicenseExpiredDate,
+                request.VehicleNumber,
+                request.VehicleModel,
+                request.VehicleType,
+                request.VehicleYear,
+                VehiclePhotoFilePath,
+                DrivingLicenseFilePath,
+                VehicleLicenseFilePath,
+                NationalIqamaIDFilePath,
+                SubmitDate = now,
+                DeliveryId = result.PartyId.Value,
+                IsActive = false,
+                IsRejected = false,
+                IsAccepted = false,
+
+                ReviewDate = now,
+                request.DisplayName,
+                request.Language
+            };
+            transaction.Commit();
+            return Success(new { id, model });
+            #endregion
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+            // return Fail("Failed to insert delivery profile history.");
+        }
+    }
+    [HttpGet("delivery-by-id")]
+    public async Task<IActionResult> GetDeliveryById(
+        [FromQuery] int deliveryId
+    )
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        var user = await Db.GetMembershipUserByPartyAsync(connection, deliveryId);
+        var party = await Db.GetPartyByIdAsync(deliveryId, connection);
+        var profile = await Db.GetDeliveryActiveProfileHistoryAsync(connection, deliveryId);
+        var statistics = await Stats.GetDeliveryStatisticsAsync(connection, deliveryId);
+
+
+        long TotalOrdersValue = statistics is not null ? statistics.TotalOrders : 0;
+        TotalOrdersValue = TotalOrdersValue != 0 ? TotalOrdersValue : 1;
+
+        
+        return Success(new
+        {
+            displayName = party?.DisplayName,
+            firstName = profile?.FirstName,
+            secondName = profile?.SecondName,
+            userId = user?.Id,
+            email = user?.Email,
+            isActive = user?.IsActive,
+            isEmailVerified = user?.EmailConfirmed,
+            profile?.NationalName,
+            profile?.NationalId,
+            profile?.LicenseNumber,
+            profile?.LicenseExpiredDate,
+            profile?.DrivingLicenseNumber,
+            profile?.DrivingLicenseExpiredDate,
+            profile?.VehicleNumber,
+            profile?.VehicleModel,
+            profile?.VehicleType,
+            profile?.VehicleYear,
+            profile?.VehiclePhotoFileUrl,
+            profile?.DrivingLicenseFileUrl,
+            profile?.VehicleLicenseFileUrl,
+            profile?.NationalIqamaIDFileUrl,
+            profile?.SubmitDate,
+            profile?.ReviewDate,
+            profile?.DeliveryId,
+            profile?.IsRejected,
+            profile?.IsAccepted,
+            profile?.ReviewDescription,
+            totalOrders = statistics is not null ? statistics.TotalOrders : 0,
+            ReceivedBalance = (statistics is not null ? statistics.ReceivedBalance : 0) / TotalOrdersValue,
+            WithdrawalBalance = (statistics is not null ? statistics.WithdrawalBalance : 0) / TotalOrdersValue,
+            availableBalance = ((statistics is not null ? statistics.ReceivedBalance : 0) - (statistics is not null ? statistics.WithdrawalBalance : 0)) / TotalOrdersValue,
+            totalBalance = (statistics is not null ? statistics.ReceivedBalance : 0) / TotalOrdersValue,
+        });
+    }
+    [HttpGet("delivery-orders-by-id")]
+    public async Task<IActionResult> GetDeliveryOrdersById(
+       [FromQuery] int deliveryId,
+       [FromQuery] byte language
+       )
+    {
+        var result = await ReadOrderService.GetForDeliveryAsync(language, deliveryId, _dbFactory);
+
+        return Success(result.Data.Select(
+            e =>
+            {
+                DriverLocation? location = null;
+                if (e.OrderDetails.Delivery.HasValue && e.OrderDetails.OrderStatus == (byte)OrderStatus.SHIPPED)
+                {
+                    location = _driversTrackerService.GetByKey(e.OrderDetails.Delivery.Value);
+                }
+                return new
+                {
+                    OrderDetails = new
+                    {
+                        e.OrderDetails.Id,
+                        OrderStatus = GetOrderStatusFromNumber(e.OrderDetails.OrderStatus).ToString(),
+                        e.OrderDetails.TotalPrice,
+                        e.OrderDetails.TransactionId,
+                        e.OrderDetails.Date,
+                        e.OrderDetails.PaymentType,
+                        e.OrderDetails.IsPaid,
+                        e.OrderDetails.ItemsPrice,
+                        e.OrderDetails.SystemFee,
+                        e.OrderDetails.DeliveryFee,
+                        e.OrderDetails.SpecialRequest,
+
+                        e.OrderDetails.Customer,
+                        e.OrderDetails.CustomerLocation,
+                        e.OrderDetails.CustomerInformationId,
+
+                        e.OrderDetails.Provider,
+                        e.OrderDetails.ProviderLocation,
+                        e.OrderDetails.ProviderInformationId,
+
+                        e.OrderDetails.Delivery,
+                        e.OrderDetails.DeliveryInformationId,
+
+                        e.OrderDetails.CustomerLocationName,
+                        e.OrderDetails.CustomerLocationLatitude,
+                        e.OrderDetails.CustomerLocationLongitude,
+                        e.OrderDetails.ProviderLocationName,
+                        e.OrderDetails.ProviderLocationLatitude,
+                        e.OrderDetails.ProviderLocationLongitude,
+
+
+                        e.OrderDetails.CustomerDisplayName,
+                        e.OrderDetails.ProviderDisplayName,
+                        e.OrderDetails.DeliveryDisplayName,
+                    },
+                    e.OrderProductOfferDetails,
+                    e.OrderProductDetails,
+                    DriverLocation = location
+                };
+            }
+        ).ToList());
+    }
     #endregion
 
 }
@@ -902,3 +1188,31 @@ public class AdminInsertProviderModel
     public string StreetNumber { get; set; } = null!;
     public string PhoneNumber { get; set; } = null!;
 }
+
+
+public class AdminInsertDeliveryModel
+{
+
+    public string Email { get; set; } = null!;
+    public string DisplayName { get; set; } = null!;
+    public string Password { get; set; } = null!;
+    public byte Language { get; set; }
+
+    public string FirstName { get; set; } = null!;
+    public string SecondName { get; set; } = null!;
+    public string NationalName { get; set; } = null!;
+    public string NationalId { get; set; } = null!;
+    public string LicenseNumber { get; set; } = null!;
+    public DateTime LicenseExpiredDate { get; set; }
+    public string DrivingLicenseNumber { get; set; } = null!;
+    public DateTime DrivingLicenseExpiredDate { get; set; }
+    public string VehicleNumber { get; set; } = null!;
+    public string VehicleModel { get; set; } = null!;
+    public string VehicleType { get; set; } = null!;
+    public string VehicleYear { get; set; } = null!;
+    public IFormFile? VehiclePhotoFile { get; set; } = null!;
+    public IFormFile? DrivingLicenseFile { get; set; } = null!;
+    public IFormFile? VehicleLicenseFile { get; set; } = null!;
+    public IFormFile? NationalIqamaIDFile { get; set; } = null!;
+}
+

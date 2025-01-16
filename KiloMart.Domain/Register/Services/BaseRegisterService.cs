@@ -63,7 +63,7 @@ public abstract class BaseRegisterService
             var partyId = await CreateParty(connection, displayName, transaction);
             await CreatePartyType(connection, partyId, transaction);
             var membershipUserId = await CreateMembershipUserDirectly(connection, email, password, UserRole, partyId, language, transaction);
-            transaction.Commit();
+            //transaction.Commit();
             return new RegisterResult { IsSuccess = true, UserId = membershipUserId, PartyId = partyId };
         }
         catch (Exception ex)

@@ -64,6 +64,68 @@ public static partial class Db
             IsAccepted = isAccepted
         }, transaction);
     }
+     public static async Task<long> InsertDeliveryProfileHistoryAsync(IDbConnection connection,
+        string firstName,
+        string secondName,
+        string nationalName,
+        string nationalId,
+        string licenseNumber,
+        DateTime licenseExpiredDate,
+        string drivingLicenseNumber,
+        DateTime drivingLicenseExpiredDate,
+        string vehicleNumber,
+        string vehicleModel,
+        string vehicleType,
+        string vehicleYear,
+        string vehiclePhotoFileUrl,
+        string drivingLicenseFileUrl,
+        string vehicleLicenseFileUrl,
+        string nationalIqamaIDFileUrl,
+        DateTime submitDate,
+        DateTime reviewDate,
+        int deliveryId,
+        bool isActive,
+        bool isRejected,
+        bool isAccepted,
+        IDbTransaction? transaction = null)
+    {
+        const string query = @"INSERT INTO [dbo].[DeliveryProfileHistory]
+                            ([FirstName], [SecondName], [NationalName], [NationalId], [LicenseNumber], [LicenseExpiredDate],
+                            [DrivingLicenseNumber], [DrivingLicenseExpiredDate], [VehicleNumber], [VehicleModel], [VehicleType],
+                            [VehicleYear], [VehiclePhotoFileUrl], [DrivingLicenseFileUrl], [VehicleLicenseFileUrl],
+                            [NationalIqamaIDFileUrl], [SubmitDate], [DeliveryId], [IsActive], [IsRejected], [IsAccepted],[ReviewDate])
+                            VALUES (@FirstName, @SecondName, @NationalName, @NationalId, @LicenseNumber, @LicenseExpiredDate,
+                            @DrivingLicenseNumber, @DrivingLicenseExpiredDate, @VehicleNumber, @VehicleModel, @VehicleType,
+                            @VehicleYear, @VehiclePhotoFileUrl, @DrivingLicenseFileUrl, @VehicleLicenseFileUrl,
+                            @NationalIqamaIDFileUrl, @SubmitDate, @DeliveryId, @IsActive, @IsRejected, @IsAccepted,@ReviewDate)
+                            SELECT CAST(SCOPE_IDENTITY() AS BIGINT)";
+
+        return await connection.ExecuteScalarAsync<long>(query, new
+        {
+            FirstName = firstName,
+            SecondName = secondName,
+            NationalName = nationalName,
+            NationalId = nationalId,
+            LicenseNumber = licenseNumber,
+            LicenseExpiredDate = licenseExpiredDate,
+            DrivingLicenseNumber = drivingLicenseNumber,
+            DrivingLicenseExpiredDate = drivingLicenseExpiredDate,
+            VehicleNumber = vehicleNumber,
+            VehicleModel = vehicleModel,
+            VehicleType = vehicleType,
+            VehicleYear = vehicleYear,
+            VehiclePhotoFileUrl = vehiclePhotoFileUrl,
+            DrivingLicenseFileUrl = drivingLicenseFileUrl,
+            VehicleLicenseFileUrl = vehicleLicenseFileUrl,
+            NationalIqamaIDFileUrl = nationalIqamaIDFileUrl,
+            SubmitDate = submitDate,
+            DeliveryId = deliveryId,
+            IsActive = isActive,
+            IsRejected = isRejected,
+            IsAccepted = isAccepted,
+            ReviewDate = reviewDate
+        }, transaction);
+    }
 
     public static async Task<bool> UpdateDeliveryProfileHistoryAsync(IDbConnection connection,
         long id,

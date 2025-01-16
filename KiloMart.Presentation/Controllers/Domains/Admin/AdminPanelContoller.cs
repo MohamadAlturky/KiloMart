@@ -1217,6 +1217,68 @@ public class AdminPanelController : AppController
             locations
         });
     }
+    [HttpGet("customers-orders-by-id")]
+    public async Task<IActionResult> GetCustomersrOrdersById(
+       [FromQuery] int customerId,
+       [FromQuery] byte language
+       )
+    {
+        var result = await ReadOrderService.GeteForCustomerAsync(language, customerId, _dbFactory);
+
+        return Success(result.Data.Select(
+            e =>
+            {
+                DriverLocation? location = null;
+                if (e.OrderDetails.Delivery.HasValue && e.OrderDetails.OrderStatus == (byte)OrderStatus.SHIPPED)
+                {
+                    location = _driversTrackerService.GetByKey(e.OrderDetails.Delivery.Value);
+                }
+                return new
+                {
+                    OrderDetails = new
+                    {
+                        e.OrderDetails.Id,
+                        OrderStatus = GetOrderStatusFromNumber(e.OrderDetails.OrderStatus).ToString(),
+                        e.OrderDetails.TotalPrice,
+                        e.OrderDetails.TransactionId,
+                        e.OrderDetails.Date,
+                        e.OrderDetails.PaymentType,
+                        e.OrderDetails.IsPaid,
+                        e.OrderDetails.ItemsPrice,
+                        e.OrderDetails.SystemFee,
+                        e.OrderDetails.DeliveryFee,
+                        e.OrderDetails.SpecialRequest,
+
+                        e.OrderDetails.Customer,
+                        e.OrderDetails.CustomerLocation,
+                        e.OrderDetails.CustomerInformationId,
+
+                        e.OrderDetails.Provider,
+                        e.OrderDetails.ProviderLocation,
+                        e.OrderDetails.ProviderInformationId,
+
+                        e.OrderDetails.Delivery,
+                        e.OrderDetails.DeliveryInformationId,
+
+                        e.OrderDetails.CustomerLocationName,
+                        e.OrderDetails.CustomerLocationLatitude,
+                        e.OrderDetails.CustomerLocationLongitude,
+                        e.OrderDetails.ProviderLocationName,
+                        e.OrderDetails.ProviderLocationLatitude,
+                        e.OrderDetails.ProviderLocationLongitude,
+
+
+                        e.OrderDetails.CustomerDisplayName,
+                        e.OrderDetails.ProviderDisplayName,
+                        e.OrderDetails.DeliveryDisplayName,
+                    },
+                    e.OrderProductOfferDetails,
+                    e.OrderProductDetails,
+                    DriverLocation = location
+                };
+            }
+        ).ToList());
+    }
     #endregion
 }
 

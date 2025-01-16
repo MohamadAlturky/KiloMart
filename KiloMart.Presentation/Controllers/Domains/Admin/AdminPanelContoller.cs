@@ -1060,7 +1060,7 @@ public class AdminPanelController : AppController
         long TotalOrdersValue = statistics is not null ? statistics.TotalOrders : 0;
         TotalOrdersValue = TotalOrdersValue != 0 ? TotalOrdersValue : 1;
 
-        
+
         return Success(new
         {
             displayName = party?.DisplayName,
@@ -1161,6 +1161,63 @@ public class AdminPanelController : AppController
     }
     #endregion
 
+
+    #region customer
+
+    [HttpGet("customers-summary")]
+    public async Task<IActionResult> GetCustomersSummaryAsync()
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+        // Fetching provider statistics
+        var stats = await Stats.GetCustomerMembershipCountsAsync(connection);
+
+        // Create a summary object to hold the results
+        var customerSummary = new
+        {
+
+            ActiveCustomersCount = stats.ActiveCount,
+            InactiveCustomersCount = stats.InactiveCount,
+
+        };
+
+        return Success(customerSummary); // Return a successful response with the summary
+    }
+
+
+    [HttpGet("customer-by-id")]
+    public async Task<IActionResult> GetCustomerById(
+       [FromQuery] int customerId
+   )
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        var user = await Db.GetMembershipUserByPartyAsync(connection, customerId);
+        var party = await Db.GetPartyByIdAsync(customerId, connection);
+        var profile = await Db.GetCustomerProfileByCustomerIdAsync(customerId, connection);
+        var statistics = await Stats.GetCustomerOrderStatisticsAsync(connection, customerId);
+        var locations = await Stats.GetLocationsByPartyAsync(connection, customerId);
+
+
+
+        return Success(new
+        {
+            displayName = party?.DisplayName,
+            customerId,
+            userId = user?.Id,
+            email = user?.Email,
+            isActive = user?.IsActive,
+            profile?.Customer,
+            profile?.FirstName,
+            profile?.SecondName,
+            profile?.NationalName,
+            profile?.NationalId,
+            isEmailVerified = user?.EmailConfirmed,
+            statistics?.OrdersCount,
+            statistics?.OrdersValue,
+            locations
+        });
+    }
+    #endregion
 }
 
 

@@ -128,3 +128,12 @@ namespace KiloMart.DataAccess.Database
         public string NationalId { get; set; } = null!;
     }
 }
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+

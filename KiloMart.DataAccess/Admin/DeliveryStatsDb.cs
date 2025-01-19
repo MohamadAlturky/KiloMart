@@ -76,6 +76,7 @@ public static partial class Stats
             pp.[IsAccepted],
             pp.[ReviewDescription],
             m.Email,
+            m.IsActive UserIsActive,
             party.DisplayName AS DisplayName,
             COUNT(DISTINCT o.Id) AS TotalOrders,
             SUM(pa.Value) AS ReceivedBalance,
@@ -198,6 +199,7 @@ public static partial class Stats
             pp.[IsAccepted],
             pp.[ReviewDescription],
             m.Email,
+            m.IsActive UserIsActive,
             party.DisplayName AS DisplayName,
             COUNT(DISTINCT o.Id) AS TotalOrders,
             SUM(pa.Value) AS ReceivedBalance,
@@ -312,6 +314,7 @@ public class DeliveryDataDto
     public DateTime ReviewDate { get; set; }
     public int DeliveryId { get; set; }
     public bool IsActive { get; set; }
+    public bool UserIsActive { get; set; }
     public bool IsRejected { get; set; }
     public bool IsAccepted { get; set; }
     public string ReviewDescription { get; set; }

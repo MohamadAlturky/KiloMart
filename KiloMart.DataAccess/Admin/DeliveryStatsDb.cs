@@ -114,6 +114,7 @@ public static partial class Stats
             pp.IsAccepted,
             pp.ReviewDescription,
             m.Email,
+            m.IsActive,
             party.DisplayName
         ORDER BY 
            pp.Id
@@ -239,6 +240,7 @@ public static partial class Stats
             pp.IsAccepted,
             pp.ReviewDescription,
             m.Email,
+            m.IsActive,
             party.DisplayName
         ORDER BY 
            pp.Id

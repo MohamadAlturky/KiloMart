@@ -3,6 +3,7 @@ using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Admin;
 using KiloMart.DataAccess.Database;
+using KiloMart.Domain.Delivery.Activity;
 using KiloMart.Domain.Orders.Common;
 using KiloMart.Domain.Orders.Services;
 using KiloMart.Domain.Register.Provider.Services;
@@ -755,13 +756,13 @@ public class AdminPanelController : AppController
 
         // Get delivery statistics
         var (activeDeliveryCount, deliveryType1Sum, deliveryType2Sum) = await Stats.GetDeliveryStatisticsAsync(connection);
-
+        
         // Create a response object containing the statistics
         var response = new
         {
             ActiveDeliveryCount = activeDeliveryCount,
-            DeliveryType1Sum = deliveryType1Sum,
-            DeliveryType2Sum = deliveryType2Sum
+            ReceivesSum = deliveryType1Sum,
+            DeductionsSum = deliveryType2Sum
         };
 
         return Success(response); // Return success response with statistics

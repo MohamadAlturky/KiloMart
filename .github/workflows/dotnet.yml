@@ -29,7 +29,7 @@ jobs:
       - name: Publish the solution
         run: |
           echo "Publishing the solution..." 
-          dotnet publish KiloMart.Presentation/KiloMart.Presentation.csproj -c Release -o publish
+          dotnet publish -c Release -o publish
 
       - name: Check build directory contents
         run: |

@@ -536,7 +536,8 @@ public class AdminPanelController : AppController
                 now, // submitDate
                 now, // reviewDate
                 result.PartyId.Value, // providerId
-                true); // isActive
+                true,
+                transaction); // isActive
 
             #endregion
 

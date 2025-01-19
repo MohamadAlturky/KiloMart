@@ -386,7 +386,7 @@ public class AdminPanelController : AppController
                     WithdrawalBalance = e.WithdrawalBalance / (TotalProductsValue * TotalOrdersValue),
                     ReceivedBalance = e.ReceivedBalance / (TotalProductsValue * TotalOrdersValue),
                     TotalBalnace = e.ReceivedBalance / (TotalProductsValue * TotalOrdersValue),
-                    AvailableBalnace = (e.ReceivedBalance - e.WithdrawalBalance) / (TotalProductsValue * TotalOrdersValue),
+                    availableBalance = (e.ReceivedBalance - e.WithdrawalBalance) / (TotalProductsValue * TotalOrdersValue),
                     locationDetails = new
                     {
                         e.Long,
@@ -435,7 +435,7 @@ public class AdminPanelController : AppController
                     WithdrawalBalance = e.WithdrawalBalance / (TotalProductsValue * TotalOrdersValue),
                     ReceivedBalance = e.ReceivedBalance / (TotalProductsValue * TotalOrdersValue),
                     TotalBalnace = e.ReceivedBalance / (TotalProductsValue * TotalOrdersValue),
-                    AvailableBalnace = (e.ReceivedBalance - e.WithdrawalBalance) / (TotalProductsValue * TotalOrdersValue),
+                    availableBalance = (e.ReceivedBalance - e.WithdrawalBalance) / (TotalProductsValue * TotalOrdersValue),
                     locationDetails = new
                     {
                         e.Long,
@@ -1278,6 +1278,36 @@ public class AdminPanelController : AppController
                 };
             }
         ).ToList());
+    }
+
+    [HttpGet("customers/paginated")]
+    public async Task<IActionResult> GetPaginatedCustomersFilteredAsync(
+       [FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? term = null)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+
+        // Fetch paginated providers data
+        var result = await Stats.GetPaginatedCustomersFilteredAsync(connection, page, pageSize, term);
+
+        return Success(new
+        {
+            result.TotalCount,
+            customers = result.Items.Select(x =>
+            new
+            {
+
+                x.Id,
+                x.Email,
+                x.EmailConfirmed,
+                x.Role,
+                x.Party,
+                x.IsActive,
+                x.Language,
+                x.IsDeleted,
+                x.DisplayName,
+                x.Balance,
+            }).ToList()
+        });
     }
     #endregion
 }

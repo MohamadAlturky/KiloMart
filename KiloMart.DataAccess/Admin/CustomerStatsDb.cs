@@ -1,4 +1,5 @@
 using Dapper;
+using KiloMart.Core.Models;
 using System.Data;
 
 namespace KiloMart.DataAccess.Admin;
@@ -51,9 +52,9 @@ public static partial class Stats
         return result;
     }
 
-public static async Task<List<LocationDto>> GetLocationsByPartyAsync(IDbConnection connection, int partyId)
-{
-    const string query = @"
+    public static async Task<List<LocationDto>> GetLocationsByPartyAsync(IDbConnection connection, int partyId)
+    {
+        const string query = @"
         SELECT 
             l.[Id] AS LocationId,
             l.[Longitude] AS LocationLongitude,
@@ -73,11 +74,72 @@ public static async Task<List<LocationDto>> GetLocationsByPartyAsync(IDbConnecti
         WHERE l.Party = @party
         ORDER BY l.[Id] DESC;";
 
-    var locations = await connection.QueryAsync<LocationDto>(query, new { party = partyId });
+        var locations = await connection.QueryAsync<LocationDto>(query, new { party = partyId });
 
-    return locations.ToList();
-}
+        return locations.ToList();
+    }
 
+
+    // Method to get the total count of active customers
+    public static async Task<int> GetActiveCustomersCountFilteredAsync(IDbConnection connection, string? searchTerm = null)
+    {
+        const string countQuery = @"
+        SELECT COUNT(DISTINCT m.Id) 
+        FROM [dbo].[MembershipUser] m
+            INNER JOIN dbo.[Customer] c ON m.Party = c.Party
+            INNER JOIN dbo.[Party] p ON p.Id = c.Party
+        WHERE (@SearchTerm IS NULL OR 
+                 p.DisplayName LIKE '%' + @SearchTerm + '%' OR 
+                 m.Email LIKE '%' + @SearchTerm + '%');
+    ";
+
+        return await connection.ExecuteScalarAsync<int>(countQuery, new { SearchTerm = searchTerm });
+    }
+
+    // Method to get paginated customer data
+    public static async Task<IEnumerable<CustomerDataDto>> GetPaginatedCustomersDataFilteredAsync(
+        IDbConnection connection, int page, int pageSize, string? searchTerm = null)
+    {
+        const string dataQuery = @"
+        SELECT 
+            m.Id,
+            m.Email,
+            m.EmailConfirmed,
+            m.PasswordHash,
+            m.Role,
+            m.Party,
+            m.IsActive,
+            m.Language,
+            m.IsDeleted,
+            p.DisplayName,
+            (SELECT SUM(o.TotalPrice) FROM dbo.[Order] o INNER JOIN OrderCustomerInformation oci ON oci.[Customer] = m.Party)  AS Balance
+
+        FROM [dbo].[MembershipUser] m
+            INNER JOIN dbo.[Customer] c ON m.Party = c.Party
+            INNER JOIN dbo.[Party] p ON p.Id = c.Party
+        WHERE (@SearchTerm IS NULL OR 
+                 p.DisplayName LIKE '%' + @SearchTerm + '%' OR 
+                 m.Email LIKE '%' + @SearchTerm + '%')
+        ORDER BY m.Id
+        OFFSET (@Page - 1) * @PageSize ROWS
+        FETCH NEXT @PageSize ROWS ONLY;
+    ";
+
+        return await connection.QueryAsync<CustomerDataDto>(dataQuery, new { Page = page, PageSize = pageSize, SearchTerm = searchTerm });
+    }
+
+    // Combined method to get paginated customers result with total count
+    public static async Task<PaginatedResult<CustomerDataDto>> GetPaginatedCustomersFilteredAsync(IDbConnection connection, int page, int pageSize, string? searchTerm = null)
+    {
+        var totalCount = await GetActiveCustomersCountFilteredAsync(connection, searchTerm);
+        var data = await GetPaginatedCustomersDataFilteredAsync(connection, page, pageSize, searchTerm);
+
+        return new PaginatedResult<CustomerDataDto>
+        {
+            TotalCount = totalCount,
+            Items = data.ToArray()
+        };
+    }
 }
 public class CustomerMembershipCountsDto
 {
@@ -101,7 +163,7 @@ public class LocationDto
     public string LocationName { get; set; }
     public int LocationParty { get; set; }
     public bool LocationIsActive { get; set; }
-    
+
     public int? LocationDetailsId { get; set; }
     public string? LocationDetailsBuildingType { get; set; }
     public string? LocationDetailsBuildingNumber { get; set; }
@@ -109,4 +171,18 @@ public class LocationDto
     public string? LocationDetailsApartmentNumber { get; set; }
     public string? LocationDetailsStreetNumber { get; set; }
     public string? LocationDetailsPhoneNumber { get; set; }
+}
+public class CustomerDataDto
+{
+    public int Id { get; set; }
+    public string Email { get; set; }
+    public bool EmailConfirmed { get; set; }
+    public string PasswordHash { get; set; }
+    public string Role { get; set; }
+    public int Party { get; set; }
+    public bool IsActive { get; set; }
+    public string Language { get; set; }
+    public bool IsDeleted { get; set; }
+    public string DisplayName { get; set; }
+    public decimal Balance { get; set; }
 }

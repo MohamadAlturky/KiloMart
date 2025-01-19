@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\KiloMart.Core\KiloMart.Core.csproj" />
+    <PackageReference Include="Dapper" Version="2.1.35" />
   </ItemGroup>
 
 </Project>

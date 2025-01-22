@@ -155,52 +155,90 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
 
     #region Favorites
 
-    [HttpPost("add-favorite-product")]
+    // [HttpPost("add-favorite-product")]
+    // [Guard([Roles.Customer])]
+    // public async Task<IActionResult> AddFavoriteProduct([FromBody] AddFavoriteProductRequest request)
+    // {
+    //     using var connection = _dbFactory.CreateDbConnection();
+    //     var customerId = _userContext.Get().Party;
+    //     var exists = await Db.GetFavoriteProductsByCustomerAndProductAsync(customerId, request.ProductId, connection);
+    //     if (exists is not null)
+    //     {
+    //         return Success(new { id = 0, message = "Product already exists in favorites" });
+    //     }
+    //     var favoriteProductId = await Db.InsertFavoriteProductAsync(connection, customerId, request.ProductId);
+    //     return Success(new { id = favoriteProductId });
+    // }
+
+    // [HttpDelete("remove-favorite-product/{id}")]
+    // [Guard([Roles.Customer])]
+    // public async Task<IActionResult> RemoveFavoriteProduct(long id)
+    // {
+    //     using var connection = _dbFactory.CreateDbConnection();
+    //     FavoriteProduct? favorite = await Db.GetFavoriteProductsByIdAsync(id, connection);
+    //     if (favorite is null)
+    //     {
+    //         return DataNotFound("Favorite product not found.");
+    //     }
+    //     if (favorite.Customer != _userContext.Get().Party)
+    //     {
+    //         return Fail("un authorized");
+    //     }
+    //     var deleted = await Db.DeleteFavoriteProductAsync(connection, id);
+    //     if (!deleted)
+    //     {
+    //         return DataNotFound("Favorite product not found.");
+    //     }
+
+    //     return Success();
+    // }
+
+
+
+    public class ToggleFavoriteProductRequest
+    {
+        public int ProductId { get; set; }
+    }
+
+    [HttpPost("toggle-favorite-product")]
     [Guard([Roles.Customer])]
-    public async Task<IActionResult> AddFavoriteProduct([FromBody] AddFavoriteProductRequest request)
+    public async Task<IActionResult> ToggleFavoriteProduct([FromBody] ToggleFavoriteProductRequest request)
     {
         using var connection = _dbFactory.CreateDbConnection();
         var customerId = _userContext.Get().Party;
+
+        // Check if the product is already in the favorites
         var exists = await Db.GetFavoriteProductsByCustomerAndProductAsync(customerId, request.ProductId, connection);
+
         if (exists is not null)
         {
-            return Success(new { id = 0, message = "Product already exists in favorites" });
+            // If it exists, remove it from favorites
+            var deleted = await Db.DeleteFavoriteProductAsync(connection, exists.Id);
+            if (!deleted)
+            {
+                return DataNotFound("Failed to remove favorite product.");
+            }
+
+            return Success(new { message = "Product removed from favorites" });
         }
-        var favoriteProductId = await Db.InsertFavoriteProductAsync(connection, customerId, request.ProductId);
-        return Success(new { id = favoriteProductId });
+        else
+        {
+            // If it does not exist, add it to favorites
+            var favoriteProductId = await Db.InsertFavoriteProductAsync(connection, customerId, request.ProductId);
+
+            return Success(new { id = favoriteProductId, message = "Product added to favorites" });
+        }
     }
 
-    [HttpDelete("remove-favorite-product/{id}")]
-    [Guard([Roles.Customer])]
-    public async Task<IActionResult> RemoveFavoriteProduct(long id)
-    {
-        using var connection = _dbFactory.CreateDbConnection();
-        FavoriteProduct? favorite = await Db.GetFavoriteProductsByIdAsync(id, connection);
-        if (favorite is null)
-        {
-            return DataNotFound("Favorite product not found.");
-        }
-        if (favorite.Customer != _userContext.Get().Party)
-        {
-            return Fail("un authorized");
-        }
-        var deleted = await Db.DeleteFavoriteProductAsync(connection, id);
-        if (!deleted)
-        {
-            return DataNotFound("Favorite product not found.");
-        }
-
-        return Success();
-    }
 
     [HttpGet("get-favorite-products")]
     [Guard([Roles.Customer])]
-    public async Task<IActionResult> GetFavoriteProducts()
+    public async Task<IActionResult> GetFavoriteProductsInfo([FromQuery] byte language = 1)
     {
         using var connection = _dbFactory.CreateDbConnection();
         var customerId = _userContext.Get().Party;
 
-        var favoriteProducts = await Db.GetFavoriteProductsByCustomerIdAsync(customerId, connection);
+        var favoriteProducts = await Db.GetFavoriteProductsByCustomerWithInfoAndPricingAsync(customerId, language, 12, null, null, connection);
         return Success(favoriteProducts);
     }
     [HttpGet("get-favorite-products-with-details")]

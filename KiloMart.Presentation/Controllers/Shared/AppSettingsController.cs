@@ -75,8 +75,31 @@ public class AppSettingsController : AppController
         public string Title { get; set; } = null!;
         public string Message { get; set; } = null!;
     }
-    [HttpPost("notify")]
+    [HttpPost("notify/admin")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> Notify([FromBody] NotificationDto dto, [FromQuery] int userId)
+    {
+        //await _hubContext.SendChatMessage(userId,message);
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+        await Db.InsertNotificationAsync(
+            connection,
+            dto.Title,
+            dto.Message,
+            DateTime.Now,
+            userId,
+            "");
+        foreach (var connectionId in NotificationHub._connections.GetConnections(userId))
+        {
+            await _hubContext.Clients.Client(connectionId).SendAsync("ReceiveNotification",
+             new { Message = $"this message is just for you user Id = {userId}, the title = {dto.Title}, the message :\n {dto.Message}" });
+        }
+        return Success();
+    }
+    [HttpPost("notify/all-users")]
+    [Guard([Roles.Customer, Roles.Delivery, Roles.Provider])]
+
+    public async Task<IActionResult> NotifyForAll([FromBody] NotificationDto dto, [FromQuery] int userId)
     {
         //await _hubContext.SendChatMessage(userId,message);
         using var connection = _dbFactory.CreateDbConnection();
@@ -156,6 +179,67 @@ public class AppSettingsController : AppController
     #endregion
 
 
+    #region mobile-app-configuration
+    [HttpGet("mobile-app-configuration")]
+    public async Task<IActionResult> GetMobileAppConfiguration()
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        var config = await Db.GetMobileAppConfigurationByIdAsync(0, connection);
+        if (config is null)
+        {
+            return DataNotFound($"Mobile app configuration with ID {0} not found.");
+        }
+
+        return Success(config);
+    }
+
+    [HttpPut("mobile-app-configuration")]
+    [Guard([Roles.Admin])]
+    public async Task<IActionResult> UpdateMobileAppConfiguration([FromBody] MobileAppConfigurationUpdateRequest request)
+    {
+        if (request == null)
+        {
+            return BadRequest("Invalid request.");
+        }
+
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        var existingConfig = await Db.GetMobileAppConfigurationByIdAsync(0, connection);
+        if (existingConfig is null)
+        {
+            return DataNotFound($"Mobile app configuration with ID {0} not found.");
+        }
+
+        var updated = await Db.UpdateMobileAppConfigurationAsync(
+            connection,
+            0,
+            request.CustomerAppMinimumBuildNumberAndroid ?? existingConfig.CustomerAppMinimumBuildNumberAndroid,
+            request.CustomerAppMinimumBuildNumberIos ?? existingConfig.CustomerAppMinimumBuildNumberIos,
+            request.CustomerAppUrlAndroid ?? existingConfig.CustomerAppUrlAndroid,
+            request.CustomerAppUrlIos ?? existingConfig.CustomerAppUrlIos,
+            request.ProviderAppMinimumBuildNumberAndroid ?? existingConfig.ProviderAppMinimumBuildNumberAndroid,
+            request.ProviderAppMinimumBuildNumberIos ?? existingConfig.ProviderAppMinimumBuildNumberIos,
+            request.ProviderAppUrlAndroid ?? existingConfig.ProviderAppUrlAndroid,
+            request.ProviderAppUrlIos ?? existingConfig.ProviderAppUrlIos,
+            request.DeliveryAppMinimumBuildNumberAndroid ?? existingConfig.DeliveryAppMinimumBuildNumberAndroid,
+            request.DeliveryAppMinimumBuildNumberIos ?? existingConfig.DeliveryAppMinimumBuildNumberIos,
+            request.DeliveryAppUrlAndroid ?? existingConfig.DeliveryAppUrlAndroid,
+            request.DeliveryAppUrlIos ?? existingConfig.DeliveryAppUrlIos
+        );
+
+        if (!updated)
+        {
+            return DataNotFound($"Mobile app configuration with ID {0} not found or not updated.");
+        }
+
+        return Success();
+    }
+    #endregion
+
+
 }
 
 public class SystemSettingsUpdateRequest
@@ -170,4 +254,20 @@ public class SystemSettingsUpdateRequest
     public decimal? DistanceToAdd { get; set; }
     public decimal? MaxDistanceToAdd { get; set; }
     public decimal? RaduisForGetProducts { get; set; }
+}
+
+public class MobileAppConfigurationUpdateRequest
+{
+    public float? CustomerAppMinimumBuildNumberAndroid { get; set; }
+    public float? CustomerAppMinimumBuildNumberIos { get; set; }
+    public string? CustomerAppUrlAndroid { get; set; }
+    public string? CustomerAppUrlIos { get; set; }
+    public float? ProviderAppMinimumBuildNumberAndroid { get; set; }
+    public float? ProviderAppMinimumBuildNumberIos { get; set; }
+    public string? ProviderAppUrlAndroid { get; set; }
+    public string? ProviderAppUrlIos { get; set; }
+    public float? DeliveryAppMinimumBuildNumberAndroid { get; set; }
+    public float? DeliveryAppMinimumBuildNumberIos { get; set; }
+    public string? DeliveryAppUrlAndroid { get; set; }
+    public string? DeliveryAppUrlIos { get; set; }
 }

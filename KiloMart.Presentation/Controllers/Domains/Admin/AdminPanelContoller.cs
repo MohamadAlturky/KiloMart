@@ -591,11 +591,14 @@ public class AdminPanelController : AppController
                 request.PhoneNumber,
                 locationId,
                 transaction);
+
+            transaction.Commit();
             return Success(new { id, request });
             #endregion
         }
         catch (Exception ex)
         {
+            transaction.Rollback();
             return Fail($"Failed to insert provider profile history: {ex.Message}");
         }
     }

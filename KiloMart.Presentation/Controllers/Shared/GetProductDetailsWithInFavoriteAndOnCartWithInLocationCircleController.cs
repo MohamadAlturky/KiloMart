@@ -44,7 +44,7 @@ public class GetProductDetailsWithInFavoriteAndOnCartWithInLocationCircleControl
             latitude,
             connection);
 
-        return Ok(result);
+        return Success(result);
     }
 
     [HttpGet("top-selling-with-favorite-and-cart")]
@@ -78,7 +78,7 @@ public class GetProductDetailsWithInFavoriteAndOnCartWithInLocationCircleControl
             latitude,
             connection);
 
-        return Ok(result);
+        return Success(result);
     }
 
     [HttpGet("with-pricing/list/paginated-with-location")]
@@ -115,7 +115,7 @@ public class GetProductDetailsWithInFavoriteAndOnCartWithInLocationCircleControl
             latitude,
             connection);
 
-        return Ok(new
+        return Success(new
         {
             Items = result.Items,
             result.TotalPages,
@@ -161,7 +161,7 @@ public class GetProductDetailsWithInFavoriteAndOnCartWithInLocationCircleControl
             latitude,
             connection);
 
-        return Ok(new
+        return Success(new
         {
             Items = result.Items,
             result.TotalPages,
@@ -205,6 +205,6 @@ public class GetProductDetailsWithInFavoriteAndOnCartWithInLocationCircleControl
             latitude,
             connection);
 
-        return Ok(result);
+        return Success(result);
     }
 }

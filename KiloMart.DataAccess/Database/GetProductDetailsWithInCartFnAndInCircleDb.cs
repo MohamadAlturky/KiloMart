@@ -156,6 +156,95 @@ public static partial class Db
         });
     }
 
+
+     public static async Task<IEnumerable<ProductDetailForProviderTopSelling>> GetTopSellingProductDetailsForProviderAsync(
+        byte language,
+        int provider,
+        int count,
+        decimal distanceInKm,
+        decimal? longitude,
+        decimal? latitude,
+        IDbConnection connection)
+    {
+        const string query = @"
+        SELECT 
+            [ProductId],
+            [ProductImageUrl],
+            [ProductIsActive],
+            [ProductMeasurementUnit],
+            [ProductDescription],
+            [ProductName],
+            [ProductCategoryId],
+            [ProductCategoryIsActive],
+            [ProductCategoryName],
+            DealId,
+            DealEndDate,
+            DealStartDate,
+            DealIsActive,
+            DealOffPercentage,
+            InCart,
+            InFavorite, 
+			po.MaxPrice AS MaxPrice, 
+            po.MinPrice AS MinPrice 
+        FROM [dbo].[GetProductDetailsWithInFavoriteAndInCartFN](@Language, @Customer) pd
+        INNER JOIN 
+        (SELECT TOP(@Count)
+            Product, COUNT(Product) Count
+            FROM dbo.[OrderProduct]
+            GROUP BY Product) p ON p.Product = pd.ProductId
+        INNER JOIN (
+            
+            SELECT 
+                [Product], 
+                MAX([Price]) AS MaxPrice, 
+                MIN([Price]) AS MinPrice,
+                SUM(Quantity) AS Quantity
+            FROM 
+                [ProductOffer] po
+                INNER JOIN [Location] l 
+                ON 
+                    l.[Party] = po.[Provider] AND
+                    l.IsActive = 1 AND
+                    (dbo.GetDistanceBetweenPoints(l.[Latitude], l.[Longitude], @Latitude, @Longitude) <= @DistanceInKm OR (@Longitude IS NULL OR @Latitude IS NULL))
+            WHERE 
+                po.[IsActive] = 1
+            GROUP BY 
+                [Product]
+
+        ) po ON pd.[ProductId] = po.[Product]
+        WHERE pd.[ProductIsActive] = 1 AND po.Quantity > 0";
+
+        return await connection.QueryAsync<ProductDetailForProviderTopSelling>(query, new
+        {
+            Language = language,
+            Customer = provider,
+            Count = count,
+            DistanceInKm = distanceInKm,
+            Longitude = longitude,
+            Latitude = latitude
+        });
+    }
+
+public class ProductDetailForProviderTopSelling
+{
+    public int ProductId { get; set; }
+    public string ProductImageUrl { get; set; } = null!;
+    public bool ProductIsActive { get; set; }
+    public string ProductMeasurementUnit { get; set; } = null!;
+    public string ProductDescription { get; set; } = null!;
+    public string ProductName { get; set; } = null!;
+    public int ProductCategoryId { get; set; }
+    public bool ProductCategoryIsActive { get; set; }
+    public string ProductCategoryName { get; set; } = null!;
+    public int? DealId { get; set; }
+    public DateTime? DealEndDate { get; set; }
+    public DateTime? DealStartDate { get; set; }
+    public bool? DealIsActive { get; set; }
+    public decimal? DealOffPercentage { get; set; }
+    public decimal MaxPrice { get; set; }
+    public decimal MinPrice { get; set; }
+}
+
     public static async Task<PaginatedResult<ProductDetailWithPricingWithInFavoriteAndOnCart>> GetProductDetailsWithPricingWithInFavoriteAndOnCartWithInLocationCircleAsync(
         byte language,
         int pageNumber,

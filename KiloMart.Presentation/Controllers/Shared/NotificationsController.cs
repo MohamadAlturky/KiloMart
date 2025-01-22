@@ -115,6 +115,29 @@ public class NotificationsController(IDbFactory dbFactory, IUserContext userCont
             return Fail(new string[] { ex.Message });
         }
     }
+    [HttpDelete("all-users/delete")]
+    [Guard([Roles.Customer, Roles.Delivery, Roles.Provider])]
+    public async Task<IActionResult> DeleteForAll([FromBody] MarkNotificationsAsReadDto notification)
+    {
+        int party = _userContext.Get().Party;
+
+        using var connection = _dbFactory.CreateDbConnection();
+
+        try
+        {
+            connection.Open();
+
+            await Db.DeleteNotificationAsync(
+                connection,
+                notification.Id);
+
+            return Success(new { DeletedId = notification.Id });
+        }
+        catch (Exception ex)
+        {
+            return Fail(new string[] { ex.Message });
+        }
+    }
 
     public class MarkNotificationsAsReadDto
     {

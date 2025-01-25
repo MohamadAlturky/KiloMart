@@ -720,28 +720,28 @@ public class ProviderActivitiesContoller : AppController
 
         return Success(stats);
     }
-    [HttpGet("stats-test")]
-    // [Guard([Roles.Provider])]
-    public async Task<IActionResult> GetProviderStats(
-            [FromQuery] DateTime startDate,
-            [FromQuery] DateTime endDate,
-            [FromQuery] int topProductsCount = 10,
-            [FromQuery] int providerId = 27,
-            [FromQuery] byte language = 1)
-    {
-        using var connection = _dbFactory.CreateDbConnection();
-        connection.Open();
+    // [HttpGet("stats-test")]
+    // // [Guard([Roles.Provider])]
+    // public async Task<IActionResult> GetProviderStats(
+    //         [FromQuery] DateTime startDate,
+    //         [FromQuery] DateTime endDate,
+    //         [FromQuery] int topProductsCount = 10,
+    //         [FromQuery] int providerId = 27,
+    //         [FromQuery] byte language = 1)
+    // {
+    //     using var connection = _dbFactory.CreateDbConnection();
+    //     connection.Open();
 
-        var stats = new ProviderStatsResponse
-        {
-            TopSellingProducts = await Stats.ToSelling(connection, language, topProductsCount, endDate, startDate),
-            OrderMetrics = await Stats.GetOrderMetricsAsync(connection, providerId, endDate, startDate),
-            CompletedOrdersCount = await Stats.GetCompletedOrdersCountAsync(connection, providerId, endDate, startDate),
-            MonthlyTrends = await Stats.GetMonthlyOrderMetricsAsync(connection, providerId, endDate, startDate)
-        };
+    //     var stats = new ProviderStatsResponse
+    //     {
+    //         TopSellingProducts = await Stats.ToSelling(connection, language, topProductsCount, endDate, startDate),
+    //         OrderMetrics = await Stats.GetOrderMetricsAsync(connection, providerId, endDate, startDate),
+    //         CompletedOrdersCount = await Stats.GetCompletedOrdersCountAsync(connection, providerId, endDate, startDate),
+    //         MonthlyTrends = await Stats.GetMonthlyOrderMetricsAsync(connection, providerId, endDate, startDate)
+    //     };
 
-        return Success(stats);
-    }
+    //     return Success(stats);
+    // }
     // Response DTO
     public class ProviderStatsResponse
     {

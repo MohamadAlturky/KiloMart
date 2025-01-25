@@ -1,5 +1,6 @@
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
+using KiloMart.DataAccess.Admin;
 using KiloMart.DataAccess.Database;
 using KiloMart.Domain.Delivery.Activity;
 using KiloMart.Domain.Orders.Common;
@@ -696,4 +697,57 @@ public class ProviderActivitiesContoller : AppController
 
     #endregion
 
+    [HttpGet("stats")]
+    [Guard([Roles.Provider])]
+    public async Task<IActionResult> GetProviderStats(
+        [FromQuery] DateTime startDate,
+        [FromQuery] DateTime endDate,
+        [FromQuery] int topProductsCount = 10,
+        [FromQuery] byte language = 1)
+    {
+        var providerId = _userContext.Get().Party;
+
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        var stats = new ProviderStatsResponse
+        {
+            TopSellingProducts = await Stats.ToSelling(connection, language, topProductsCount, endDate, startDate),
+            OrderMetrics = await Stats.GetOrderMetricsAsync(connection, providerId, endDate, startDate),
+            CompletedOrdersCount = await Stats.GetCompletedOrdersCountAsync(connection, providerId, endDate, startDate),
+            MonthlyTrends = await Stats.GetMonthlyOrderMetricsAsync(connection, providerId, endDate, startDate)
+        };
+
+        return Success(stats);
+    }
+    [HttpGet("stats-test")]
+    // [Guard([Roles.Provider])]
+    public async Task<IActionResult> GetProviderStats(
+            [FromQuery] DateTime startDate,
+            [FromQuery] DateTime endDate,
+            [FromQuery] int topProductsCount = 10,
+            [FromQuery] int providerId = 27,
+            [FromQuery] byte language = 1)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        var stats = new ProviderStatsResponse
+        {
+            TopSellingProducts = await Stats.ToSelling(connection, language, topProductsCount, endDate, startDate),
+            OrderMetrics = await Stats.GetOrderMetricsAsync(connection, providerId, endDate, startDate),
+            CompletedOrdersCount = await Stats.GetCompletedOrdersCountAsync(connection, providerId, endDate, startDate),
+            MonthlyTrends = await Stats.GetMonthlyOrderMetricsAsync(connection, providerId, endDate, startDate)
+        };
+
+        return Success(stats);
+    }
+    // Response DTO
+    public class ProviderStatsResponse
+    {
+        public IEnumerable<ToSellingProviderProductDetailDto> TopSellingProducts { get; set; }
+        public AggregatedOrderMetrics? OrderMetrics { get; set; }
+        public int CompletedOrdersCount { get; set; }
+        public IEnumerable<MonthlyOrderMetrics> MonthlyTrends { get; set; }
+    }
 }

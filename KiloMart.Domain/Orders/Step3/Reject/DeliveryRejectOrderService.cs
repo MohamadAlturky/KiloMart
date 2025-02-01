@@ -38,7 +38,7 @@
 
 //             OrderActivity orderActivity = new()
 //             {
-//                 Date = DateTime.Now,
+//                 Date = SaudiDateTimeHelper.GetCurrentTime(),
 //                 OperatedBy = userPayLoad.Party,
 //                 Order = id,
 //                 OrderActivityType = (byte)OrderActivityType.RejectedFromDelivery

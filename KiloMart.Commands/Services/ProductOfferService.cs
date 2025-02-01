@@ -2,6 +2,7 @@ using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.Core.Models;
 using KiloMart.DataAccess.Database;
+using KiloMart.Domain.DateServices;
 
 namespace KiloMart.Commands.Services
 {
@@ -29,7 +30,7 @@ namespace KiloMart.Commands.Services
             if (Quantity <= 0)
                 errors.Add("Quantity must be a positive number.");
 
-            //if (FromDate.AddMinutes(1) < DateTime.UtcNow)
+            //if (FromDate.AddMinutes(1) < SaudiDateTimeHelper.GetCurrentTime())
             //    errors.Add("From date must be in the future");
 
             return (errors.Count == 0, errors.ToArray());
@@ -75,7 +76,7 @@ namespace KiloMart.Commands.Services
                     model.Price,
                     model.OffPercentage,
                     //model.FromDate,
-                    DateTime.Now,
+                    SaudiDateTimeHelper.GetCurrentTime(),
                     null,
                     model.Quantity,
                     userPayLoad.Party);
@@ -85,7 +86,7 @@ namespace KiloMart.Commands.Services
                     Product = model.Product,
                     Price = model.Price,
                     OffPercentage = model.OffPercentage,
-                    FromDate = DateTime.Now,
+                    FromDate = SaudiDateTimeHelper.GetCurrentTime(),
                     ToDate = null,
                     Quantity = model.Quantity,
                     Provider = userPayLoad.Party,
@@ -173,7 +174,7 @@ namespace KiloMart.Commands.Services
                 }
 
                 existingModel.IsActive = false;
-                existingModel.ToDate = DateTime.Now;
+                existingModel.ToDate = SaudiDateTimeHelper.GetCurrentTime();
 
                 await Db.UpdateProductOfferAsync(writeConnection,
                     existingModel.Id,
@@ -189,7 +190,7 @@ namespace KiloMart.Commands.Services
                 
                 var newOffer = new ProductOffer()
                 {
-                    FromDate = DateTime.Now,
+                    FromDate = SaudiDateTimeHelper.GetCurrentTime(),
                     ToDate = null,
                     OffPercentage = existingModel.OffPercentage,
                     Product = existingModel.Product,
@@ -241,7 +242,7 @@ namespace KiloMart.Commands.Services
                 }
 
                 existingModel.IsActive = false;
-                existingModel.ToDate = DateTime.Now;
+                existingModel.ToDate = SaudiDateTimeHelper.GetCurrentTime();
                 await Db.UpdateProductOfferAsync(connection,
                     existingModel.Id,
                     existingModel.Product,

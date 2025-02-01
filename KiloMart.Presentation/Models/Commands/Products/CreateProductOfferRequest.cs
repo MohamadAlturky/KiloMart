@@ -1,3 +1,5 @@
+using KiloMart.Domain.DateServices;
+
 namespace KiloMart.Presentation.Models.Commands.Products;
 
 public class CreateProductOfferRequest
@@ -18,7 +20,7 @@ public class CreateProductOfferRequest
             errors.Add("Price must be greater than zero");
         if (OffPercentage < 0 || OffPercentage > 100)
             errors.Add("Off percentage must be between 0 and 100");
-        if (FromDate.AddMinutes(1) < DateTime.UtcNow)
+        if (FromDate.AddMinutes(1) < SaudiDateTimeHelper.GetCurrentTime())
             errors.Add("From date must be in the future");
         if (Quantity <= 0)
             errors.Add("Quantity must be greater than zero");

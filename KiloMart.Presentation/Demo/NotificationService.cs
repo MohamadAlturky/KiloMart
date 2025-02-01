@@ -16,7 +16,7 @@
 //         while (!stoppingToken.IsCancellationRequested)
 //         {
 //             await _hubContext.Clients.All.SendAsync("ReceiveNotification", 
-//             new {Message = $"Notification at {DateTime.Now}"});
+//             new {Message = $"Notification at {SaudiDateTimeHelper.GetCurrentTime()}"});
 //             await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
 //         }
 //     }

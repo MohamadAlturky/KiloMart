@@ -1,6 +1,7 @@
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Database;
+using KiloMart.Domain.DateServices;
 using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Authorization;
 using KiloMart.Presentation.Services;
@@ -136,7 +137,7 @@ public class DeliveryProfileHistoryController(
                 DrivingLicenseFilePath,
                 VehicleLicenseFilePath,
                 NationalIqamaIDFilePath,
-                DateTime.Now,
+                SaudiDateTimeHelper.GetCurrentTime(),
                 user.Party,
                 false,
                 false,
@@ -162,7 +163,7 @@ public class DeliveryProfileHistoryController(
                 DrivingLicenseFilePath,
                 VehicleLicenseFilePath,
                 NationalIqamaIDFilePath,
-                SubmitDate = DateTime.Now,
+                SubmitDate = SaudiDateTimeHelper.GetCurrentTime(),
                 DeliveryId = user.Party,
                 IsActive = false,
                 IsRejected = false,
@@ -294,7 +295,7 @@ public class DeliveryProfileHistoryController(
                 DrivingLicenseFilePath??oldProfile.DrivingLicenseFileUrl,
                 VehicleLicenseFilePath??oldProfile.VehicleLicenseFileUrl,
                 NationalIqamaIDFilePath??oldProfile.NationalIqamaIDFileUrl,
-                DateTime.Now,
+                SaudiDateTimeHelper.GetCurrentTime(),
                 user.Party,
                 false,
                 false,
@@ -320,7 +321,7 @@ public class DeliveryProfileHistoryController(
                 DrivingLicenseFileUrl =DrivingLicenseFilePath??oldProfile.DrivingLicenseFileUrl,
                 VehicleLicenseFileUrl = VehicleLicenseFilePath??oldProfile.VehicleLicenseFileUrl,
                 NationalIqamaIDFileUrl = NationalIqamaIDFilePath??oldProfile.NationalIqamaIDFileUrl,
-                SubmitDate = DateTime.Now,
+                SubmitDate = SaudiDateTimeHelper.GetCurrentTime(),
                 DeliveryId = user.Party,
                 IsActive = false,
                 IsRejected = false,
@@ -477,7 +478,7 @@ public class DeliveryProfileHistoryController(
             false,
             transaction);
 
-        profileHistory.ReviewDate = DateTime.Now;
+        profileHistory.ReviewDate = SaudiDateTimeHelper.GetCurrentTime();
         profileHistory.IsAccepted = true;
         profileHistory.IsRejected = false;
         profileHistory.IsActive = true;
@@ -529,7 +530,7 @@ public class DeliveryProfileHistoryController(
         }
 
 
-        profileHistory.ReviewDate = DateTime.Now;
+        profileHistory.ReviewDate = SaudiDateTimeHelper.GetCurrentTime();
         profileHistory.IsAccepted = false;
         profileHistory.IsRejected = true;
         profileHistory.IsActive = false;

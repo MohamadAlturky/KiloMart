@@ -2,6 +2,7 @@
 using KiloMart.Core.Contracts;
 using KiloMart.Core.Models;
 using KiloMart.DataAccess.Database;
+using KiloMart.Domain.DateServices;
 using KiloMart.Domain.ProductRequests.Add;
 
 namespace KiloMart.Domain.ProductRequests.Accept;
@@ -67,7 +68,7 @@ public static class AcceptProductRequestService
                 productId,
                 productRequest.Price,
                 productRequest.OffPercentage,
-                DateTime.UtcNow,
+                SaudiDateTimeHelper.GetCurrentTime(),
                 null,
                 productRequest.Quantity,
                 productRequest.Provider,

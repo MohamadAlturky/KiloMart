@@ -19,6 +19,7 @@
     <ProjectReference Include="..\KiloMart.Commands\KiloMart.Commands.csproj" />
     <ProjectReference Include="..\KiloMart.Domain\KiloMart.Domain.csproj" />
     <ProjectReference Include="..\KiloMart.Domain.Orders\KiloMart.Domain.Orders.csproj" />
+    <ProjectReference Include="..\KiloMart.DataAccess.EFCore\KiloMart.DataAccess.EFCore.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -3,6 +3,7 @@ using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Admin;
 using KiloMart.DataAccess.Database;
+using KiloMart.Domain.DateServices;
 using KiloMart.Domain.Delivery.Activity;
 using KiloMart.Domain.Orders.Common;
 using KiloMart.Domain.Orders.Services;
@@ -142,7 +143,9 @@ public class AdminPanelController : AppController
             Profit = totalSystemFees
         });
     }
-    [HttpGet("order-yearly-stats-summary-by-year")]
+
+
+    [HttpGet("payment-yearly-stats-by-year")]
     public async Task<IActionResult> GetOrderSummaryAsync(
         [FromQuery] int year
     )
@@ -161,28 +164,19 @@ public class AdminPanelController : AppController
             true,
             (byte)PaymentType.Elcetronic,
             year);
+        // int[] CardPayments = PaymentGetDaysInMonth(year, month, stats1);
+        decimal[] CardPayments = PaymentGetMonthlyOrderCounts(orderThatPaidByElcetronicStats);
+        decimal[] CashPayments = PaymentGetMonthlyOrderCounts(orderThatPaidByCashStats);
 
-        var orderThatNotPaidByCashStats = await Stats.GetOrderSummaryAsync(
-           connection,
-           false,
-           (byte)PaymentType.Cash,
-           year);
-
-        var orderThatNotPaidByElcetronicStats = await Stats.GetOrderSummaryAsync(
-            connection,
-            false,
-            (byte)PaymentType.Elcetronic,
-            year);
 
         return Success(new
         {
-            orderThatNotPaidByElcetronicStats,
-            orderThatNotPaidByCashStats,
-            orderThatPaidByElcetronicStats,
-            orderThatPaidByCashStats
+            CardPayments,
+            CashPayments
         });
+
     }
-    [HttpGet("order-yearly-stats-summary-by-month")]
+    [HttpGet("payment-yearly-stats-by-month")]
     public async Task<IActionResult> GetOrderSummaryMonthlyAsync(
         [FromQuery] int year,
         [FromQuery] int month
@@ -191,37 +185,28 @@ public class AdminPanelController : AppController
 
         using var connection = _dbFactory.CreateDbConnection();
 
-        var orderThatPaidByCashStats = await Stats.GetOrderSummaryAsync(
+        var orderThatPaidByCashStats = await Stats.GetOrderSummaryDailyAsync(
             connection,
             true,
             (byte)PaymentType.Cash,
             year,
             month);
 
-        var orderThatPaidByElcetronicStats = await Stats.GetOrderSummaryAsync(
+        var orderThatPaidByElcetronicStats = await Stats.GetOrderSummaryDailyAsync(
             connection,
             true,
             (byte)PaymentType.Elcetronic,
-            year);
+            year,
+            month);
 
-        var orderThatNotPaidByCashStats = await Stats.GetOrderSummaryAsync(
-           connection,
-           false,
-           (byte)PaymentType.Cash,
-           year);
+        decimal[] CardPayments = PaymentGetDaysInMonth(year, month, orderThatPaidByElcetronicStats);
+        decimal[] CashPayments = PaymentGetDaysInMonth(year, month, orderThatPaidByCashStats);
 
-        var orderThatNotPaidByElcetronicStats = await Stats.GetOrderSummaryAsync(
-            connection,
-            false,
-            (byte)PaymentType.Elcetronic,
-            year);
 
         return Success(new
         {
-            orderThatNotPaidByElcetronicStats,
-            orderThatNotPaidByCashStats,
-            orderThatPaidByElcetronicStats,
-            orderThatPaidByCashStats
+            CardPayments,
+            CashPayments
         });
     }
 
@@ -236,102 +221,188 @@ public class AdminPanelController : AppController
     /////////////////////////////
     /////////////////////////////
     /////////////////////////////
+    public static int[] GetDaysInMonth(int year, int month, List<OrderCountMonthlySummary> orderCounts)
+    {
+        // Validate the input month
+        if (month < 1 || month > 12)
+        {
+            throw new ArgumentOutOfRangeException(nameof(month), "Month must be between 1 and 12.");
+        }
 
+        // Create a list to hold the days of the specified month
 
-    [HttpGet("orders-count-yearly-stats-summary-by-month")]
+        // Get the number of days in the specified month and year
+        int daysInSpecifiedMonth = DateTime.DaysInMonth(year, month);
+        int[] daysInMonth = new int[daysInSpecifiedMonth];
+
+        // Populate the list with each day of the month
+        foreach (var order in orderCounts)
+        {
+            if (
+                order.OrderMonth >= 1 && order.OrderMonth <= 12
+            )
+            {
+                daysInMonth[order.OrderDay - 1] += order.TotalCount;
+            }
+        }
+
+        return daysInMonth;
+    }
+    public static int[] GetMonthlyOrderCounts(List<OrderCountMonthlySummary> orderCounts)
+    {
+        // Initialize an array with 12 elements (for each month)
+        int[] monthlyCounts = new int[12];
+
+        // Populate the array with counts from the orderCounts list
+        foreach (var order in orderCounts)
+        {
+            if (order.OrderMonth >= 1 && order.OrderMonth <= 12)
+            {
+                monthlyCounts[order.OrderMonth - 1] += order.TotalCount;
+            }
+        }
+
+        return monthlyCounts;
+    }
+
+    [HttpGet("orders-count-yearly-stats-summary")]
     public async Task<IActionResult> GetOrderCountSummaryAsync(
-        [FromQuery] int? year,
-        [FromQuery] int? month
+        [FromQuery] int year
     )
     {
         using var connection = _dbFactory.CreateDbConnection();
 
         // Fetching order statistics for the specified year and month
-        var orderStats = await GetOrderStatisticsAsync(connection, year, month);
+        //var orderStats = await GetOrderStatisticsAsync(connection, year, month);
+        var stats1 = await Stats.GetOrderCountSummaryAsync(
+            connection,
+            true,
+            ((byte)PaymentType.Elcetronic),
+            year,
+            (byte)OrderStatus.COMPLETED
+        );
 
-        return Success(orderStats);
+        var stats2 = await Stats.GetOrderCountSummaryAsync(
+            connection,
+            true,
+            ((byte)PaymentType.Cash),
+            year,
+            (byte)OrderStatus.COMPLETED
+        );
+        int[] CardPayments = GetMonthlyOrderCounts(stats1);
+        int[] CashPayments = GetMonthlyOrderCounts(stats2);
+
+
+        return Success(new
+        {
+            CardPayments,
+            CashPayments
+        });
     }
 
-    private async Task<object> GetOrderStatisticsAsync(IDbConnection connection, int? year, int? month)
+    public static decimal[] PaymentGetMonthlyOrderCounts(List<OrderYearlySummary> orderCounts)
     {
-        var orderStatuses = new[]
-        {
-            OrderStatus.CANCELED,
-            OrderStatus.COMPLETED,
-            OrderStatus.PREPARING,
-            OrderStatus.SHIPPED,
-            OrderStatus.ORDER_PLACED
-        };
-        var paymentTypes = new[] { PaymentType.Cash, PaymentType.Elcetronic };
+        // Initialize an array with 12 elements (for each month)
+        decimal[] monthlyCounts = new decimal[12];
 
-        var results = new Dictionary<string, List<OrderCountMonthlySummary>>();
-
-        foreach (var status in orderStatuses)
+        // Populate the array with counts from the orderCounts list
+        foreach (var order in orderCounts)
         {
-            foreach (var paymentType in paymentTypes)
+            if (order.OrderYear > 0 && order.OrderMonth >= 1 && order.OrderMonth <= 12)
             {
-                byte orderStatus = (byte)status;
-
-                bool? isPaid = false;
-                var stats = await Stats.GetOrderCountSummaryAsync(
-                    connection,
-                    isPaid,
-                    (byte)paymentType,
-                    year,
-                    month,
-                    orderStatus
-                );
-
-                results[$"{status}_{paymentType}_Paid"] = stats;
-
-
-                isPaid = false;
-                var statsNotPaid = await Stats.GetOrderCountSummaryAsync(
-                    connection,
-                    isPaid,
-                    (byte)paymentType,
-                    year,
-                    month,
-                    orderStatus
-                );
-
-                results[$"{status}_{paymentType}_Not_Paid"] = statsNotPaid;
+                monthlyCounts[order.OrderMonth - 1] += order.TotalPriceSum;
             }
         }
 
-        return new
-        {
-            results
-        };
+        return monthlyCounts;
     }
 
+    public static decimal[] PaymentGetDaysInMonth(int year, int month, List<OrderDailySummary> dailySummaries)
+    {
+        // Validate the input month
+        if (month < 1 || month > 12)
+        {
+            throw new ArgumentOutOfRangeException(nameof(month), "Month must be between 1 and 12.");
+        }
 
+        // Get the number of days in the specified month and year
+        int daysInSpecifiedMonth = DateTime.DaysInMonth(year, month);
+        decimal[] daysInMonth = new decimal[daysInSpecifiedMonth];
 
+        // Populate the array with each day's total count from daily summaries
+        foreach (var order in dailySummaries)
+        {
+            if (order.OrderYear == year && order.OrderMonth == month && order.OrderDay >= 1 && order.OrderDay <= daysInSpecifiedMonth)
+            {
+                daysInMonth[order.OrderDay - 1] += order.TotalPriceSum;
+            }
+        }
 
-    [HttpGet("orders-count-summary")]
-    public async Task<IActionResult> GetOrdersCountSummaryAsync()
+        return daysInMonth;
+    }
+
+    [HttpGet("orders-count-monthly-stats-summary")]
+    public async Task<IActionResult> GetOrderMonthlyCountSummaryAsync(
+            [FromQuery] int year,
+            [FromQuery] int month
+        )
     {
         using var connection = _dbFactory.CreateDbConnection();
 
-        // Fetching various order statistics
-        var canceledOrderCount = await Stats.GetCanceledOrderCountAsync(connection);
-        var completedOrderCount = await Stats.GetCompletedOrderCountAsync(connection);
-        var totalOrderCount = await Stats.GetTotalOrderCountAsync(connection);
-        var noProviderCount = await Stats.ThereIsNoProviderAcceptedItAsync(connection);
-        var noDeliveryCount = await Stats.ThereIsNoDeliveryAcceptedItAsync(connection);
+        // Fetching order statistics for the specified year and month
+        //var orderStats = await GetOrderStatisticsAsync(connection, year, month);
+        var stats1 = await Stats.GetOrderCountSummaryAsync(
+            connection,
+            true,
+            ((byte)PaymentType.Elcetronic),
+            year,
+            month,
+            (byte)OrderStatus.COMPLETED
+        );
 
-        // Create a summary object to hold the results
-        var orderSummary = new
+        var stats2 = await Stats.GetOrderCountSummaryAsync(
+            connection,
+            true,
+            ((byte)PaymentType.Cash),
+            year,
+            month,
+            (byte)OrderStatus.COMPLETED
+        );
+        int[] CardPayments = GetDaysInMonth(year, month, stats1);
+        int[] CashPayments = GetDaysInMonth(year, month, stats2);
+
+
+        return Success(new
         {
-            CanceledOrders = canceledOrderCount,
-            CompletedOrders = completedOrderCount,
-            TotalOrders = totalOrderCount,
-            NoProviderAccepted = noProviderCount,
-            NoDeliveryAccepted = noDeliveryCount
-        };
-
-        return Success(orderSummary);
+            CardPayments,
+            CashPayments
+        });
     }
+
+    // [HttpGet("orders-count-summary")]
+    // public async Task<IActionResult> GetOrdersCountSummaryAsync()
+    // {
+    //     using var connection = _dbFactory.CreateDbConnection();
+
+    //     // Fetching various order statistics
+    //     var canceledOrderCount = await Stats.GetCanceledOrderCountAsync(connection);
+    //     var completedOrderCount = await Stats.GetCompletedOrderCountAsync(connection);
+    //     var totalOrderCount = await Stats.GetTotalOrderCountAsync(connection);
+    //     var noProviderCount = await Stats.ThereIsNoProviderAcceptedItAsync(connection);
+    //     var noDeliveryCount = await Stats.ThereIsNoDeliveryAcceptedItAsync(connection);
+
+    //     // Create a summary object to hold the results
+    //     var orderSummary = new
+    //     {
+    //         CanceledOrders = canceledOrderCount,
+    //         CompletedOrders = completedOrderCount,
+    //         TotalOrders = totalOrderCount,
+    //         NoProviderAccepted = noProviderCount,
+    //         NoDeliveryAccepted = noDeliveryCount
+    //     };
+
+    //     return Success(orderSummary);
+    // }
     #endregion
 
     #region provider
@@ -512,7 +583,7 @@ public class AdminPanelController : AppController
             #endregion
 
             #region Insert into Database
-            var now = DateTime.Now;
+            var now = SaudiDateTimeHelper.GetCurrentTime();
             long id = await Db.InsertProviderProfileHistoryAsync(
                 connection,
                 request.FirstName,
@@ -759,7 +830,7 @@ public class AdminPanelController : AppController
 
         // Get delivery statistics
         var (activeDeliveryCount, deliveryType1Sum, deliveryType2Sum) = await Stats.GetDeliveryStatisticsAsync(connection);
-        
+
         // Create a response object containing the statistics
         var response = new
         {
@@ -813,7 +884,7 @@ public class AdminPanelController : AppController
                     e.SubmitDate,
                     e.ReviewDate,
                     e.DeliveryId,
-                    e.IsActive,
+                    //                    e.IsActive,
                     e.IsRejected,
                     e.IsAccepted,
                     e.ReviewDescription,
@@ -865,7 +936,7 @@ public class AdminPanelController : AppController
                     e.SubmitDate,
                     e.ReviewDate,
                     e.DeliveryId,
-                    e.IsActive,
+                    //  e.IsActive,
                     e.IsRejected,
                     e.IsAccepted,
                     e.ReviewDescription,
@@ -981,7 +1052,7 @@ public class AdminPanelController : AppController
                 return Fail("failed to save VehicleLicense file");
             }
             #endregion
-            var now = DateTime.Now;
+            var now = SaudiDateTimeHelper.GetCurrentTime();
             #region Adding the Profile
             long id = await Db.InsertDeliveryProfileHistoryAsync(
                 connection,

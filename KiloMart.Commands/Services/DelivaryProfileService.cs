@@ -2,6 +2,7 @@ using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.Core.Models;
 using KiloMart.DataAccess.Database;
+using KiloMart.Domain.DateServices;
 
 namespace KiloMart.Commands.Services;
 
@@ -36,13 +37,13 @@ public class DelivaryProfileInsertModel
         if (string.IsNullOrWhiteSpace(LicenseNumber))
             errors.Add("License number is required.");
 
-        if (LicenseExpiredDate < DateTime.Now)
+        if (LicenseExpiredDate < SaudiDateTimeHelper.GetCurrentTime())
             errors.Add("License expire date must be in the future.");
 
         if (string.IsNullOrWhiteSpace(DrivingLicenseNumber))
             errors.Add("Driving license number is required.");
 
-        if (DrivingLicenseExpiredDate < DateTime.Now)
+        if (DrivingLicenseExpiredDate < SaudiDateTimeHelper.GetCurrentTime())
             errors.Add("Driving license expire date must be in the future.");
 
         return (errors.Count == 0, errors.ToArray());

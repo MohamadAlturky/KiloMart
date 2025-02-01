@@ -1,4 +1,5 @@
 using Dapper;
+using KiloMart.Domain.DateServices;
 using System.Data;
 
 namespace KiloMart.DataAccess.Database;
@@ -162,7 +163,7 @@ public static partial class Db
         int userId,
         IDbTransaction? transaction = null)
     {
-        DateTime now = DateTime.Now;
+        DateTime now = SaudiDateTimeHelper.GetCurrentTime();
         const string query = @"SELECT 
                                 [Id], 
                                 [Token], 
@@ -187,7 +188,7 @@ public static partial class Db
         string code,
         IDbTransaction? transaction = null)
     {
-        DateTime now = DateTime.Now;
+        DateTime now = SaudiDateTimeHelper.GetCurrentTime();
         const string query = @"SELECT 
                                 [Id], 
                                 [Token], 

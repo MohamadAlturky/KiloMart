@@ -3,6 +3,7 @@ using KiloMart.Commands.Services;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Database;
+using KiloMart.Domain.DateServices;
 using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Authorization;
 using KiloMart.Requests.Queries;
@@ -153,7 +154,7 @@ public class DiscountCodeAdminController(IDbFactory dbFactory, IUserContext user
 
         try
         {
-            long newId = await Db.InsertProductDiscountAsync(connection, request.Product, request.DiscountCode, DateTime.Now);
+            long newId = await Db.InsertProductDiscountAsync(connection, request.Product, request.DiscountCode, SaudiDateTimeHelper.GetCurrentTime());
             return Success(new { Id = newId });
         }
         catch (Exception ex)

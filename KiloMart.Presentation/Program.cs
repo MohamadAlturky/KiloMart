@@ -11,10 +11,17 @@ using KiloMart.Core.Settings;
 using KiloMart.DataAccess.EFCore.Repositories;
 using KiloMart.Presentation.Middlewares;
 using KiloMart.Presentation.Tracking;
+using KiloMart.DataAccess.EFCore.Data;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddMemoryCache();
 
+
+
+// Add services to the container
+builder.Services.AddDbContext<KilomartDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 // Dependency Injection
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserContext, UserContext>();

@@ -2,6 +2,7 @@ using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.Core.Models;
 using KiloMart.DataAccess.Database;
+using KiloMart.Domain.DateServices;
 using KiloMart.Domain.Delivery.Activity;
 using KiloMart.Domain.Orders.Common;
 using KiloMart.Domain.Orders.DataAccess;
@@ -64,7 +65,7 @@ public class CompleteOrderService
             {
                 await Db.InsertDeliveryActivityAsync(
                     connection,
-                    DateTime.Now,
+                    SaudiDateTimeHelper.GetCurrentTime(),
                     order.DeliveryFee,
                     (byte)DeliveryActivityType.Receives,
                     userPayLoad.Party,
@@ -74,7 +75,7 @@ public class CompleteOrderService
             {
                 await Db.InsertDeliveryActivityAsync(
                     connection,
-                    DateTime.Now,
+                    SaudiDateTimeHelper.GetCurrentTime(),
                     order.TotalPrice - order.DeliveryFee,
                     (byte)DeliveryActivityType.Deductions,
                     userPayLoad.Party,
@@ -87,7 +88,7 @@ public class CompleteOrderService
             }
             await Db.InsertProviderActivityAsync(
                 connection,
-                DateTime.Now,
+                SaudiDateTimeHelper.GetCurrentTime(),
                 order.ItemsPrice,
                 order.Provider.Value,
                 (byte)DeliveryActivityType.Receives,
@@ -115,7 +116,7 @@ public class CompleteOrderService
             // Log order activity
             OrderActivity activity = new()
             {
-                Date = DateTime.Now,
+                Date = SaudiDateTimeHelper.GetCurrentTime(),
                 Order = order.Id,
                 OperatedBy = userPayLoad.Party,
                 OrderActivityType = (byte)OrderActivityType.CompletedByDelivery

@@ -7,6 +7,7 @@ using KiloMart.Core.Authentication;
 using KiloMart.DataAccess.Database;
 using KiloMart.Presentation.Authorization;
 using KiloMart.Domain.Register.Utils;
+using KiloMart.Domain.DateServices;
 
 namespace KiloMart.Presentation.Controllers;
 
@@ -86,7 +87,7 @@ public class AppSettingsController : AppController
             connection,
             dto.Title,
             dto.Message,
-            DateTime.Now,
+            SaudiDateTimeHelper.GetCurrentTime(),
             userId,
             "");
         foreach (var connectionId in NotificationHub._connections.GetConnections(userId))
@@ -108,7 +109,7 @@ public class AppSettingsController : AppController
             connection,
             dto.Title,
             dto.Message,
-            DateTime.Now,
+            SaudiDateTimeHelper.GetCurrentTime(),
             userId,
             "");
         foreach (var connectionId in NotificationHub._connections.GetConnections(userId))

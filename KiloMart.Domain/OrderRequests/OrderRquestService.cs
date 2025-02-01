@@ -44,7 +44,7 @@
 //             {
 //                 Customer = userPayLoad.Party,
 //                 OrderRequestStatus = (byte)OrderRequestStatus.Init,
-//                 Date = DateTime.Now
+//                 Date = SaudiDateTimeHelper.GetCurrentTime()
 //             };
 //             response.OrderRequest.Id = await Db.InsertOrderAsync(connection,
 //                 response.OrderRequest.Customer,

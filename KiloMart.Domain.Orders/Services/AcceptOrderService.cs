@@ -2,6 +2,7 @@ using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.Core.Models;
 using KiloMart.DataAccess.Database;
+using KiloMart.Domain.DateServices;
 using KiloMart.Domain.Delivery.Activity;
 using KiloMart.Domain.Orders.Common;
 using KiloMart.Domain.Orders.DataAccess;
@@ -142,7 +143,7 @@ public static class AcceptOrderService
 
             // await Db.InsertSystemActivityAsync(
             //     connection,
-            //     DateTime.Now,
+            //     SaudiDateTimeHelper.GetCurrentTime(),
             //     systemSettings.SystemOrderFee,
             //     orderId,
             //     transaction);
@@ -163,7 +164,7 @@ public static class AcceptOrderService
 
             await OrdersDb.InsertOrderActivityAsync(connection,
                 orderId,
-                DateTime.Now,
+                SaudiDateTimeHelper.GetCurrentTime(),
                 (byte)OrderActivityType.AcceptedByProvider,
                 providerId,
                 transaction);
@@ -237,7 +238,7 @@ public static class AcceptOrderService
 
             await OrdersDb.InsertOrderActivityAsync(connection,
                 orderId,
-                DateTime.Now,
+                SaudiDateTimeHelper.GetCurrentTime(),
                 (byte)OrderActivityType.AcceptedByDelivery,
                 deliveryId,
                 transaction);

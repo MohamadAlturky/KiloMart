@@ -50,6 +50,27 @@ public static class OrderAggregator
             }
         }
 
+
+        // Set ActualUnitPrice based on offers
+        foreach (var aggOrder in aggregatedOrders.Values)
+        {
+            if (aggOrder.OrderProductOfferDetails is not null && aggOrder.OrderProductOfferDetails.Count != 0)
+            {
+                // Create a lookup for offers by ProductId
+                var offerPriceLookup = aggOrder.OrderProductOfferDetails
+                    .GroupBy(o => o.ProductId)
+                    .ToDictionary(g => g.Key, g => g.First().UnitPrice);
+
+                // Update product details with offer prices
+                foreach (var product in aggOrder.OrderProductDetails)
+                {
+                    if (offerPriceLookup.TryGetValue(product.ProductId, out var unitPrice))
+                    {
+                        product.ActualUnitPrice = unitPrice;
+                    }
+                }
+            }
+        }
         // Return the list of aggregated orders
         return [.. aggregatedOrders.Values];
     }

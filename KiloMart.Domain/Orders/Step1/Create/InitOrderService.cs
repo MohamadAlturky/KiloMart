@@ -53,7 +53,7 @@
 //             }
 //             OrderActivity orderActivity = new()
 //             {
-//                 Date = DateTime.Now,
+//                 Date = SaudiDateTimeHelper.GetCurrentTime(),
 //                 OperatedBy = userPayLoad.Party,
 //                 Order = orderId,
 //                 OrderActivityType = (byte)OrderActivityType.InitByCustomer

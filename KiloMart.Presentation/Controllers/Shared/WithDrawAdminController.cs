@@ -1,6 +1,7 @@
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Database;
+using KiloMart.Domain.DateServices;
 using KiloMart.Domain.Delivery.Activity;
 using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Authorization;
@@ -132,7 +133,7 @@ public class WithDrawAdminController(IDbFactory dbFactory, IUserContext userCont
                     transaction);
 
                 await Db.InsertDeliveryActivityAsync(connection,
-                    DateTime.Now,
+                    SaudiDateTimeHelper.GetCurrentTime(),
                     request.TotalValue,
                     (byte)DeliveryActivityType.Deductions,
                     withdraw.Party,
@@ -173,7 +174,7 @@ public class WithDrawAdminController(IDbFactory dbFactory, IUserContext userCont
                         transaction);
 
                 await Db.InsertProviderActivityAsync(connection,
-                    DateTime.Now,
+                    SaudiDateTimeHelper.GetCurrentTime(),
                     request.TotalValue,
                     withdraw.Party,
                     (byte)DeliveryActivityType.Deductions,

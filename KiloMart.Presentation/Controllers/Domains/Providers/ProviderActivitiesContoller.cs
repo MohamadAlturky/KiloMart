@@ -2,6 +2,7 @@ using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Admin;
 using KiloMart.DataAccess.Database;
+using KiloMart.Domain.DateServices;
 using KiloMart.Domain.Delivery.Activity;
 using KiloMart.Domain.Orders.Common;
 using KiloMart.Domain.Orders.DataAccess;
@@ -51,7 +52,7 @@ public class ProviderActivitiesContoller : AppController
 
         var result = await ProductRequestService.Insert(_dbFactory, _userContext.Get(), new ProductRequestInsertModel()
         {
-            Date = DateTime.Now,
+            Date = SaudiDateTimeHelper.GetCurrentTime(),
             Description = request.Description,
             ImageUrl = filePath,
             Language = request.Language,
@@ -577,7 +578,7 @@ public class ProviderActivitiesContoller : AppController
             deliveryID,
             request.BankAccountNumber,
             request.IbanNumber,
-            DateTime.Now,
+            SaudiDateTimeHelper.GetCurrentTime(),
             false,
             false,
             false);

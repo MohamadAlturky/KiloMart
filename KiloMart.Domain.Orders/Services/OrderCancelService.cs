@@ -2,6 +2,7 @@
 using KiloMart.Core.Contracts;
 using KiloMart.Core.Models;
 using KiloMart.DataAccess.Database;
+using KiloMart.Domain.DateServices;
 using KiloMart.Domain.Orders.Common;
 using KiloMart.Domain.Orders.DataAccess;
 using KiloMart.Domain.Orders.Repositories;
@@ -60,7 +61,7 @@ public class OrderCancelService
 
             await OrdersDb.InsertOrderActivityAsync(connection,
                 orderId,
-                DateTime.Now,
+                SaudiDateTimeHelper.GetCurrentTime(),
                 (byte)OrderActivityType.CanceledByCustomerBeforeProviderAcceptIt,
                 userPayLoad.Party,
                 transaction);
@@ -130,7 +131,7 @@ public class OrderCancelService
 
             await OrdersDb.InsertOrderActivityAsync(connection,
                 orderId,
-                DateTime.Now,
+                SaudiDateTimeHelper.GetCurrentTime(),
                 (byte)OrderActivityType.CanceledByProviderBeforeDeliveryAcceptIt,
                 userPayLoad.Party,
                 transaction);
@@ -227,7 +228,7 @@ public class OrderCancelService
 
             await OrdersDb.InsertOrderActivityAsync(connection,
                 orderId,
-                DateTime.Now,
+                SaudiDateTimeHelper.GetCurrentTime(),
                 (byte)OrderActivityType.CanceledByDelivery,
                 userPayLoad.Party,
                 transaction);

@@ -204,6 +204,7 @@
 using System.Data;
 using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Database;
+using KiloMart.Domain.DateServices;
 using KiloMart.Domain.Login.Handlers;
 using KiloMart.Domain.Login.Models;
 using KiloMart.Domain.Register.Utils;
@@ -264,7 +265,7 @@ public class LoginService
             token,
             loginResult.UserId,
             expires,
-            DateTime.Now,
+            SaudiDateTimeHelper.GetCurrentTime(),
             sessionCode);
         return loginResult;
     }

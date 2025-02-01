@@ -2,6 +2,7 @@ using Dapper;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Database;
+using KiloMart.Domain.DateServices;
 using KiloMart.Domain.Login.Models;
 using KiloMart.Domain.Login.Services;
 using KiloMart.Domain.Register.Activate;
@@ -369,7 +370,7 @@ public class UserCommandController(IConfiguration configuration,
 
     //     int userId = _userContext.Get().Id;
     //     string code = GenerateRandomString(4);
-    //     DateTime date = DateTime.Now;
+    //     DateTime date = SaudiDateTimeHelper.GetCurrentTime();
 
     //     await Db.InsertResetPasswordCodeAsync(
     //         connection,
@@ -399,7 +400,7 @@ public class UserCommandController(IConfiguration configuration,
         }
 
         string code = GenerateRandomString(4);
-        DateTime date = DateTime.Now;
+        DateTime date = SaudiDateTimeHelper.GetCurrentTime();
 
         await Db.InsertResetPasswordCodeAsync(
             connection,

@@ -1,6 +1,7 @@
 using System.Data;
 using Dapper;
 using KiloMart.Core.Contracts;
+using KiloMart.Domain.DateServices;
 using KiloMart.Domain.Register.Utils;
 using Microsoft.Extensions.Configuration;
 
@@ -137,7 +138,7 @@ public abstract class BaseRegisterService
         await connection.ExecuteAsync(
             @"INSERT INTO VerificationToken (MembershipUser, Value, CreatedAt)
                 VALUES (@MembershipUser, @Value, @CreatedAt)",
-            new { MembershipUser = membershipUserId, Value = token, CreatedAt = DateTime.UtcNow },
+            new { MembershipUser = membershipUserId, Value = token, CreatedAt = SaudiDateTimeHelper.GetCurrentTime() },
             transaction
         );
 

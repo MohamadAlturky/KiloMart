@@ -41,7 +41,7 @@ public class ProductRequestController
 
     //     var result = await ProductRequestService.Insert(_dbFactory, _userContext.Get(), new ProductRequestInsertModel()
     //     {
-    //         Date = DateTime.Now,
+    //         Date = SaudiDateTimeHelper.GetCurrentTime(),
     //         Description = request.Description,
     //         ImageUrl = filePath,
     //         Language = request.Language,

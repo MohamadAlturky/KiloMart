@@ -2,6 +2,7 @@ using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.Core.Models;
 using KiloMart.DataAccess.Database;
+using KiloMart.Domain.DateServices;
 
 namespace KiloMart.Commands.Services;
 
@@ -25,7 +26,7 @@ public class CardInsertModel
         if (string.IsNullOrWhiteSpace(SecurityCode))
             errors.Add("Security code is required.");
 
-        if (ExpireDate < DateTime.Now)
+        if (ExpireDate < SaudiDateTimeHelper.GetCurrentTime())
             errors.Add("Expire date must be in the future.");
 
 

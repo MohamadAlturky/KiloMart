@@ -2,6 +2,7 @@ using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.Core.Models;
 using KiloMart.DataAccess.Database;
+using KiloMart.Domain.DateServices;
 
 namespace KiloMart.Commands.Services;
 
@@ -27,7 +28,7 @@ public class DiscountCodeInsertModel
         if (string.IsNullOrWhiteSpace(Description))
             errors.Add("Description is required.");
 
-        if (StartDate < DateTime.Now)
+        if (StartDate < SaudiDateTimeHelper.GetCurrentTime())
             errors.Add("Start date must be in the future.");
 
         if (EndDate.HasValue && EndDate < StartDate)

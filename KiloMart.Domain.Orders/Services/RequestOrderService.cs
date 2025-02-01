@@ -2,6 +2,7 @@
 using KiloMart.Core.Contracts;
 using KiloMart.Core.Models;
 using KiloMart.DataAccess.Database;
+using KiloMart.Domain.DateServices;
 using KiloMart.Domain.Orders.Common;
 using KiloMart.Domain.Orders.DataAccess;
 using KiloMart.Requests.Queries;
@@ -50,7 +51,7 @@ public class RequestOrderService
                 SystemFee = 0,
                 ItemsPrice = 0,
                 TransactionId = Guid.NewGuid().ToString(),
-                Date = DateTime.Now,
+                Date = SaudiDateTimeHelper.GetCurrentTime(),
                 PaymentType = model.PaymentType,
                 IsPaid = false,
                 SpecialRequest = model.SpecialRequest
@@ -78,7 +79,7 @@ public class RequestOrderService
                 {
                     if (discountCode.IsActive)
                     {
-                        var now = DateTime.Now;
+                        var now = SaudiDateTimeHelper.GetCurrentTime();
                         if (discountCode.EndDate is not null)
                         {
                             if (now >= discountCode.StartDate
@@ -122,7 +123,7 @@ public class RequestOrderService
 
             OrderActivity activity = new()
             {
-                Date = DateTime.Now,
+                Date = SaudiDateTimeHelper.GetCurrentTime(),
                 Order = response.Order.Id,
                 OperatedBy = userPayLoad.Party,
                 OrderActivityType = (byte)OrderActivityType.InitByCustomer

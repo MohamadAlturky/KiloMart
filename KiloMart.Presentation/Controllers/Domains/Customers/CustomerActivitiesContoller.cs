@@ -593,6 +593,17 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
 
         return result.Success ? Success(result.Data) : Fail(result.Errors);
     }
+    [HttpGet("orders/mine-by-status-test")]
+    public async Task<IActionResult> GetMineByStatusTest([FromQuery] byte language,
+    [FromQuery] byte status, [FromQuery] int user)
+    {
+        var result = await ReadOrderService.GetMineByStatusAsync(language,
+            status,
+            user,
+            _dbFactory);
+
+        return result.Success ? Success(result.Data) : Fail(result.Errors);
+    }
 
     [HttpPost("orders/create")]
     [Guard([Roles.Customer])]

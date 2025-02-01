@@ -211,7 +211,7 @@ public class OrderProductDetailsDto
     public long ItemOrder { get; set; }
     public int ItemQuantity { get; set; }
 
-
+    public decimal? ActualUnitPrice { get; set; } = null;
     public int ProductId { get; set; }
     public string ProductImageUrl { get; set; } = null!;
     public bool ProductIsActive { get; set; }

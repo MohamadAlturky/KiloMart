@@ -7,6 +7,7 @@ using Microsoft.Data.SqlClient;
 using KiloMart.DataAccess.Database;
 using KiloMart.Core.Authentication;
 using Dapper;
+using KiloMart.Domain.DateServices;
 
 namespace KiloMart.Presentation.Authorization;
 
@@ -81,7 +82,7 @@ public class GuardAttribute : Attribute, IAuthorizationFilter
             return;
         }
 
-        if (session.ExpireDate <= DateTime.Now)
+        if (session.ExpireDate <= SaudiDateTimeHelper.GetCurrentTime())
         {
             context.Result = new UnauthorizedResult();
             return;

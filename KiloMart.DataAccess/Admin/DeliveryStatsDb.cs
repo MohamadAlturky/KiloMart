@@ -71,7 +71,6 @@ public static partial class Stats
             pp.[SubmitDate],
             pp.[ReviewDate],
             pp.[DeliveryId],
-            pp.[IsActive],
             pp.[IsRejected],
             pp.[IsAccepted],
             pp.[ReviewDescription],
@@ -109,7 +108,7 @@ public static partial class Stats
             pp.SubmitDate,
             pp.ReviewDate,
             pp.DeliveryId,
-            pp.IsActive,
+            m.IsActive,
             pp.IsRejected,
             pp.IsAccepted,
             pp.ReviewDescription,
@@ -195,7 +194,6 @@ public static partial class Stats
             pp.[SubmitDate],
             pp.[ReviewDate],
             pp.[DeliveryId],
-            pp.[IsActive],
             pp.[IsRejected],
             pp.[IsAccepted],
             pp.[ReviewDescription],
@@ -235,7 +233,7 @@ public static partial class Stats
             pp.SubmitDate,
             pp.ReviewDate,
             pp.DeliveryId,
-            pp.IsActive,
+            m.IsActive,
             pp.IsRejected,
             pp.IsAccepted,
             pp.ReviewDescription,
@@ -315,7 +313,7 @@ public class DeliveryDataDto
     public DateTime SubmitDate { get; set; }
     public DateTime ReviewDate { get; set; }
     public int DeliveryId { get; set; }
-    public bool IsActive { get; set; }
+    //public bool IsActive { get; set; }
     public bool UserIsActive { get; set; }
     public bool IsRejected { get; set; }
     public bool IsAccepted { get; set; }

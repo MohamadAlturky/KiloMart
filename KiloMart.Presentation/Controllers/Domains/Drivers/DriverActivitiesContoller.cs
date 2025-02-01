@@ -2,6 +2,7 @@ using Dapper;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Database;
+using KiloMart.Domain.DateServices;
 using KiloMart.Domain.Delivery.Activity;
 using KiloMart.Domain.Orders.Common;
 using KiloMart.Domain.Orders.DataAccess;
@@ -268,7 +269,7 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory,
             deliveryID,
             request.BankAccountNumber,
             request.IbanNumber,
-            DateTime.Now,
+            SaudiDateTimeHelper.GetCurrentTime(),
             false,
             false,
             false);

@@ -1,6 +1,7 @@
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Database;
+using KiloMart.Domain.DateServices;
 using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Authorization;
 using KiloMart.Presentation.Services;
@@ -99,7 +100,7 @@ public class ProviderProfileHistoryController : AppController
                 request.PhoneNumber,
                 false, // isAccepted
                 false, // isRejected
-                DateTime.Now, // submitDate
+                SaudiDateTimeHelper.GetCurrentTime(), // submitDate
                 null, // reviewDate
                 user.Party, // providerId
                 false); // isActive
@@ -128,7 +129,7 @@ public class ProviderProfileHistoryController : AppController
                 request.PhoneNumber,
                 IsAccepted = false,
                 IsRejected = false,
-                SubmitDate = DateTime.Now,
+                SubmitDate = SaudiDateTimeHelper.GetCurrentTime(),
                 ReviewDate = (DateTime?)null,
                 ProviderId = user.Party,
                 IsActive = false
@@ -232,7 +233,7 @@ public class ProviderProfileHistoryController : AppController
                 request.PhoneNumber ?? oldProfile.PhoneNumber,
                 false, // isAccepted
                 false, // isRejected
-                DateTime.Now, // submitDate
+                SaudiDateTimeHelper.GetCurrentTime(), // submitDate
                 null, // reviewDate
                 user.Party, // providerId
                 false); // isActive
@@ -261,7 +262,7 @@ public class ProviderProfileHistoryController : AppController
                 PhoneNumber = request.PhoneNumber ?? oldProfile.PhoneNumber,
                 IsAccepted = false,
                 IsRejected = false,
-                SubmitDate = DateTime.Now,
+                SubmitDate = SaudiDateTimeHelper.GetCurrentTime(),
                 ReviewDate = (DateTime?)null,
                 ProviderId = user.Party,
                 IsActive = false
@@ -435,7 +436,7 @@ public class ProviderProfileHistoryController : AppController
             false,
             transaction);
 
-        profileHistory.ReviewDate = DateTime.Now;
+        profileHistory.ReviewDate = SaudiDateTimeHelper.GetCurrentTime();
         profileHistory.IsAccepted = true;
         profileHistory.IsRejected = false;
         profileHistory.IsActive = true;
@@ -508,7 +509,7 @@ public class ProviderProfileHistoryController : AppController
             return Fail("Profile History Is Already Rejected");
         }
 
-        profileHistory.ReviewDate = DateTime.Now;
+        profileHistory.ReviewDate = SaudiDateTimeHelper.GetCurrentTime();
         profileHistory.IsAccepted = false;
         profileHistory.IsRejected = true;
         profileHistory.IsActive = false;

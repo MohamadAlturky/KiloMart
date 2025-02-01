@@ -1,4 +1,5 @@
 using Dapper;
+using KiloMart.Domain.DateServices;
 using System.Data;
 
 namespace KiloMart.DataAccess.Database;
@@ -70,7 +71,7 @@ public static partial class Db
         {
             Id = id,
             IsActive = false,
-            EndDate = DateTime.Now
+            EndDate = SaudiDateTimeHelper.GetCurrentTime()
         }, transaction);
 
         return updatedRowsCount > 0;
@@ -86,7 +87,7 @@ public static partial class Db
         {
             Id = id,
             IsActive = true,
-            EndDate = DateTime.Now
+            EndDate = SaudiDateTimeHelper.GetCurrentTime()
         }, transaction);
 
         return updatedRowsCount > 0;

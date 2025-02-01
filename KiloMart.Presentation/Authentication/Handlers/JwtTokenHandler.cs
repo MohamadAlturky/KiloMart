@@ -4,6 +4,7 @@ using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Configuration;
 using KiloMart.Domain.Login.Models;
+using KiloMart.Domain.DateServices;
 
 namespace KiloMart.Domain.Login.Handlers;
 public static class JwtTokenHandler
@@ -30,7 +31,7 @@ public static class JwtTokenHandler
             issuer: issuer,
             audience: audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(expiryTime),
+            expires: SaudiDateTimeHelper.GetCurrentTime().AddMinutes(expiryTime),
             signingCredentials: credentials
         );
 
@@ -68,7 +69,7 @@ public static class JwtTokenHandler
             new Claim(CustomClaimTypes.Party, user.Party.ToString()),
             new Claim(CustomClaimTypes.Code, code)
         };
-        var expires = DateTime.UtcNow.AddMinutes(expiryTime);
+        var expires = SaudiDateTimeHelper.GetCurrentTime().AddMinutes(expiryTime);
         var token = new JwtSecurityToken(
             issuer: issuer,
             audience: audience,

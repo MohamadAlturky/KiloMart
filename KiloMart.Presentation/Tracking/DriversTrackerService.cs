@@ -1,3 +1,4 @@
+using KiloMart.Domain.DateServices;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace KiloMart.Presentation.Tracking;
@@ -32,7 +33,7 @@ public class DriversTrackerService
         {
             Latitude = latitude,
             Longitude = longitude,
-            UpdatedAt = DateTime.UtcNow
+            UpdatedAt = SaudiDateTimeHelper.GetCurrentTime()
         };
 
         _memoryCache.Set(userId, location, _cacheOptions);

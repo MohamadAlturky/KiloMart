@@ -4,11 +4,9 @@ using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Admin;
 using KiloMart.DataAccess.Database;
 using KiloMart.Domain.DateServices;
-using KiloMart.Domain.Delivery.Activity;
 using KiloMart.Domain.Orders.Common;
 using KiloMart.Domain.Orders.Services;
 using KiloMart.Domain.Register.Provider.Services;
-using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Services;
 using KiloMart.Presentation.Tracking;
 using KiloMart.Requests.Queries;
@@ -24,7 +22,8 @@ public class AdminPanelController : AppController
     private readonly IWebHostEnvironment _environment;
     private readonly DriversTrackerService _driversTrackerService;
 
-    public AdminPanelController(DriversTrackerService driversTrackerService, IDbFactory dbFactory, IUserContext userContext, IWebHostEnvironment environment) : base(dbFactory, userContext)
+    public AdminPanelController(DriversTrackerService driversTrackerService, IDbFactory dbFactory,
+    IUserContext userContext, IWebHostEnvironment environment) : base(dbFactory, userContext)
     {
         _environment = environment;
         _driversTrackerService = driversTrackerService;
@@ -175,6 +174,31 @@ public class AdminPanelController : AppController
             CashPayments
         });
 
+    }
+
+    [HttpGet("orders-count-summary")]
+    public async Task<IActionResult> GetOrdersCountSummaryAsync()
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+
+        // Fetching various order statistics
+        var canceledOrderCount = await Stats.GetCanceledOrderCountAsync(connection);
+        var completedOrderCount = await Stats.GetCompletedOrderCountAsync(connection);
+        var totalOrderCount = await Stats.GetTotalOrderCountAsync(connection);
+        var noProviderCount = await Stats.ThereIsNoProviderAcceptedItAsync(connection);
+        var noDeliveryCount = await Stats.ThereIsNoDeliveryAcceptedItAsync(connection);
+
+        // Create a summary object to hold the results
+        var orderSummary = new
+        {
+            CanceledOrders = canceledOrderCount,
+            CompletedOrders = completedOrderCount,
+            TotalOrders = totalOrderCount,
+            NoProviderAccepted = noProviderCount,
+            NoDeliveryAccepted = noDeliveryCount
+        };
+
+        return Success(orderSummary);
     }
     [HttpGet("payment-yearly-stats-by-month")]
     public async Task<IActionResult> GetOrderSummaryMonthlyAsync(
@@ -936,7 +960,7 @@ public class AdminPanelController : AppController
                     e.SubmitDate,
                     e.ReviewDate,
                     e.DeliveryId,
-                    //  e.IsActive,
+                    IsActive = e.UserIsActive,
                     e.IsRejected,
                     e.IsAccepted,
                     e.ReviewDescription,

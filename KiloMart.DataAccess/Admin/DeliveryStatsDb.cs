@@ -206,7 +206,7 @@ public static partial class Stats
         FROM [dbo].[DeliveryProfileHistory] pp
         INNER JOIN MembershipUser m ON m.Party = pp.DeliveryId
         INNER JOIN Party party ON party.Id = pp.DeliveryId
-        LEFT JOIN dbo.OrderProviderInformation o ON o.Provider = pp.DeliveryId
+        LEFT JOIN dbo.OrderDeliveryInformation o ON o.Delivery = pp.DeliveryId
         LEFT JOIN dbo.DeliveryActivity pa ON pa.Delivery = pp.DeliveryId AND pa.Type = 1
         LEFT JOIN dbo.DeliveryActivity paall ON paall.Delivery = pp.DeliveryId AND paall.Type = 2
         WHERE pp.IsActive = 1 AND (@SearchTerm IS NULL OR 

@@ -4,7 +4,7 @@ using Dapper;
 namespace KiloMart.DataAccess.Database;
 public static partial class Db
 {
-    public static async Task<int> InsertProductLocalizedAsync(IDbConnection connection,
+    public static async Task InsertProductLocalizedAsync(IDbConnection connection,
         int language,
         int product,
         string measurementUnit,
@@ -14,12 +14,11 @@ public static partial class Db
     {
         const string query = @"INSERT INTO [dbo].[ProductLocalized]
                             ([Language], [Product], [MeasurementUnit], [Description], [Name])
-                            VALUES (@Language, @Product, @MeasurementUnit, @Description, @Name)
-                            SELECT CAST(SCOPE_IDENTITY() AS INT);";
+                            VALUES (@Language, @Product, @MeasurementUnit, @Description, @Name);";
 
         // However the above SQL Insert will not get the last identity inserted.
         // There is no SCOPE_IDENTITY so we use OUTPUT.
-        return await connection.ExecuteScalarAsync<int>(query, new
+        await connection.ExecuteAsync(query, new
         {
             Language = language,
             Product = product,

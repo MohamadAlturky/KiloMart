@@ -80,7 +80,7 @@ public static class ProductLocalizedService
         {
             var connection = dbFactory.CreateDbConnection();
             connection.Open();
-            var id = await Db.InsertProductLocalizedAsync(connection, model.Language, model.Product, model.MeasurementUnit, model.Description, model.Name);
+            await Db.InsertProductLocalizedAsync(connection, model.Language, model.Product, model.MeasurementUnit, model.Description, model.Name);
 
             var productLocalized = await Db.GetProductLocalizedByLanguageAndProductAsync(model.Language, model.Product, connection);
 

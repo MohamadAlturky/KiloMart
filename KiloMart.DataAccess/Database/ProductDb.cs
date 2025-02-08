@@ -41,39 +41,39 @@ namespace KiloMart.DataAccess.Database
             }, transaction);
         }
 
-        public static async Task<bool> UpdateProductAsync(IDbConnection connection,
-            int id,
-            string imageUrl,
-            int productCategory,
-            bool isActive,
-            string measurementUnit,
-            string description,
-            string name,
-            IDbTransaction? transaction = null)
-        {
-            const string query = @"UPDATE [dbo].[Product]
-                                    SET 
-                                    [ImageUrl] = @ImageUrl,
-                                    [ProductCategory] = @ProductCategory,
-                                    [IsActive] = @IsActive,
-                                    [MeasurementUnit] = @MeasurementUnit,
-                                    [Description] = @Description,
-                                    [Name] = @Name
-                                    WHERE [Id] = @Id";
+        // public static async Task<bool> UpdateProductAsync(IDbConnection connection,
+        //     int id,
+        //     string imageUrl,
+        //     int productCategory,
+        //     bool isActive,
+        //     string measurementUnit,
+        //     string description,
+        //     string name,
+        //     IDbTransaction? transaction = null)
+        // {
+        //     const string query = @"UPDATE [dbo].[Product]
+        //                             SET 
+        //                             [ImageUrl] = @ImageUrl,
+        //                             [ProductCategory] = @ProductCategory,
+        //                             [IsActive] = @IsActive,
+        //                             [MeasurementUnit] = @MeasurementUnit,
+        //                             [Description] = @Description,
+        //                             [Name] = @Name
+        //                             WHERE [Id] = @Id";
 
-            var updatedRowsCount = await connection.ExecuteAsync(query, new
-            {
-                Id = id,
-                ImageUrl = imageUrl,
-                ProductCategory = productCategory,
-                IsActive = isActive,
-                MeasurementUnit = measurementUnit,
-                Description = description,
-                Name = name
-            }, transaction);
+        //     var updatedRowsCount = await connection.ExecuteAsync(query, new
+        //     {
+        //         Id = id,
+        //         ImageUrl = imageUrl,
+        //         ProductCategory = productCategory,
+        //         IsActive = isActive,
+        //         MeasurementUnit = measurementUnit,
+        //         Description = description,
+        //         Name = name
+        //     }, transaction);
 
-            return updatedRowsCount > 0;
-        }
+        //     return updatedRowsCount > 0;
+        // }
 
         public static async Task<bool> DeleteProductAsync(IDbConnection connection, int id, IDbTransaction? transaction = null)
         {

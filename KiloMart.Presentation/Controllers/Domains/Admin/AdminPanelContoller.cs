@@ -5,6 +5,8 @@ using KiloMart.DataAccess.Admin;
 using KiloMart.DataAccess.Database;
 using KiloMart.Domain.DateServices;
 using KiloMart.Domain.Orders.Common;
+using KiloMart.Domain.Orders.Helpers;
+using KiloMart.Domain.Orders.Repositories;
 using KiloMart.Domain.Orders.Services;
 using KiloMart.Domain.Register.Provider.Services;
 using KiloMart.Presentation.Services;
@@ -1410,6 +1412,458 @@ public class AdminPanelController : AppController
         });
     }
     #endregion
+
+    [HttpGet("product/orders-by-id")]
+    public async Task<IActionResult> GetProductOrdersById(
+      [FromQuery] int productId,
+      [FromQuery] byte language)
+    {
+        var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+        var orders = await OrderRepository.GetOrderDetailsByProductIdAsync(connection, productId);
+        if (orders is null)
+        {
+            return Success(new List<AggregatedOrder> { });
+        }
+        if (!orders.Any())
+        {
+            return Success(new List<AggregatedOrder> { });
+
+        }
+        var ordersIds = orders.Select(e => e.Id).ToList();
+
+        // Get the orders products
+        var ordersProducts = await OrderRepository.GetOrderProductsByIdsAsync(connection, ordersIds, language);
+
+        // Get the orders products offers
+        var ordersOffersProducts = await OrderRepository.GetOrderProductOffersByIdsAsync(connection, ordersIds, language);
+
+        List<AggregatedOrder> aggregatedOrders = OrderAggregator.Aggregate(
+            orders.ToList(),
+            ordersProducts.ToList(),
+            ordersOffersProducts.ToList());
+        return Success(aggregatedOrders.Select(
+             e =>
+             {
+                 DriverLocation? location = null;
+                 if (e.OrderDetails.Delivery.HasValue && e.OrderDetails.OrderStatus == (byte)OrderStatus.SHIPPED)
+                 {
+                     location = _driversTrackerService.GetByKey(e.OrderDetails.Delivery.Value);
+                 }
+                 return new
+                 {
+                     OrderDetails = new
+                     {
+                         e.OrderDetails.Id,
+                         OrderStatus = GetOrderStatusFromNumber(e.OrderDetails.OrderStatus).ToString(),
+                         e.OrderDetails.TotalPrice,
+                         e.OrderDetails.TransactionId,
+                         e.OrderDetails.Date,
+                         e.OrderDetails.PaymentType,
+                         e.OrderDetails.IsPaid,
+                         e.OrderDetails.ItemsPrice,
+                         e.OrderDetails.SystemFee,
+                         e.OrderDetails.DeliveryFee,
+                         e.OrderDetails.SpecialRequest,
+
+                         e.OrderDetails.Customer,
+                         e.OrderDetails.CustomerLocation,
+                         e.OrderDetails.CustomerInformationId,
+
+                         e.OrderDetails.Provider,
+                         e.OrderDetails.ProviderLocation,
+                         e.OrderDetails.ProviderInformationId,
+
+                         e.OrderDetails.Delivery,
+                         e.OrderDetails.DeliveryInformationId,
+
+                         e.OrderDetails.CustomerLocationName,
+                         e.OrderDetails.CustomerLocationLatitude,
+                         e.OrderDetails.CustomerLocationLongitude,
+                         e.OrderDetails.ProviderLocationName,
+                         e.OrderDetails.ProviderLocationLatitude,
+                         e.OrderDetails.ProviderLocationLongitude,
+
+
+                         e.OrderDetails.CustomerDisplayName,
+                         e.OrderDetails.ProviderDisplayName,
+                         e.OrderDetails.DeliveryDisplayName,
+                     },
+                     e.OrderProductOfferDetails,
+                     e.OrderProductDetails,
+                     DriverLocation = location
+                 };
+             }
+         ).ToList());
+    }
+    [HttpGet("product/offers-by-id")]
+    public async Task<IActionResult> GetProductOffers(
+     [FromQuery] int productId)
+    {
+        var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+        var offers = await Stats.GetActiveProductOffersByProductAsync(connection, productId);
+        return Success(offers);
+    }
+
+    [HttpGet("product-full-details")]
+    public async Task<IActionResult> GetProductDetails(
+       [FromQuery] byte languageId,
+       [FromQuery] int? categoryId,
+       [FromQuery] bool? isActive,
+       [FromQuery] int pageSize = 10,
+       [FromQuery] int page = 1)
+    {
+        // Validate input parameters
+        if (pageSize <= 0 || page <= 0)
+        {
+            return BadRequest("pageSize and page must be greater than 0.");
+        }
+
+        // Create and open the database connection
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        // Execute the query
+        var productDetails = await Stats.GetProductDetailsAsync(
+            connection,
+            languageId,
+            categoryId,
+            isActive,
+            pageSize,
+            page);
+        var productDetailsCount = await Stats.GetProductDetailsCountAsync(
+            connection,
+            languageId,
+            categoryId,
+            isActive);
+
+
+        // Return the results
+        return Ok(new
+        {
+            Count = productDetailsCount,
+            Data = productDetails
+        });
+    }
+
+
+    [HttpGet("offers-details-by-id")]
+    public async Task<IActionResult> GetProductDetailsWithOffers([FromQuery] byte languageId,
+    [FromQuery] long offerId)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        var productDetails = await Stats.GetProductDetailsWithOffersAsync(connection, offerId, languageId);
+
+        return Ok(productDetails);
+    }
+
+
+    [HttpGet("product-offer/orders-by-id")]
+    public async Task<IActionResult> GetProductOffersOrdersById(
+     [FromQuery] long offerId,
+     [FromQuery] byte language)
+    {
+        var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+        var orders = await OrderRepository.GetOrderDetailsByProductOfferIdAsync(connection, offerId);
+        if (orders is null)
+        {
+            return Success(new List<AggregatedOrder> { });
+        }
+        if (!orders.Any())
+        {
+            return Success(new List<AggregatedOrder> { });
+
+        }
+        var ordersIds = orders.Select(e => e.Id).ToList();
+
+        // Get the orders products
+        var ordersProducts = await OrderRepository.GetOrderProductsByIdsAsync(connection, ordersIds, language);
+
+        // Get the orders products offers
+        var ordersOffersProducts = await OrderRepository.GetOrderProductOffersByIdsAsync(connection, ordersIds, language);
+
+        List<AggregatedOrder> aggregatedOrders = OrderAggregator.Aggregate(
+            orders.ToList(),
+            ordersProducts.ToList(),
+            ordersOffersProducts.ToList());
+        return Success(aggregatedOrders.Select(
+             e =>
+             {
+                 DriverLocation? location = null;
+                 if (e.OrderDetails.Delivery.HasValue && e.OrderDetails.OrderStatus == (byte)OrderStatus.SHIPPED)
+                 {
+                     location = _driversTrackerService.GetByKey(e.OrderDetails.Delivery.Value);
+                 }
+                 return new
+                 {
+                     OrderDetails = new
+                     {
+                         e.OrderDetails.Id,
+                         OrderStatus = GetOrderStatusFromNumber(e.OrderDetails.OrderStatus).ToString(),
+                         e.OrderDetails.TotalPrice,
+                         e.OrderDetails.TransactionId,
+                         e.OrderDetails.Date,
+                         e.OrderDetails.PaymentType,
+                         e.OrderDetails.IsPaid,
+                         e.OrderDetails.ItemsPrice,
+                         e.OrderDetails.SystemFee,
+                         e.OrderDetails.DeliveryFee,
+                         e.OrderDetails.SpecialRequest,
+
+                         e.OrderDetails.Customer,
+                         e.OrderDetails.CustomerLocation,
+                         e.OrderDetails.CustomerInformationId,
+
+                         e.OrderDetails.Provider,
+                         e.OrderDetails.ProviderLocation,
+                         e.OrderDetails.ProviderInformationId,
+
+                         e.OrderDetails.Delivery,
+                         e.OrderDetails.DeliveryInformationId,
+
+                         e.OrderDetails.CustomerLocationName,
+                         e.OrderDetails.CustomerLocationLatitude,
+                         e.OrderDetails.CustomerLocationLongitude,
+                         e.OrderDetails.ProviderLocationName,
+                         e.OrderDetails.ProviderLocationLatitude,
+                         e.OrderDetails.ProviderLocationLongitude,
+
+
+                         e.OrderDetails.CustomerDisplayName,
+                         e.OrderDetails.ProviderDisplayName,
+                         e.OrderDetails.DeliveryDisplayName,
+                     },
+                     e.OrderProductOfferDetails,
+                     e.OrderProductDetails,
+                     DriverLocation = location
+                 };
+             }
+         ).ToList());
+    }
+
+    [HttpGet("product-requests")]
+    public async Task<IActionResult> ProductsRequests(
+        [FromQuery] int pageNumber,
+        [FromQuery] int pageSize,
+        [FromQuery] int? providerId = null,
+        [FromQuery] int? statusId = null)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        var productDetails = await Stats.GetProductRequestsAsync(connection, pageNumber, pageSize, providerId, statusId);
+
+        return Ok(productDetails);
+    }
+
+    [HttpPut("product-requests/edit")]
+    public async Task<IActionResult> EditProductsRequest(
+            [FromQuery] int requestId,
+            [FromQuery] byte statusId)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        var productRequest = await Db.GetProductRequestByIdAsync(requestId, connection);
+        if (productRequest is null)
+        {
+            return Fail("not found");
+        }
+        productRequest.Status = statusId;
+
+        return Ok();
+    }
+    [HttpDelete("product-requests/delete")]
+    public async Task<IActionResult> DeleteProductsRequest(
+           [FromQuery] int requestId)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+        var productRequest = await Db.GetProductRequestByIdAsync(requestId, connection);
+        if (productRequest is null)
+        {
+            return Fail("not found");
+        }
+
+        await Db.DeleteProductRequestDataLocalizedAsync(connection, requestId);
+        await Db.DeleteProductRequestAsync(connection, requestId);
+        return Ok();
+    }
+
+
+    [HttpGet("provider-get-all-orders")]
+    public async Task<IActionResult> ProviderOrders(
+        [FromQuery] int providerId,
+        [FromQuery] byte language)
+    {
+
+
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        var whereClause = "WHERE Provider = @provider";
+        var parameters = new { provider = providerId };
+
+        // Get the orders
+        var orders = await OrderRepository.GetOrderDetailsAsync(connection, whereClause, parameters);
+
+        var ordersIds = orders.Select(e => e.Id).ToList();
+
+        // Get the orders products
+        var ordersProducts = await OrderRepository.GetOrderProductsByIdsAsync(connection, ordersIds, language);
+
+        // Get the orders products offers
+        var ordersOffersProducts = await OrderRepository.GetOrderProductOffersByIdsAsync(connection, ordersIds, language);
+
+        List<AggregatedOrder> aggregatedOrders = OrderAggregator.Aggregate(
+            orders.ToList(),
+            ordersProducts.ToList(),
+            ordersOffersProducts.ToList());
+
+        return Success(aggregatedOrders.Select(
+             e =>
+             {
+                 DriverLocation? location = null;
+                 if (e.OrderDetails.Delivery.HasValue && e.OrderDetails.OrderStatus == (byte)OrderStatus.SHIPPED)
+                 {
+                     location = _driversTrackerService.GetByKey(e.OrderDetails.Delivery.Value);
+                 }
+                 return new
+                 {
+                     OrderDetails = new
+                     {
+                         e.OrderDetails.Id,
+                         OrderStatus = GetOrderStatusFromNumber(e.OrderDetails.OrderStatus).ToString(),
+                         e.OrderDetails.TotalPrice,
+                         e.OrderDetails.TransactionId,
+                         e.OrderDetails.Date,
+                         e.OrderDetails.PaymentType,
+                         e.OrderDetails.IsPaid,
+                         e.OrderDetails.ItemsPrice,
+                         e.OrderDetails.SystemFee,
+                         e.OrderDetails.DeliveryFee,
+                         e.OrderDetails.SpecialRequest,
+
+                         e.OrderDetails.Customer,
+                         e.OrderDetails.CustomerLocation,
+                         e.OrderDetails.CustomerInformationId,
+
+                         e.OrderDetails.Provider,
+                         e.OrderDetails.ProviderLocation,
+                         e.OrderDetails.ProviderInformationId,
+
+                         e.OrderDetails.Delivery,
+                         e.OrderDetails.DeliveryInformationId,
+
+                         e.OrderDetails.CustomerLocationName,
+                         e.OrderDetails.CustomerLocationLatitude,
+                         e.OrderDetails.CustomerLocationLongitude,
+                         e.OrderDetails.ProviderLocationName,
+                         e.OrderDetails.ProviderLocationLatitude,
+                         e.OrderDetails.ProviderLocationLongitude,
+
+
+                         e.OrderDetails.CustomerDisplayName,
+                         e.OrderDetails.ProviderDisplayName,
+                         e.OrderDetails.DeliveryDisplayName,
+                     },
+                     e.OrderProductOfferDetails,
+                     e.OrderProductDetails,
+                     DriverLocation = location
+                 };
+             }
+         ).ToList());
+    }
+
+
+    [HttpGet("provider-get-all-active-orders")]
+    public async Task<IActionResult> ProviderActiveOrders(
+        [FromQuery] int providerId,
+        [FromQuery] byte language)
+    {
+
+
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        var whereClause = "WHERE Provider = @provider AND OrderStatus != @Canceled AND OrderStatus != @Completed";
+        var parameters = new { provider = providerId, Canceled = OrderStatus.CANCELED, Completed = OrderStatus.COMPLETED };
+
+        // Get the orders
+        var orders = await OrderRepository.GetOrderDetailsAsync(connection, whereClause, parameters);
+
+        var ordersIds = orders.Select(e => e.Id).ToList();
+
+        // Get the orders products
+        var ordersProducts = await OrderRepository.GetOrderProductsByIdsAsync(connection, ordersIds, language);
+
+        // Get the orders products offers
+        var ordersOffersProducts = await OrderRepository.GetOrderProductOffersByIdsAsync(connection, ordersIds, language);
+
+        List<AggregatedOrder> aggregatedOrders = OrderAggregator.Aggregate(
+            orders.ToList(),
+            ordersProducts.ToList(),
+            ordersOffersProducts.ToList());
+
+        return Success(aggregatedOrders.Select(
+             e =>
+             {
+                 DriverLocation? location = null;
+                 if (e.OrderDetails.Delivery.HasValue && e.OrderDetails.OrderStatus == (byte)OrderStatus.SHIPPED)
+                 {
+                     location = _driversTrackerService.GetByKey(e.OrderDetails.Delivery.Value);
+                 }
+                 return new
+                 {
+                     OrderDetails = new
+                     {
+                         e.OrderDetails.Id,
+                         OrderStatus = GetOrderStatusFromNumber(e.OrderDetails.OrderStatus).ToString(),
+                         e.OrderDetails.TotalPrice,
+                         e.OrderDetails.TransactionId,
+                         e.OrderDetails.Date,
+                         e.OrderDetails.PaymentType,
+                         e.OrderDetails.IsPaid,
+                         e.OrderDetails.ItemsPrice,
+                         e.OrderDetails.SystemFee,
+                         e.OrderDetails.DeliveryFee,
+                         e.OrderDetails.SpecialRequest,
+
+                         e.OrderDetails.Customer,
+                         e.OrderDetails.CustomerLocation,
+                         e.OrderDetails.CustomerInformationId,
+
+                         e.OrderDetails.Provider,
+                         e.OrderDetails.ProviderLocation,
+                         e.OrderDetails.ProviderInformationId,
+
+                         e.OrderDetails.Delivery,
+                         e.OrderDetails.DeliveryInformationId,
+
+                         e.OrderDetails.CustomerLocationName,
+                         e.OrderDetails.CustomerLocationLatitude,
+                         e.OrderDetails.CustomerLocationLongitude,
+                         e.OrderDetails.ProviderLocationName,
+                         e.OrderDetails.ProviderLocationLatitude,
+                         e.OrderDetails.ProviderLocationLongitude,
+
+
+                         e.OrderDetails.CustomerDisplayName,
+                         e.OrderDetails.ProviderDisplayName,
+                         e.OrderDetails.DeliveryDisplayName,
+                     },
+                     e.OrderProductOfferDetails,
+                     e.OrderProductDetails,
+                     DriverLocation = location
+                 };
+             }
+         ).ToList());
+    }
+
 }
 
 

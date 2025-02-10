@@ -6,11 +6,11 @@ namespace KiloMart.DataAccess.Database
     public static partial class Db
     {
         public static async Task InsertProductRequestDataLocalizedAsync(IDbConnection connection,
-            int productRequest, 
-            short language, 
-            string name, 
-            string description, 
-            string measurementUnit, 
+            int productRequest,
+            short language,
+            string name,
+            string description,
+            string measurementUnit,
             IDbTransaction? transaction = null)
         {
             const string query = @"INSERT INTO [dbo].[ProductRequestDataLocalized]
@@ -28,11 +28,11 @@ namespace KiloMart.DataAccess.Database
         }
 
         public static async Task<bool> UpdateProductRequestDataLocalizedAsync(IDbConnection connection,
-            int productRequest, 
-            short language, 
-            string name, 
-            string description, 
-            string measurementUnit, 
+            int productRequest,
+            short language,
+            string name,
+            string description,
+            string measurementUnit,
             IDbTransaction? transaction = null)
         {
             const string query = @"UPDATE [dbo].[ProductRequestDataLocalized]
@@ -54,9 +54,9 @@ namespace KiloMart.DataAccess.Database
             return updatedRowsCount > 0;
         }
 
-        public static async Task<bool> DeleteProductRequestDataLocalizedAsync(IDbConnection connection, 
-            int productRequest, 
-            short language, 
+        public static async Task<bool> DeleteProductRequestDataLocalizedAsync(IDbConnection connection,
+            int productRequest,
+            short language,
             IDbTransaction? transaction = null)
         {
             const string query = @"DELETE FROM [dbo].[ProductRequestDataLocalized]
@@ -70,9 +70,23 @@ namespace KiloMart.DataAccess.Database
 
             return deletedRowsCount > 0;
         }
+        public static async Task<bool> DeleteProductRequestDataLocalizedAsync(IDbConnection connection,
+                    int productRequest,
+                    IDbTransaction? transaction = null)
+        {
+            const string query = @"DELETE FROM [dbo].[ProductRequestDataLocalized]
+                                    WHERE [ProductRequest] = @ProductRequest";
 
-        public static async Task<ProductRequestDataLocalized?> GetProductRequestDataLocalizedAsync(int productRequest, 
-            short language, 
+            var deletedRowsCount = await connection.ExecuteAsync(query, new
+            {
+                ProductRequest = productRequest
+            }, transaction);
+
+            return deletedRowsCount > 0;
+        }
+
+        public static async Task<ProductRequestDataLocalized?> GetProductRequestDataLocalizedAsync(int productRequest,
+            short language,
             IDbConnection connection)
         {
             const string query = @"SELECT 
@@ -103,6 +117,23 @@ namespace KiloMart.DataAccess.Database
                                     WHERE [ProductRequest] = @ProductRequest";
 
             return await connection.QueryFirstOrDefaultAsync<ProductRequestDataLocalized>(query, new
+            {
+                ProductRequest = productRequest
+            });
+        }
+        public static async Task<IEnumerable<ProductRequestDataLocalized>> GetProductRequestsDataLocalizedAsync(int productRequest,
+            IDbConnection connection)
+        {
+            const string query = @"SELECT 
+                                    [ProductRequest], 
+                                    [Language], 
+                                    [Name], 
+                                    [Description], 
+                                    [MeasurementUnit]
+                                    FROM [dbo].[ProductRequestDataLocalized]
+                                    WHERE [ProductRequest] = @ProductRequest";
+
+            return await connection.QueryAsync<ProductRequestDataLocalized>(query, new
             {
                 ProductRequest = productRequest
             });

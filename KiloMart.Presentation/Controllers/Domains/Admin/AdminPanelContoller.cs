@@ -1888,13 +1888,37 @@ public class AdminPanelController : AppController
 
         var productDetails = await Stats.GetProductDetailsAndOrderCountAsync(productId, language, connection);
 
-        return Ok(new 
+        return Ok(new
         {
             OrderCount = productDetails.OrderCount,
             ProductDetail = productDetails.ProductDetail
         });
     }
+    [HttpGet("get-all-productOffers-paginated")]
+    public async Task<IActionResult> ProductOffersPaginated(
+        [FromQuery] int pageNumber,
+        [FromQuery] int pageSize,
+        [FromQuery] byte languageId,
+        [FromQuery] int? categoryId,
+        [FromQuery] bool? isActive)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
 
+        var productDetails = await Stats.GetProductOffersWithPaginationAsync(
+            pageNumber,
+            pageSize,
+            languageId,
+            categoryId,
+            isActive,
+            connection);
+
+        return Ok(new
+        {
+            Count = productDetails.TotalCount,
+            Offers = productDetails.Results
+        });
+    }
 }
 
 

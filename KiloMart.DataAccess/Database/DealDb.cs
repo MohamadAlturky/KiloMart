@@ -189,6 +189,85 @@ public static partial class Db
 
         return await connection.QueryAsync<Deal>(query, new { Product = product });
     }
+
+    public static async Task<IEnumerable<DealWithProductDetails>> GetActiveDealsByProductAsync(IDbConnection connection, byte language)
+    {
+        const string query = @"
+        SELECT 
+            d.[Id], 
+            d.[Product], 
+            d.[IsActive], 
+            d.[OffPercentage], 
+            d.[StartDate], 
+            d.[EndDate],
+            pd.[ProductId],
+            pd.[ProductImageUrl],
+            pd.[ProductIsActive],
+            pd.[ProductMeasurementUnit],
+            pd.[ProductDescription],
+            pd.[ProductName],
+            pd.[ProductCategoryId],
+            pd.[ProductCategoryIsActive],
+            pd.[ProductCategoryName]
+        FROM [dbo].[Deal] d
+        INNER JOIN 
+        dbo.GetProductDetailsFN(@language) pd
+        ON pd.ProductId = d.Product
+        WHERE 
+        GETDATE() BETWEEN d.[StartDate] AND d.[EndDate] 
+        AND d.[IsActive] = 1";
+
+        return await connection.QueryAsync<DealWithProductDetails>(query, new { Language = language });
+    }
+
+    public static async Task<(IEnumerable<DealWithProductDetails> Deals, int TotalCount)> GetActiveDealsByProductAsync(IDbConnection connection, byte language, int pageNumber, int pageSize)
+    {
+        const string query = @"
+        SELECT 
+            d.[Id], 
+            d.[Product], 
+            d.[IsActive], 
+            d.[OffPercentage], 
+            d.[StartDate], 
+            d.[EndDate],
+            pd.[ProductId],
+            pd.[ProductImageUrl],
+            pd.[ProductIsActive],
+            pd.[ProductMeasurementUnit],
+            pd.[ProductDescription],
+            pd.[ProductName],
+            pd.[ProductCategoryId],
+            pd.[ProductCategoryIsActive],
+            pd.[ProductCategoryName]
+        FROM [dbo].[Deal] d
+        INNER JOIN 
+        dbo.GetProductDetailsFN(@language) pd
+        ON pd.ProductId = d.Product
+        WHERE 
+        GETDATE() BETWEEN d.[StartDate] AND d.[EndDate] 
+        ORDER BY d.[Id]
+        OFFSET @Offset ROWS
+        FETCH NEXT @PageSize ROWS ONLY";
+
+        const string countQuery = @"
+        SELECT COUNT(*)
+        FROM [dbo].[Deal] d
+        WHERE 
+        GETDATE() BETWEEN d.[StartDate] AND d.[EndDate]";
+
+        int offset = (pageNumber - 1) * pageSize;
+
+        var deals = await connection.QueryAsync<DealWithProductDetails>(query, new
+        {
+            Language = language,
+            Offset = offset,
+            PageSize = pageSize
+        });
+
+        var totalCount = await connection.ExecuteScalarAsync<int>(countQuery, new { Language = language });
+
+        return (deals, totalCount);
+    }
 }
 
 public class Deal
@@ -199,4 +278,22 @@ public class Deal
     public float OffPercentage { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
+}
+public class DealWithProductDetails
+{
+    public int Id { get; set; }
+    public int Product { get; set; }
+    public bool IsActive { get; set; }
+    public float OffPercentage { get; set; }
+    public DateTime StartDate { get; set; }
+    public DateTime EndDate { get; set; }
+    public int ProductId { get; set; }
+    public string ProductImageUrl { get; set; }
+    public bool ProductIsActive { get; set; }
+    public string ProductMeasurementUnit { get; set; }
+    public string ProductDescription { get; set; }
+    public string ProductName { get; set; }
+    public int ProductCategoryId { get; set; }
+    public bool ProductCategoryIsActive { get; set; }
+    public string ProductCategoryName { get; set; }
 }

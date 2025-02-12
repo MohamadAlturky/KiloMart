@@ -125,7 +125,7 @@ namespace KiloMart.Presentation.Controllers.Shared
             {
                 return Fail("there is an intersection with the deals in the db try another start date and end date");
             }
-            
+
             var result = await Db.ActivateDealAsync(connection, id);
             if (result)
             {
@@ -137,12 +137,12 @@ namespace KiloMart.Presentation.Controllers.Shared
 
         [HttpGet("admin/active")]
         [Guard([Roles.Admin])]
-        public async Task<IActionResult> GetActive()
+        public async Task<IActionResult> GetActive([FromQuery] byte language)
         {
             using var connection = _dbFactory.CreateDbConnection();
             connection.Open();
 
-            var activeDeals = await Db.GetActiveDealsAsync(connection);
+            var activeDeals = await Db.GetActiveDealsByProductAsync(connection, language);
 
             if (activeDeals != null)
             {
@@ -150,6 +150,21 @@ namespace KiloMart.Presentation.Controllers.Shared
             }
 
             return DataNotFound();
+        }
+        [HttpGet("admin/all")]
+        [Guard([Roles.Admin])]
+        public async Task<IActionResult> GetAll([FromQuery] byte language, [FromQuery] int pageNumber, [FromQuery] int pageSize)
+        {
+            using var connection = _dbFactory.CreateDbConnection();
+            connection.Open();
+
+            var deals = await Db.GetActiveDealsByProductAsync(connection, language, pageNumber, pageSize);
+
+            return Success(new
+            {
+                Deals = deals.Deals,
+                TotalCount = deals.TotalCount
+            });
         }
         [HttpGet("admin/active-for-product")]
         [Guard([Roles.Admin])]

@@ -8,6 +8,7 @@ using KiloMart.Domain.Orders.Common;
 using KiloMart.Domain.Orders.Helpers;
 using KiloMart.Domain.Orders.Repositories;
 using KiloMart.Domain.Orders.Services;
+using KiloMart.Domain.ProductRequests.Add;
 using KiloMart.Domain.Register.Provider.Services;
 using KiloMart.Presentation.Services;
 using KiloMart.Presentation.Tracking;
@@ -1660,10 +1661,9 @@ public class AdminPanelController : AppController
         return Ok(productDetails);
     }
 
-    [HttpPut("product-requests/edit")]
-    public async Task<IActionResult> EditProductsRequest(
-            [FromQuery] int requestId,
-            [FromQuery] byte statusId)
+    [HttpPut("product-requests/reject")]
+    public async Task<IActionResult> RejectProductsRequest(
+            [FromQuery] int requestId)
     {
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
@@ -1673,10 +1673,22 @@ public class AdminPanelController : AppController
         {
             return Fail("not found");
         }
-        productRequest.Status = statusId;
+        productRequest.Status = (byte)ProductRequestStatus.Rejected;
+        await Db.UpdateProductRequestAsync(
+            connection,
+            requestId,
+            productRequest.Provider,
+            productRequest.Date,
+            productRequest.ImageUrl,
+            productRequest.ProductCategory,
+            productRequest.Price,
+            productRequest.OffPercentage,
+            productRequest.Quantity,
+            productRequest.Status);
 
-        return Ok();
+        return Success("Ok");
     }
+
     [HttpDelete("product-requests/delete")]
     public async Task<IActionResult> DeleteProductsRequest(
            [FromQuery] int requestId)
@@ -1697,7 +1709,7 @@ public class AdminPanelController : AppController
 
     [HttpGet("provider-get-all-orders")]
     public async Task<IActionResult> ProviderOrders(
-        [FromQuery] int providerId,
+        [FromQuery] int? providerId,
         [FromQuery] byte language)
     {
 
@@ -1705,7 +1717,7 @@ public class AdminPanelController : AppController
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
 
-        var whereClause = "WHERE Provider = @provider";
+        var whereClause = "WHERE Provider = @provider Or @provider Is NULL";
         var parameters = new { provider = providerId };
 
         // Get the orders
@@ -1782,7 +1794,7 @@ public class AdminPanelController : AppController
 
     [HttpGet("provider-get-all-active-orders")]
     public async Task<IActionResult> ProviderActiveOrders(
-        [FromQuery] int providerId,
+        [FromQuery] int? providerId,
         [FromQuery] byte language)
     {
 
@@ -1790,7 +1802,7 @@ public class AdminPanelController : AppController
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
 
-        var whereClause = "WHERE Provider = @provider AND OrderStatus != @Canceled AND OrderStatus != @Completed";
+        var whereClause = "WHERE (Provider = @provider Or @provider Is NULL) AND OrderStatus != @Canceled AND OrderStatus != @Completed";
         var parameters = new { provider = providerId, Canceled = OrderStatus.CANCELED, Completed = OrderStatus.COMPLETED };
 
         // Get the orders
@@ -1862,6 +1874,25 @@ public class AdminPanelController : AppController
                  };
              }
          ).ToList());
+    }
+
+
+
+    [HttpGet("product-details-by-id")]
+    public async Task<IActionResult> ProductDetails(
+          [FromQuery] int productId,
+          [FromQuery] byte language)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        var productDetails = await Stats.GetProductDetailsAndOrderCountAsync(productId, language, connection);
+
+        return Ok(new 
+        {
+            OrderCount = productDetails.OrderCount,
+            ProductDetail = productDetails.ProductDetail
+        });
     }
 
 }

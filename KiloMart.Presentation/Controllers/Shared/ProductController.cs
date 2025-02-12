@@ -1,6 +1,7 @@
 using Dapper;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
+using KiloMart.DataAccess.Database;
 using KiloMart.Domain.Languages.Models;
 using KiloMart.Domain.Products.Add.Models;
 using KiloMart.Domain.Products.Add.Services;
@@ -67,6 +68,131 @@ public class ProductController(
     }
     #endregion
 
+
+
+
+
+    // PUT api/admin/product/{id}
+    [HttpPut("{productId}")]
+    [Guard(new[] { Roles.Admin })]
+    public async Task<IActionResult> UpdateProduct([FromRoute] int productId, [FromForm] UpdateProductRequest request)
+    {
+        using var writeConnection = _dbFactory.CreateDbConnection();
+        writeConnection.Open();
+        var transaction = writeConnection.BeginTransaction();
+
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+
+        var product = await Db.GetProductByIdAsync(productId, connection);
+        if (product is null)
+        {
+            return Fail("Product Not Found");
+        }
+        var productArabic = await Db.GetProductLocalizedByLanguageAndProductAsync((byte)Language.Arabic, productId, connection);
+        var productEnglish = await Db.GetProductLocalizedByLanguageAndProductAsync((byte)Language.English, productId, connection);
+        if (request.Image is not null)
+        {
+            Guid fileName = Guid.NewGuid();
+            var filePath = await FileService.SaveImageFileAsync(request.Image,
+                _environment.WebRootPath,
+                fileName);
+            product.ImageUrl = filePath;
+        }
+        if (request.ProductCategory is not null)
+        {
+            product.ProductCategory = request.ProductCategory.Value;
+        }
+        bool updated = await Db.UpdateProductAsync(
+            writeConnection,
+            productId,
+            product.Name,
+            product.Description,
+            product.ImageUrl,
+            product.ProductCategory,
+            product.MeasurementUnit,
+            request.IsActive??product.IsActive,
+            transaction
+        );
+        if (productArabic is not null)
+        {
+            if (request.ProductDataAr is not null)
+            {
+                await Db.UpdateProductLocalizedAsync(
+                    writeConnection,
+                    (byte)Language.Arabic,
+                    productId,
+                    request.ProductDataAr.MeasurementUnit,
+                    request.ProductDataAr.Description,
+                    request.ProductDataAr.Name,
+                    transaction);
+            }
+        }
+        else
+        {
+            if (request.ProductDataAr is not null)
+            {
+                await Db.InsertProductLocalizedAsync(
+                    writeConnection,
+                    (byte)Language.Arabic,
+                    productId,
+                    request.ProductDataAr.MeasurementUnit,
+                    request.ProductDataAr.Description,
+                    request.ProductDataAr.Name,
+                    transaction);
+            }
+        }
+        if (productEnglish is not null)
+        {
+            if (request.ProductDataEn is not null)
+            {
+                await Db.UpdateProductLocalizedAsync(
+                    writeConnection,
+                    (byte)Language.English,
+                    productId,
+                    request.ProductDataEn.MeasurementUnit,
+                    request.ProductDataEn.Description,
+                    request.ProductDataEn.Name,
+                    transaction);
+            }
+        }
+        else
+        {
+            if (request.ProductDataEn is not null)
+            {
+                await Db.InsertProductLocalizedAsync(
+                    writeConnection,
+                    (byte)Language.English,
+                    productId,
+                    request.ProductDataEn.MeasurementUnit,
+                    request.ProductDataEn.Description,
+                    request.ProductDataEn.Name,
+                    transaction);
+            }
+        }
+        transaction.Commit();
+        return Success("ok");
+    }
+
+
+
+
+
+    public class ProductData
+    {
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string MeasurementUnit { get; set; }
+    }
+    // Request DTO for updating the product's main properties
+    public class UpdateProductRequest
+    {
+        public ProductData? ProductDataAr { get; set; }
+        public ProductData? ProductDataEn { get; set; }
+        public int? ProductCategory { get; set; }
+        public IFormFile? Image { get; set; }
+        public bool? IsActive { get; set; }
+    }
 
     // [HttpGet("admin/paginated")]
     // [Guard([Roles.Admin])]

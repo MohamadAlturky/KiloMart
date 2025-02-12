@@ -39,29 +39,7 @@ public class ProductAdminController(IDbFactory dbFactory, IUserContext userConte
         return Fail("Failed to deactivate product.");
     }
 
-    // PUT api/admin/product/{id}
-    [HttpPut("{id:int}")]
-    [Guard(new[] { Roles.Admin })]
-    public async Task<IActionResult> UpdateProduct([FromRoute] int productId, [FromBody] UpdateProductRequest request)
-    {
-        using var connection = _dbFactory.CreateDbConnection();
-        connection.Open();
-
-        bool updated = await Db.UpdateProductAsync(
-            connection,
-            productId,
-            request.Name,
-            request.Description,
-            request.ImageUrl,
-            request.ProductCategory,
-            request.MeasurementUnit
-        );
-
-        if (updated)
-            return Success("Product updated successfully.");
-        return Fail("Failed to update product.");
-    }
-
+  
     // POST api/admin/product/{id}/localized
     [HttpPost("{productId:int}/localized")]
     [Guard(new[] { Roles.Admin })]
@@ -159,15 +137,6 @@ public class ProductAdminController(IDbFactory dbFactory, IUserContext userConte
     }
 }
 
-// Request DTO for updating the product's main properties
-public class UpdateProductRequest
-{
-    public string Name { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
-    public string ImageUrl { get; set; } = string.Empty;
-    public int ProductCategory { get; set; }
-    public string MeasurementUnit { get; set; } = string.Empty;
-}
 
 // Request DTO for inserting/updating localized product data
 public class ProductLocalizedRequest

@@ -42,6 +42,7 @@ public static partial class Db
         string imageUrl,
         int productCategory,
         string measurementUnit,
+        bool isActive,
         IDbTransaction? transaction = null)
     {
         const string query = @"UPDATE [dbo].[Product]
@@ -60,7 +61,8 @@ public static partial class Db
             Description = description,
             ImageUrl = imageUrl,
             ProductCategory = productCategory,
-            MeasurementUnit = measurementUnit
+            MeasurementUnit = measurementUnit,
+            IsActive = isActive
         }, transaction);
 
         return updatedRowsCount > 0;

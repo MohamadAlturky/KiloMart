@@ -243,8 +243,8 @@ public static partial class Db
         INNER JOIN 
         dbo.GetProductDetailsFN(@language) pd
         ON pd.ProductId = d.Product
-        WHERE 
-        GETDATE() BETWEEN d.[StartDate] AND d.[EndDate] 
+        --WHERE 
+        --GETDATE() BETWEEN d.[StartDate] AND d.[EndDate] 
         ORDER BY d.[Id]
         OFFSET @Offset ROWS
         FETCH NEXT @PageSize ROWS ONLY";
@@ -252,8 +252,8 @@ public static partial class Db
         const string countQuery = @"
         SELECT COUNT(*)
         FROM [dbo].[Deal] d
-        WHERE 
-        GETDATE() BETWEEN d.[StartDate] AND d.[EndDate]";
+        --WHERE 
+        --GETDATE() BETWEEN d.[StartDate] AND d.[EndDate]";
 
         int offset = (pageNumber - 1) * pageSize;
 

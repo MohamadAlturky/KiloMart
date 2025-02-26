@@ -5,6 +5,7 @@ using KiloMart.Core.Models;
 using KiloMart.Domain.Orders.Common;
 using KiloMart.Domain.Orders.Helpers;
 using KiloMart.Domain.Orders.Repositories;
+using KiloMart.DataAccess.Database;
 
 namespace KiloMart.Domain.Orders.Services;
 public static class ReadOrderService
@@ -306,6 +307,63 @@ public static class ReadOrderService
 
             // Get the orders
             var orders = await OrderRepository.GetOrderDetailsAsync(connection, whereClause, parameters);
+
+            if (orders is null)
+            {
+                return Result<List<AggregatedOrder>>.Ok([]);
+            }
+            if (!orders.Any())
+            {
+                return Result<List<AggregatedOrder>>.Ok([]);
+            }
+            var ordersIds = orders.Select(e => e.Id).ToList();
+
+            // Get the orders products
+            var ordersProducts = await OrderRepository.GetOrderProductsByIdsAsync(connection, ordersIds, language);
+
+            // Get the orders products offers
+            var ordersOffersProducts = await OrderRepository.GetOrderProductOffersByIdsAsync(connection, ordersIds, language);
+
+            List<AggregatedOrder> aggregatedOrders = OrderAggregator.Aggregate(
+                orders.AsList(),
+                ordersProducts.AsList(),
+                ordersOffersProducts.AsList());
+
+            return Result<List<AggregatedOrder>>.Ok(aggregatedOrders);
+        }
+        catch (Exception e)
+        {
+            return Result<List<AggregatedOrder>>.Fail([e.Message]);
+        }
+    }
+    
+    public static async Task<Result<List<AggregatedOrder>>> GetRequestedOrdersForProvider(
+        byte language,
+        int providerId,
+        IDbFactory dbFactory)
+    {
+        try
+        {
+            byte status = (byte)OrderStatus.ORDER_PLACED;
+            using var connection = dbFactory.CreateDbConnection();
+            connection.Open();
+            var location = await Db.GetLocationByPartyAsync(providerId, connection);
+            if (location is null)
+            {
+                return Result<List<AggregatedOrder>>.Fail(["You Have To Add Your Location First"]);
+            }
+            var settings = await Db.GetSystemSettingsByIdAsync(0, connection);
+            if (settings is null)
+            {
+                return Result<List<AggregatedOrder>>.Fail(["Settings not found"]);
+            }
+            var whereClause = "WHERE OrderStatus = @status AND dbo.GetDistanceBetweenPoints(cl.[Latitude], cl.[Longitude], @Latitude, @Longitude) <= @DistanceInKm";
+            var parameters = new { status, Latitude = location.Latitude, Longitude = location.Longitude, DistanceInKm = settings.CircleRaduis };
+
+            // Get the orders
+            var orders = await OrderRepository.GetOrderDetailsForProviderAsync(connection, 
+                whereClause, 
+                parameters);
 
             if (orders is null)
             {

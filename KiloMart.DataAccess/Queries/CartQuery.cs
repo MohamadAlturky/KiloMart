@@ -15,6 +15,7 @@ public partial class Query
                         MAX(po.Price) AS MaxPrice,
                         MIN(po.Price) AS MinPrice 
                     FROM ProductOffer po
+                    WHERE po.IsActive = 1
                     GROUP BY po.Product
                 ) p 
                 INNER JOIN Cart c

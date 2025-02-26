@@ -152,10 +152,11 @@ public class ProviderActivitiesContoller : AppController
         return result.Success ? Success(result.Data) : Fail(result.Errors);
     }
     [HttpGet("orders/requested-orders")]
-    // [Guard([Roles.Customer])]
+    [Guard([Roles.Provider])]
     public async Task<IActionResult> GetMineByStatus([FromQuery] byte language)
     {
-        var result = await ReadOrderService.GetRequestedOrders(language,
+        var result = await ReadOrderService.GetRequestedOrdersForProvider(language,
+            _userContext.Get().Party,
             _dbFactory);
 
         return result.Success ? Success(result.Data) : Fail(result.Errors);

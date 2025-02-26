@@ -1,11 +1,71 @@
 using System.Data;
 using Dapper;
+using KiloMart.DataAccess.Database;
 
 namespace KiloMart.Domain.Orders.Repositories;
 
 #region Orders Filter
 public static partial class OrderRepository
 {
+    public static async Task<IEnumerable<OrderDetailsDto>> GetOrderDetailsForProviderAsync(IDbConnection connection,
+     string whereClause,
+     object parameters)
+    {
+        var sql = $@"
+            SELECT 
+                o.Id,
+                o.OrderStatus,
+                o.TotalPrice,
+                o.TransactionId,
+                o.Date,
+                o.PaymentType,
+                o.IsPaid,
+                o.ItemsPrice,
+                o.SystemFee,
+                o.DeliveryFee,
+                o.SpecialRequest,
+                oci.Customer,
+                oci.Location AS CustomerLocation,
+                oci.Id AS CustomerInformationId,
+                opi.Provider,
+                opi.Location AS ProviderLocation,
+                opi.Id AS ProviderInformationId,
+                odi.Delivery,
+                odi.Id AS DeliveryInformationId,
+
+                cl.[Name] AS CustomerLocationName,
+                cl.[Latitude] AS CustomerLocationLatitude,
+                cl.[Longitude] AS CustomerLocationLongitude,
+                pl.[Name] AS ProviderLocationName,
+                pl.[Latitude] AS ProviderLocationLatitude,
+                pl.[Longitude] AS ProviderLocationLongitude,
+                               
+                mc.DisplayName CustomerDisplayName,
+				mp.DisplayName ProviderDisplayName,
+				md.DisplayName DeliveryDisplayName
+            FROM 
+                dbo.[Order] o
+            LEFT JOIN 
+                dbo.[OrderCustomerInformation] oci ON oci.[Order] = o.Id
+            LEFT JOIN 
+                dbo.[OrderDeliveryInformation] odi ON odi.[Order] = o.Id
+            LEFT JOIN 
+                dbo.[OrderProviderInformation] opi ON opi.[Order] = o.Id
+			LEFT JOIN dbo.Party mc ON oci.Customer = mc.Id
+			LEFT JOIN dbo.Party mp ON opi.Provider = mp.Id
+			LEFT JOIN dbo.Party md ON odi.Delivery = md.Id
+            LEFT JOIN 
+                dbo.[Location] cl ON cl.Id = oci.[Location]
+            LEFT JOIN 
+                dbo.[Location] pl ON pl.Id = opi.[Location]
+
+            {whereClause}
+            ORDER BY 
+                o.[Id];";
+
+        return await connection.QueryAsync<OrderDetailsDto>(sql, parameters);
+    }
+
     public static async Task<IEnumerable<OrderDetailsDto>> GetOrderDetailsAsync(IDbConnection connection,
      string whereClause,
      object parameters)

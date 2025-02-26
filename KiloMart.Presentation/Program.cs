@@ -13,6 +13,8 @@ using KiloMart.Presentation.Middlewares;
 using KiloMart.Presentation.Tracking;
 using KiloMart.DataAccess.EFCore.Data;
 using Microsoft.EntityFrameworkCore;
+using EdfaPayApi.Core.Interfaces;
+using EdfaPayApi.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddMemoryCache();
@@ -28,6 +30,10 @@ builder.Services.AddScoped<IUserContext, UserContext>();
 builder.Services.AddSingleton<IAppSettingsRepository, AppSettingsRepository>();
 //builder.Services.AddSingleton<IAppSettingsProvider, AppSettingsProvider>();
 builder.Services.AddSingleton<DriversTrackerService>();
+
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+
 // builder.Services.AddHostedService<FFF.NotificationService>();
 
 // JWT Configuration

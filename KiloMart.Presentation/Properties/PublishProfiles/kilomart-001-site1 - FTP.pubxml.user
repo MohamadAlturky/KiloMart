@@ -8,7 +8,180 @@ by editing this MSBuild file. In order to learn more about this please visit htt
     <TimeStampOfAssociatedLegacyPublishXmlFile />
     <EncryptedPassword />
     <_PublishTargetUrl>ftp://win9073.site4now.net:21/kilomartapi</_PublishTargetUrl>
-    <History>False|2024-12-16T09:42:04.9094563Z;False|2024-12-16T12:38:41.7984549+03:00;</History>
+    <History>False|2025-02-26T09:01:24.5468724Z;False|2024-12-16T12:42:04.9094563+03:00;False|2024-12-16T12:38:41.7984549+03:00;</History>
     <LastFailureDetails />
   </PropertyGroup>
+  <ItemGroup>
+    <File Include="appsettings.Development.json">
+      <publishTime>02/26/2025 07:33:46</publishTime>
+    </File>
+    <File Include="appsettings.json">
+      <publishTime>02/26/2025 07:33:46</publishTime>
+    </File>
+    <File Include="Azure.Core.dll">
+      <publishTime>02/26/2024 18:24:40</publishTime>
+    </File>
+    <File Include="Azure.Identity.dll">
+      <publishTime>06/10/2024 19:43:48</publishTime>
+    </File>
+    <File Include="Dapper.dll">
+      <publishTime>03/06/2024 18:03:20</publishTime>
+    </File>
+    <File Include="de/Microsoft.Data.SqlClient.resources.dll">
+      <publishTime>08/27/2024 21:46:52</publishTime>
+    </File>
+    <File Include="es/Microsoft.Data.SqlClient.resources.dll">
+      <publishTime>08/27/2024 21:46:52</publishTime>
+    </File>
+    <File Include="fr/Microsoft.Data.SqlClient.resources.dll">
+      <publishTime>08/27/2024 21:46:50</publishTime>
+    </File>
+    <File Include="Humanizer.dll">
+      <publishTime>06/02/2020 16:07:58</publishTime>
+    </File>
+    <File Include="it/Microsoft.Data.SqlClient.resources.dll">
+      <publishTime>08/27/2024 21:47:06</publishTime>
+    </File>
+    <File Include="ja/Microsoft.Data.SqlClient.resources.dll">
+      <publishTime>08/27/2024 21:47:06</publishTime>
+    </File>
+    <File Include="KiloMart.Commands.pdb">
+      <publishTime>02/26/2025 11:34:56</publishTime>
+    </File>
+    <File Include="KiloMart.Core.pdb">
+      <publishTime>02/26/2025 11:34:40</publishTime>
+    </File>
+    <File Include="KiloMart.DataAccess.EFCore.pdb">
+      <publishTime>02/26/2025 11:34:40</publishTime>
+    </File>
+    <File Include="KiloMart.DataAccess.pdb">
+      <publishTime>02/26/2025 11:34:50</publishTime>
+    </File>
+    <File Include="KiloMart.Domain.Orders.pdb">
+      <publishTime>02/26/2025 11:34:56</publishTime>
+    </File>
+    <File Include="KiloMart.Domain.pdb">
+      <publishTime>02/26/2025 11:34:53</publishTime>
+    </File>
+    <File Include="KiloMart.Presentation.deps.json">
+      <publishTime>02/26/2025 11:36:29</publishTime>
+    </File>
+    <File Include="KiloMart.Presentation.exe">
+      <publishTime>02/26/2025 11:36:17</publishTime>
+    </File>
+    <File Include="KiloMart.Presentation.pdb">
+      <publishTime>02/26/2025 11:36:16</publishTime>
+    </File>
+    <File Include="KiloMart.Presentation.runtimeconfig.json">
+      <publishTime>02/26/2025 11:36:29</publishTime>
+    </File>
+    <File Include="KiloMart.Queries.dll">
+      <publishTime>02/26/2025 11:34:47</publishTime>
+    </File>
+    <File Include="KiloMart.Queries.pdb">
+      <publishTime>02/26/2025 11:34:47</publishTime>
+    </File>
+    <File Include="ko/Microsoft.Data.SqlClient.resources.dll">
+      <publishTime>08/27/2024 21:47:06</publishTime>
+    </File>
+    <File Include="Microsoft.Bcl.AsyncInterfaces.dll">
+      <publishTime>04/15/2020 01:39:12</publishTime>
+    </File>
+    <File Include="Microsoft.Data.SqlClient.dll">
+      <publishTime>08/27/2024 21:46:52</publishTime>
+    </File>
+    <File Include="Microsoft.EntityFrameworkCore.Abstractions.dll">
+      <publishTime>11/01/2023 01:15:22</publishTime>
+    </File>
+    <File Include="Microsoft.EntityFrameworkCore.Relational.dll">
+      <publishTime>11/01/2023 01:16:48</publishTime>
+    </File>
+    <File Include="Microsoft.EntityFrameworkCore.SqlServer.dll">
+      <publishTime>11/01/2023 01:16:56</publishTime>
+    </File>
+    <File Include="Microsoft.Extensions.DependencyInjection.Abstractions.dll">
+      <publishTime>09/17/2024 02:09:34</publishTime>
+    </File>
+    <File Include="Microsoft.Identity.Client.dll">
+      <publishTime>06/07/2024 01:09:28</publishTime>
+    </File>
+    <File Include="Microsoft.Identity.Client.Extensions.Msal.dll">
+      <publishTime>06/07/2024 01:14:52</publishTime>
+    </File>
+    <File Include="Microsoft.IdentityModel.Abstractions.dll">
+      <publishTime>11/21/2023 04:54:14</publishTime>
+    </File>
+    <File Include="Microsoft.SqlServer.Server.dll">
+      <publishTime>01/27/2022 19:19:08</publishTime>
+    </File>
+    <File Include="Newtonsoft.Json.dll">
+      <publishTime>03/17/2021 22:03:36</publishTime>
+    </File>
+    <File Include="pt-BR/Microsoft.Data.SqlClient.resources.dll">
+      <publishTime>08/27/2024 21:46:52</publishTime>
+    </File>
+    <File Include="ru/Microsoft.Data.SqlClient.resources.dll">
+      <publishTime>08/27/2024 21:46:52</publishTime>
+    </File>
+    <File Include="runtimes/unix/lib/net8.0/Microsoft.Data.SqlClient.dll">
+      <publishTime>08/27/2024 21:46:52</publishTime>
+    </File>
+    <File Include="runtimes/win-arm/native/Microsoft.Data.SqlClient.SNI.dll">
+      <publishTime>02/21/2024 01:29:06</publishTime>
+    </File>
+    <File Include="runtimes/win-arm64/native/Microsoft.Data.SqlClient.SNI.dll">
+      <publishTime>02/21/2024 01:29:06</publishTime>
+    </File>
+    <File Include="runtimes/win-x64/native/Microsoft.Data.SqlClient.SNI.dll">
+      <publishTime>02/21/2024 01:30:22</publishTime>
+    </File>
+    <File Include="runtimes/win-x86/native/Microsoft.Data.SqlClient.SNI.dll">
+      <publishTime>02/21/2024 01:28:56</publishTime>
+    </File>
+    <File Include="runtimes/win/lib/net8.0/Microsoft.Data.SqlClient.dll">
+      <publishTime>08/27/2024 21:46:52</publishTime>
+    </File>
+    <File Include="runtimes/win/lib/net8.0/System.Runtime.Caching.dll">
+      <publishTime>10/31/2023 18:00:12</publishTime>
+    </File>
+    <File Include="SqlKata.dll">
+      <publishTime>09/19/2022 18:47:52</publishTime>
+    </File>
+    <File Include="SqlKata.Execution.dll">
+      <publishTime>09/19/2022 18:47:54</publishTime>
+    </File>
+    <File Include="System.ClientModel.dll">
+      <publishTime>01/03/2024 20:43:00</publishTime>
+    </File>
+    <File Include="System.Configuration.ConfigurationManager.dll">
+      <publishTime>10/31/2023 17:59:08</publishTime>
+    </File>
+    <File Include="System.Memory.Data.dll">
+      <publishTime>04/08/2021 19:45:54</publishTime>
+    </File>
+    <File Include="System.Runtime.Caching.dll">
+      <publishTime>10/31/2023 18:05:46</publishTime>
+    </File>
+    <File Include="System.Security.Cryptography.ProtectedData.dll">
+      <publishTime>10/31/2023 17:59:04</publishTime>
+    </File>
+    <File Include="Twilio.dll">
+      <publishTime>01/13/2025 14:54:24</publishTime>
+    </File>
+    <File Include="web.config">
+      <publishTime>02/26/2025 11:46:22</publishTime>
+    </File>
+    <File Include="wwwroot/example.json">
+      <publishTime>02/26/2025 07:33:46</publishTime>
+    </File>
+    <File Include="wwwroot/example3.json">
+      <publishTime>02/26/2025 07:33:46</publishTime>
+    </File>
+    <File Include="zh-Hans/Microsoft.Data.SqlClient.resources.dll">
+      <publishTime>08/27/2024 21:46:52</publishTime>
+    </File>
+    <File Include="zh-Hant/Microsoft.Data.SqlClient.resources.dll">
+      <publishTime>08/27/2024 21:46:52</publishTime>
+    </File>
+  </ItemGroup>
 </Project>

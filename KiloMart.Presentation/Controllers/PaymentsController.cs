@@ -49,6 +49,26 @@ public class PaymentsController : AppController
         return Ok(response);
     }
 
+    [HttpPost("sale/multiple")]
+    public async Task<ActionResult<IEnumerable<PaymentResponse>>> ProcessMultiplePayments(IEnumerable<PaymentRequestMini> requestMinis)
+    {
+        var responses = new List<PaymentResponse>();
+        
+        foreach (var requestMini in requestMinis)
+        {
+            var request = requestMini.ToPaymentRequest();
+            request.Hash = _paymentService.GenerateHash(
+                request.PayerEmail,
+                request.CardNumber, 
+                request.MerchantPassword
+            );
+
+            var response = await _paymentService.ProcessPaymentAsync(request);
+            responses.Add(response);
+        }
+
+        return Ok(responses);
+
     [HttpPost("payments")]
     public async Task<IActionResult> Pay([FromForm] UnifiedPaymentTransactionResponse response)
     {

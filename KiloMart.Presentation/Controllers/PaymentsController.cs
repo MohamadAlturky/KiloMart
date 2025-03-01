@@ -1,5 +1,7 @@
 using System;
 using System.Text.Json.Serialization;
+using EdfaPayApi.Core.Interfaces;
+using EdfaPayApi.Core.Models;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Database;
@@ -12,10 +14,39 @@ namespace KiloMart.Presentation.Controllers.Profiles;
 public class PaymentsController : AppController
 {
     public PaymentsController(
-        IDbFactory dbFactory, 
-        IUserContext userContext) 
+        IDbFactory dbFactory,
+        IUserContext userContext)
             : base(dbFactory, userContext)
     {
+    }
+
+    private readonly IPaymentService _paymentService;
+    private readonly IConfiguration _configuration;
+
+    public PaymentsController(
+        IDbFactory dbFactory,
+        IConfiguration configuration,
+        IUserContext userContext,
+        IPaymentService paymentService)
+            : base(dbFactory, userContext)
+    {
+        _paymentService = paymentService;
+        _configuration = configuration;
+    }
+
+    [HttpPost("sale")]
+   public async Task<ActionResult<PaymentResponse>> ProcessPayment(PaymentRequestMini requestMini)
+    {
+        var request = requestMini.ToPaymentRequest();
+        // Generate hash
+        request.Hash = _paymentService.GenerateHash(
+            request.PayerEmail,
+            request.CardNumber,
+            request.MerchantPassword
+        );
+
+        var response = await _paymentService.ProcessPaymentAsync(request);
+        return Ok(response);
     }
 
     [HttpPost("payments")]
@@ -50,7 +81,7 @@ public class PaymentsController : AppController
                 CreatedAt = DateTime.UtcNow
             }
         );
-       
+
         return Ok();
     }
 

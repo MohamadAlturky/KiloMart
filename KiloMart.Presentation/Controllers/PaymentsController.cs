@@ -78,7 +78,7 @@ public class PaymentsController : AppController
 
     //     return Ok();
     // }
-     [HttpPost("payments")]
+    [HttpPost("payments")]
     public async Task<IActionResult> Pay([FromForm] string response)
     {
         var connection = _dbFactory.CreateDbConnection();

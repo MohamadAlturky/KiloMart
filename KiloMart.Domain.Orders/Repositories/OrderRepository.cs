@@ -468,6 +468,8 @@ public class OrderProductDetailsDto
     public DateTime? DealStartDate { get; set; }
     public bool? DealIsActive { get; set; }
     public decimal? DealOffPercentage { get; set; }
+    public decimal? MaxPrice { get; set; }
+    public decimal? MinPrice { get; set; }
 }
 public static partial class OrderRepository
 {
@@ -530,9 +532,24 @@ public static partial class OrderRepository
                     [DealEndDate],
                     [DealStartDate],
                     [DealIsActive],
-                    [DealOffPercentage]
+                    [DealOffPercentage],
+                    [MaxPrice],
+                    [MinPrice]
             FROM dbo.GetProductDetailsFN(@Language) pd
             INNER JOIN OrderProduct op ON op.Product = pd.ProductId
+                INNER JOIN (
+                SELECT 
+                    [Product], 
+                    MAX([Price]) AS MaxPrice, 
+                    MIN([Price]) AS MinPrice,
+                    SUM(Quantity) AS Quantity
+                FROM 
+                    [ProductOffer]
+                WHERE 
+                    [IsActive] = 1
+                GROUP BY 
+                    [Product]
+            ) po ON pd.[ProductId] = po.[Product]
                 WHERE 
                     op.[Order] IN @OrderIds;";
 

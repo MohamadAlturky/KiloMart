@@ -61,6 +61,30 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory,
 
         return result.Success ? Success(result.Data) : Fail(result.Errors);
     }
+    [HttpGet("orders/mine")]
+    [Guard([Roles.Delivery])]
+    public async Task<IActionResult> GetMine()
+    {
+        var result = await ReadOrderService.GetMineForDeliveryAsync(
+            _userContext,
+            _dbFactory);
+
+        return result.Success ? Success(result.Data) : Fail(result.Errors);
+    }
+    [HttpGet("orders/mine-by-statuses")]
+    [Guard([Roles.Delivery])]
+    public async Task<IActionResult> GetMineByStatuses([FromQuery] string statuses)
+    {
+        var statusesArray = statuses.Split(',').Select(byte.Parse).ToList();
+        var result = await ReadOrderService.GetMineByStatusesForDeliveryAsync(
+            _userContext,
+            statusesArray,
+            _dbFactory);
+
+        return result.Success ? Success(result.Data) : Fail(result.Errors);
+    }
+
+
     [HttpGet("orders/min-all-orders-by-status")]
     [Guard([Roles.Delivery])]
     public async Task<IActionResult> GetMine([FromQuery] byte status)
@@ -165,7 +189,7 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory,
                             deliveryId,
                             (byte)DeliveryActivityType.Receives,
                             (byte)DeliveryActivityType.Deductions,
-                            connection); 
+                            connection);
         if (wallet == null)
         {
             return DataNotFound("No Wallet For This Delivery");

@@ -593,6 +593,29 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
 
         return result.Success ? Success(result.Data) : Fail(result.Errors);
     }
+    [HttpGet("orders/mine")]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> GetMine([FromQuery] byte language)
+    {
+        var result = await ReadOrderService.GetMineAsync(language,
+            _userContext,
+            _dbFactory);
+
+        return result.Success ? Success(result.Data) : Fail(result.Errors);
+    }
+    [HttpGet("orders/mine-by-statuses")]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> GetMineByStatuses([FromQuery] byte language,
+    [FromQuery] string statuses)
+    {
+        var statusesArray = statuses.Split(',').Select(byte.Parse).ToList();
+        var result = await ReadOrderService.GetMineByStatusesAsync(statusesArray,
+            language,
+            _userContext,
+            _dbFactory);
+
+        return result.Success ? Success(result.Data) : Fail(result.Errors);
+    }
     [HttpGet("orders/mine-by-status-test")]
     public async Task<IActionResult> GetMineByStatusTest([FromQuery] byte language,
     [FromQuery] byte status, [FromQuery] int user)

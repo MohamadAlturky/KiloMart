@@ -151,6 +151,29 @@ public class ProviderActivitiesContoller : AppController
 
         return result.Success ? Success(result.Data) : Fail(result.Errors);
     }
+    [HttpGet("orders/mine")]
+    [Guard([Roles.Provider])]
+    public async Task<IActionResult> GetMine([FromQuery] byte language)
+    {
+        var result = await ReadOrderService.GetMineForProviderAsync(language,
+            _userContext,
+            _dbFactory);
+
+        return result.Success ? Success(result.Data) : Fail(result.Errors);
+    }
+    [HttpGet("orders/mine-by-statuses")]
+    [Guard([Roles.Provider])]
+    public async Task<IActionResult> GetMineByStatuses([FromQuery] byte language,
+   [FromQuery] string statuses)
+    {
+        var statusesArray = statuses.Split(',').Select(byte.Parse).ToList();
+        var result = await ReadOrderService.GetMineByStatusesForProviderAsync(language,
+            statusesArray,
+            _userContext,
+            _dbFactory);
+
+        return result.Success ? Success(result.Data) : Fail(result.Errors);
+    }
     [HttpGet("orders/requested-orders")]
     [Guard([Roles.Provider])]
     public async Task<IActionResult> GetMineByStatus([FromQuery] byte language)

@@ -29,7 +29,7 @@ public class PaymentsController : AppController
     }
 
     [HttpPost("sale")]
-   public async Task<ActionResult<PaymentResponse>> ProcessPayment(PaymentRequestMini requestMini)
+    public async Task<ActionResult<PaymentResponse>> ProcessPayment(PaymentRequestMini requestMini)
     {
         var request = requestMini.ToPaymentRequest();
         // Generate hash
@@ -79,7 +79,7 @@ public class PaymentsController : AppController
     //     return Ok();
     // }
     [HttpPost("payments")]
-    public async Task<IActionResult> Pay([FromForm] string response)
+    public async Task<IActionResult> Pay([FromBody] string response)
     {
         var connection = _dbFactory.CreateDbConnection();
         connection.Open();
@@ -119,6 +119,20 @@ public class PaymentsController : AppController
     {
         return Ok();
     }
+
+
+    [HttpGet("test/orders-with-available-stock")]
+    public async Task<IActionResult> GetOrdersWithAvailableStock([FromQuery] int providerId)
+    {
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+        var result = await Db.GetOrdersWithAvailableStockAsync(
+            connection,
+            providerId);
+
+        return Success(new { Result = result });
+    }
+
 }
 
 // public abstract class PaymentTransactionBaseResponse

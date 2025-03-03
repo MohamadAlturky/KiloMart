@@ -43,8 +43,43 @@ public class PaymentsController : AppController
         return Ok(response);
     }
 
-    [HttpPost("payments")]
-    public async Task<IActionResult> Pay([FromForm] UnifiedPaymentTransactionResponse response)
+    // [HttpPost("payments")]
+    // public async Task<IActionResult> Pay([FromForm] UnifiedPaymentTransactionResponse response)
+    // {
+    //     var connection = _dbFactory.CreateDbConnection();
+    //     connection.Open();
+
+    //     var id = await Db.InsertPaymentTransactionAsync(
+    //         connection,
+    //         new PaymentTransactionTable
+    //         {
+    //             OrderId = response.OrderId,
+    //             TransactionId = response.TransactionId,
+    //             Hash = response.Hash,
+    //             TransactionDate = response.TransactionDate,
+    //             RecurringToken = response.RecurringToken,
+    //             ScheduleId = response.ScheduleId,
+    //             CardToken = response.CardToken,
+    //             Card = response.Card,
+    //             CardExpirationDate = response.CardExpirationDate,
+    //             Descriptor = response.Descriptor,
+    //             Amount = response.Amount,
+    //             Currency = response.Currency,
+    //             DeclineReason = response.DeclineReason,
+    //             RedirectUrl = response.RedirectUrl,
+    //             RedirectParams = response.RedirectParams.ToString(),
+    //             RedirectMethod = response.RedirectMethod,
+    //             Status = response.Status,
+    //             Result = response.Result,
+    //             Action = response.Action,
+    //             CreatedAt = DateTime.UtcNow
+    //         }
+    //     );
+
+    //     return Ok();
+    // }
+     [HttpPost("payments")]
+    public async Task<IActionResult> Pay([FromForm] string response)
     {
         var connection = _dbFactory.CreateDbConnection();
         connection.Open();
@@ -53,25 +88,25 @@ public class PaymentsController : AppController
             connection,
             new PaymentTransactionTable
             {
-                OrderId = response.OrderId,
-                TransactionId = response.TransactionId,
-                Hash = response.Hash,
-                TransactionDate = response.TransactionDate,
-                RecurringToken = response.RecurringToken,
-                ScheduleId = response.ScheduleId,
-                CardToken = response.CardToken,
-                Card = response.Card,
-                CardExpirationDate = response.CardExpirationDate,
-                Descriptor = response.Descriptor,
-                Amount = response.Amount,
-                Currency = response.Currency,
-                DeclineReason = response.DeclineReason,
-                RedirectUrl = response.RedirectUrl,
-                RedirectParams = response.RedirectParams.ToString(),
-                RedirectMethod = response.RedirectMethod,
-                Status = response.Status,
-                Result = response.Result,
-                Action = response.Action,
+                OrderId = "1",
+                TransactionId = "response.TransactionId",
+                Hash = "response.Hash",
+                TransactionDate = "response.TransactionDate",
+                RecurringToken = "response.RecurringToken",
+                ScheduleId = "response.ScheduleId",
+                CardToken = "response.CardToken",
+                Card = "response.Card",
+                CardExpirationDate = "response.CardExpirationDate",
+                Descriptor = "response.Descriptor",
+                Amount = 10,
+                Currency = "response.Currency",
+                DeclineReason = "response.DeclineReason",
+                RedirectUrl = "response.RedirectUrl",
+                RedirectParams = response,
+                RedirectMethod = "response.RedirectMethod",
+                Status = "response.Status",
+                Result = "response.Result",
+                Action = "response.Action",
                 CreatedAt = DateTime.UtcNow
             }
         );

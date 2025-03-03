@@ -13,12 +13,6 @@ namespace KiloMart.Presentation.Controllers.Profiles;
 [Route("callbacks")]
 public class PaymentsController : AppController
 {
-    public PaymentsController(
-        IDbFactory dbFactory,
-        IUserContext userContext)
-            : base(dbFactory, userContext)
-    {
-    }
 
     private readonly IPaymentService _paymentService;
     private readonly IConfiguration _configuration;

@@ -111,7 +111,7 @@ public class PaymentService : IPaymentService
             Amount = paymentResponse.amount,
             Currency = paymentResponse.currency,
             RedirectUrl = paymentResponse.redirect_url,
-            RedirectParams = paymentResponse.redirect_params.body,
+            RedirectParams = paymentResponse.redirect_params?.body,
             RedirectMethod = paymentResponse.redirect_method,
             ErrorCode = paymentResponse.error_code,
             ErrorMessage = paymentResponse.error_message,

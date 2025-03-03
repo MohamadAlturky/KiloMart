@@ -14,13 +14,13 @@ public class PaymentService : IPaymentService
     private readonly HttpClient _httpClient;
     private readonly IDbFactory _dbFactory;
     private string _merchantPassword;
-    private readonly string _clientKey;
+    private string _clientKey;
 
     public PaymentService(HttpClient httpClient, IConfiguration configuration, IDbFactory dbFactory)
     {
         _httpClient = httpClient;
         //_merchantPassword = configuration["PaymentGateway:MerchantPassword"];
-        _clientKey = configuration["PaymentGateway:MerchantKey"];
+        // _clientKey = configuration["PaymentGateway:MerchantKey"];
         _httpClient.BaseAddress = new Uri("https://api.edfapay.com/");
         _dbFactory = dbFactory;
     }
@@ -28,6 +28,7 @@ public class PaymentService : IPaymentService
     public async Task<PaymentResponse> ProcessPaymentAsync(PaymentRequest request)
     {
         _merchantPassword = request.MerchantPassword;
+        _clientKey = request.MerchantKey;
         var content = new FormUrlEncodedContent(new Dictionary<string, string>
         {
             ["payer_country"] = request.PayerCountry,

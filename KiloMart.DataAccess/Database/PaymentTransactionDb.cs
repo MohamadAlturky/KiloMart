@@ -159,7 +159,7 @@ public class PaymentTransactionTable
     public string? OrderId { get; set; }
     public string? TransactionId { get; set; }
     public string? Hash { get; set; }
-    public DateTime? TransactionDate { get; set; }
+    public string? TransactionDate { get; set; }
     
     // Fields from PaymentTransactionResponse
     public string? RecurringToken { get; set; }

@@ -185,7 +185,7 @@ public class UnifiedPaymentTransactionResponse
     public string Hash { get; set; }
 
     [JsonPropertyName("trans_date")]
-    public DateTime TransactionDate { get; set; }
+    public string TransactionDate { get; set; }
 
     // Properties from PaymentTransactionResponse
     [JsonPropertyName("recurring_token")]
@@ -221,7 +221,7 @@ public class UnifiedPaymentTransactionResponse
     public string RedirectUrl { get; set; }
 
     [JsonPropertyName("redirect_params")]
-    public object RedirectParams { get; set; }
+    public string RedirectParams { get; set; }
 
     [JsonPropertyName("redirect_method")]
     public string RedirectMethod { get; set; }

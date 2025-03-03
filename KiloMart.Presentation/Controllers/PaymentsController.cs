@@ -43,43 +43,8 @@ public class PaymentsController : AppController
         return Ok(response);
     }
 
-    // [HttpPost("payments")]
-    // public async Task<IActionResult> Pay([FromForm] UnifiedPaymentTransactionResponse response)
-    // {
-    //     var connection = _dbFactory.CreateDbConnection();
-    //     connection.Open();
-
-    //     var id = await Db.InsertPaymentTransactionAsync(
-    //         connection,
-    //         new PaymentTransactionTable
-    //         {
-    //             OrderId = response.OrderId,
-    //             TransactionId = response.TransactionId,
-    //             Hash = response.Hash,
-    //             TransactionDate = response.TransactionDate,
-    //             RecurringToken = response.RecurringToken,
-    //             ScheduleId = response.ScheduleId,
-    //             CardToken = response.CardToken,
-    //             Card = response.Card,
-    //             CardExpirationDate = response.CardExpirationDate,
-    //             Descriptor = response.Descriptor,
-    //             Amount = response.Amount,
-    //             Currency = response.Currency,
-    //             DeclineReason = response.DeclineReason,
-    //             RedirectUrl = response.RedirectUrl,
-    //             RedirectParams = response.RedirectParams.ToString(),
-    //             RedirectMethod = response.RedirectMethod,
-    //             Status = response.Status,
-    //             Result = response.Result,
-    //             Action = response.Action,
-    //             CreatedAt = DateTime.UtcNow
-    //         }
-    //     );
-
-    //     return Ok();
-    // }
     [HttpPost("payments")]
-    public async Task<IActionResult> Pay([FromBody] string response)
+    public async Task<IActionResult> Pay([FromForm] UnifiedPaymentTransactionResponse response)
     {
         var connection = _dbFactory.CreateDbConnection();
         connection.Open();
@@ -88,31 +53,66 @@ public class PaymentsController : AppController
             connection,
             new PaymentTransactionTable
             {
-                OrderId = "1",
-                TransactionId = "response.TransactionId",
-                Hash = "response.Hash",
-                TransactionDate = "response.TransactionDate",
-                RecurringToken = "response.RecurringToken",
-                ScheduleId = "response.ScheduleId",
-                CardToken = "response.CardToken",
-                Card = "response.Card",
-                CardExpirationDate = "response.CardExpirationDate",
-                Descriptor = "response.Descriptor",
-                Amount = 10,
-                Currency = "response.Currency",
-                DeclineReason = "response.DeclineReason",
-                RedirectUrl = "response.RedirectUrl",
-                RedirectParams = response,
-                RedirectMethod = "response.RedirectMethod",
-                Status = "response.Status",
-                Result = "response.Result",
-                Action = "response.Action",
+                OrderId = response.OrderId,
+                TransactionId = response.TransactionId,
+                Hash = response.Hash,
+                TransactionDate = response.TransactionDate,
+                RecurringToken = response.RecurringToken,
+                ScheduleId = response.ScheduleId,
+                CardToken = response.CardToken,
+                Card = response.Card,
+                CardExpirationDate = response.CardExpirationDate,
+                Descriptor = response.Descriptor,
+                Amount = response.Amount,
+                Currency = response.Currency,
+                DeclineReason = response.DeclineReason,
+                RedirectUrl = response.RedirectUrl,
+                RedirectParams = response.RedirectParams.ToString(),
+                RedirectMethod = response.RedirectMethod,
+                Status = response.Status,
+                Result = response.Result,
+                Action = response.Action,
                 CreatedAt = DateTime.UtcNow
             }
         );
 
         return Ok();
     }
+    // [HttpPost("payments")]
+    // public async Task<IActionResult> Pay([FromForm] string response)
+    // {
+    //     var connection = _dbFactory.CreateDbConnection();
+    //     connection.Open();
+
+    //     var id = await Db.InsertPaymentTransactionAsync(
+    //         connection,
+    //         new PaymentTransactionTable
+    //         {
+    //             OrderId = "1",
+    //             TransactionId = "response.TransactionId",
+    //             Hash = "response.Hash",
+    //             TransactionDate = "response.TransactionDate",
+    //             RecurringToken = "response.RecurringToken",
+    //             ScheduleId = "response.ScheduleId",
+    //             CardToken = "response.CardToken",
+    //             Card = "response.Card",
+    //             CardExpirationDate = "response.CardExpirationDate",
+    //             Descriptor = "response.Descriptor",
+    //             Amount = 10,
+    //             Currency = "response.Currency",
+    //             DeclineReason = "response.DeclineReason",
+    //             RedirectUrl = "response.RedirectUrl",
+    //             RedirectParams = response,
+    //             RedirectMethod = "response.RedirectMethod",
+    //             Status = "response.Status",
+    //             Result = "response.Result",
+    //             Action = "response.Action",
+    //             CreatedAt = DateTime.UtcNow
+    //         }
+    //     );
+
+    //     return Ok();
+    // }
 
     [HttpGet("success")]
     public async Task<IActionResult> Success()
@@ -216,62 +216,62 @@ public class PaymentsController : AppController
 public class UnifiedPaymentTransactionResponse
 {
     [JsonPropertyName("action")]
-    public string Action { get; set; } = "SALE";
+    public string? Action { get; set; } = "SALE";
 
     [JsonPropertyName("result")]
-    public string Result { get; set; }
+    public string? Result { get; set; }
 
     [JsonPropertyName("status")]
-    public string Status { get; set; }
+    public string? Status { get; set; }
 
     [JsonPropertyName("order_id")]
-    public string OrderId { get; set; }
+    public string? OrderId { get; set; }
 
     [JsonPropertyName("trans_id")]
-    public string TransactionId { get; set; }
+    public string? TransactionId { get; set; }
 
     [JsonPropertyName("hash")]
-    public string Hash { get; set; }
+    public string? Hash { get; set; }
 
     [JsonPropertyName("trans_date")]
-    public string TransactionDate { get; set; }
+    public string? TransactionDate { get; set; }
 
     // Properties from PaymentTransactionResponse
     [JsonPropertyName("recurring_token")]
-    public string RecurringToken { get; set; }
+    public string? RecurringToken { get; set; }
 
     [JsonPropertyName("schedule_id")]
-    public string ScheduleId { get; set; }
+    public string? ScheduleId { get; set; }
 
     [JsonPropertyName("card_token")]
-    public string CardToken { get; set; }
+    public string? CardToken { get; set; }
 
     [JsonPropertyName("card")]
-    public string Card { get; set; }
+    public string? Card { get; set; }
 
     [JsonPropertyName("card_expiration_date")]
-    public string CardExpirationDate { get; set; }
+    public string? CardExpirationDate { get; set; }
 
     [JsonPropertyName("descriptor")]
-    public string Descriptor { get; set; }
+    public string? Descriptor { get; set; }
 
     [JsonPropertyName("amount")]
-    public decimal Amount { get; set; }
+    public decimal? Amount { get; set; }
 
     [JsonPropertyName("currency")]
-    public string Currency { get; set; }
+    public string? Currency { get; set; }
 
     // Property from PaymentTransactionDeclinedResponse
     [JsonPropertyName("decline_reason")]
-    public string DeclineReason { get; set; }
+    public string? DeclineReason { get; set; }
 
     // Properties from PaymentTransactionRedirectResponse
     [JsonPropertyName("redirect_url")]
-    public string RedirectUrl { get; set; }
+    public string? RedirectUrl { get; set; }
 
     [JsonPropertyName("redirect_params")]
-    public string RedirectParams { get; set; }
+    public string? RedirectParams { get; set; }
 
     [JsonPropertyName("redirect_method")]
-    public string RedirectMethod { get; set; }
+    public string? RedirectMethod { get; set; }
 }

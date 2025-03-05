@@ -67,11 +67,11 @@ public class PaymentsController : AppController
                 Currency = response.Currency,
                 DeclineReason = response.DeclineReason,
                 RedirectUrl = response.RedirectUrl,
-                RedirectParams = response.RedirectParams.ToString(),
+                RedirectParams = response.RedirectParams?.ToString() ?? "",
                 RedirectMethod = response.RedirectMethod,
                 Status = response.Status,
                 Result = response.Result,
-                Action = response.Action,
+                Action = response.Action ?? "",
                 CreatedAt = DateTime.UtcNow
             }
         );
@@ -215,63 +215,61 @@ public class PaymentsController : AppController
 
 public class UnifiedPaymentTransactionResponse
 {
-    [JsonPropertyName("action")]
+    [FromForm(Name = "action")]
     public string? Action { get; set; } = "SALE";
 
-    [JsonPropertyName("result")]
+    [FromForm(Name = "result")]
     public string? Result { get; set; }
 
-    [JsonPropertyName("status")]
+    [FromForm(Name = "status")]
     public string? Status { get; set; }
 
-    [JsonPropertyName("order_id")]
+    [FromForm(Name = "order_id")]
     public string? OrderId { get; set; }
 
-    [JsonPropertyName("trans_id")]
+    [FromForm(Name = "trans_id")]
     public string? TransactionId { get; set; }
 
-    [JsonPropertyName("hash")]
+    [FromForm(Name = "hash")]
     public string? Hash { get; set; }
 
-    [JsonPropertyName("trans_date")]
+    [FromForm(Name = "trans_date")]
     public string? TransactionDate { get; set; }
 
     // Properties from PaymentTransactionResponse
-    [JsonPropertyName("recurring_token")]
+    [FromForm(Name = "recurring_token")]
     public string? RecurringToken { get; set; }
 
-    [JsonPropertyName("schedule_id")]
+    [FromForm(Name = "schedule_id")]
     public string? ScheduleId { get; set; }
 
-    [JsonPropertyName("card_token")]
+    [FromForm(Name = "card_token")]
     public string? CardToken { get; set; }
 
-    [JsonPropertyName("card")]
+    [FromForm(Name = "card")]
     public string? Card { get; set; }
 
-    [JsonPropertyName("card_expiration_date")]
+    [FromForm(Name = "card_expiration_date")]
     public string? CardExpirationDate { get; set; }
 
-    [JsonPropertyName("descriptor")]
+    [FromForm(Name = "descriptor")]
     public string? Descriptor { get; set; }
 
-    [JsonPropertyName("amount")]
+    [FromForm(Name = "amount")]
     public decimal? Amount { get; set; }
 
-    [JsonPropertyName("currency")]
+    [FromForm(Name = "currency")]
     public string? Currency { get; set; }
 
-    // Property from PaymentTransactionDeclinedResponse
-    [JsonPropertyName("decline_reason")]
+    [FromForm(Name = "decline_reason")]
     public string? DeclineReason { get; set; }
 
-    // Properties from PaymentTransactionRedirectResponse
-    [JsonPropertyName("redirect_url")]
+    [FromForm(Name = "redirect_url")]
     public string? RedirectUrl { get; set; }
 
-    [JsonPropertyName("redirect_params")]
+    [FromForm(Name = "redirect_params")]
     public string? RedirectParams { get; set; }
 
-    [JsonPropertyName("redirect_method")]
+    [FromForm(Name = "redirect_method")]
     public string? RedirectMethod { get; set; }
 }

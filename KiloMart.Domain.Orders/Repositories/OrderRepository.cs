@@ -479,25 +479,40 @@ public static partial class OrderRepository
     {
         var sql = @"
                 SELECT 
-                op.Id AS ItemId,
-                op.[Order] AS ItemOrder,
-                op.Quantity AS ItemQuantity,
-                [ProductId],
-                [ProductImageUrl],
-                [ProductIsActive],
-                [ProductMeasurementUnit],
-                [ProductDescription],
-                [ProductName],
-                [ProductCategoryId],
-                [ProductCategoryIsActive],
-                [ProductCategoryName],
-                [DealId],
-                [DealEndDate],
-                [DealStartDate],
-                [DealIsActive],
-                [DealOffPercentage]
+                    op.Id AS ItemId,
+                    op.[Order] AS ItemOrder,
+                    op.Quantity AS ItemQuantity,
+                    [ProductId],
+                    [ProductImageUrl],
+                    [ProductIsActive],
+                    [ProductMeasurementUnit],
+                    [ProductDescription],
+                    [ProductName],
+                    [ProductCategoryId],
+                    [ProductCategoryIsActive],
+                    [ProductCategoryName],
+                    [DealId],
+                    [DealEndDate],
+                    [DealStartDate],
+                    [DealIsActive],
+                    [DealOffPercentage],
+                    [MaxPrice],
+                    [MinPrice]
             FROM dbo.GetProductDetailsFN(@Language) pd
             INNER JOIN OrderProduct op ON op.Product = pd.ProductId
+                INNER JOIN (
+                SELECT 
+                    [Product], 
+                    MAX([Price]) AS MaxPrice, 
+                    MIN([Price]) AS MinPrice,
+                    SUM(Quantity) AS Quantity
+                FROM 
+                    [ProductOffer]
+                WHERE 
+                    [IsActive] = 1
+                GROUP BY 
+                    [Product]
+            ) po ON pd.[ProductId] = po.[Product]
             WHERE [Order] = @OrderId";
 
         var parameters = new { OrderId = orderId, Language = language };

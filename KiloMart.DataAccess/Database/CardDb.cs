@@ -12,7 +12,8 @@ namespace KiloMart.DataAccess.Database;
 // 	[SecurityCode] [varchar](100) NOT NULL,
 // 	[ExpireDate] [date] NOT NULL,
 // 	[Customer] [int] NOT NULL,
-// 	[IsActive] [bit] NOT NULL) 
+// 	[IsActive] [bit] NOT NULL,
+//  [IsPrimary] [bit] NOT NULL) 
 /// </summary>
 /// 
 public static partial class Db
@@ -23,11 +24,12 @@ public static partial class Db
         string securityCode,
         DateTime expireDate,
         int customer,
+        bool isPrimary = false,
         IDbTransaction? transaction = null)
     {
         const string query = @"INSERT INTO [dbo].[Card]
-                            ([HolderName], [Number], [SecurityCode], [ExpireDate], [Customer],[IsActive])
-                            VALUES (@HolderName, @Number, @SecurityCode, @ExpireDate, @Customer,1)
+                            ([HolderName], [Number], [SecurityCode], [ExpireDate], [Customer], [IsActive], [IsPrimary])
+                            VALUES (@HolderName, @Number, @SecurityCode, @ExpireDate, @Customer, 1, @IsPrimary)
                             SELECT CAST(SCOPE_IDENTITY() AS INT)";
 
         return await connection.ExecuteScalarAsync<int>(query, new
@@ -36,7 +38,8 @@ public static partial class Db
             Number = number,
             SecurityCode = securityCode,
             ExpireDate = expireDate,
-            Customer = customer
+            Customer = customer,
+            IsPrimary = isPrimary
         }, transaction);
     }
 
@@ -47,7 +50,8 @@ public static partial class Db
         string securityCode, 
         DateTime expireDate,
         int customer, 
-        bool isActive, 
+        bool isActive,
+        bool isPrimary,
         IDbTransaction? transaction = null)
     {
         const string query = @"UPDATE [dbo].[Card]
@@ -57,7 +61,8 @@ public static partial class Db
                                 [SecurityCode] = @SecurityCode,
                                 [ExpireDate] = @ExpireDate,
                                 [Customer] = @Customer,
-                                [IsActive] = @IsActive
+                                [IsActive] = @IsActive,
+                                [IsPrimary] = @IsPrimary
                                 WHERE [Id] = @Id";
 
         var updatedRowsCount = await connection.ExecuteAsync(query, new
@@ -68,7 +73,8 @@ public static partial class Db
             SecurityCode = securityCode,
             ExpireDate = expireDate,
             Customer = customer,
-            IsActive = isActive
+            IsActive = isActive,
+            IsPrimary = isPrimary
         }, transaction);
 
         return updatedRowsCount > 0;
@@ -87,7 +93,7 @@ public static partial class Db
         return deletedRowsCount > 0;
     }
 
-    public static async Task<Card?> GetCardByIdAsync(int id, IDbConnection connection)
+    public static async Task<Card?> GetCardByIdAsync(int id, IDbConnection connection, IDbTransaction? transaction = null)
     {
         const string query = @"SELECT 
                             [Id], 
@@ -96,13 +102,75 @@ public static partial class Db
                             [SecurityCode], 
                             [ExpireDate], 
                             [Customer], 
-                            [IsActive]
+                            [IsActive],
+                            [IsPrimary]
                             FROM [dbo].[Card]
                             WHERE [Id] = @Id";
 
         return await connection.QueryFirstOrDefaultAsync<Card>(query, new
         {
             Id = id
+        }, transaction);
+    }
+
+    public static async Task<bool> SetAllCardsNonPrimaryAsync(IDbConnection connection, 
+        int customerId, 
+        IDbTransaction? transaction = null)
+    {
+        const string query = @"UPDATE [dbo].[Card]
+                             SET [IsPrimary] = 0
+                             WHERE [Customer] = @CustomerId";
+
+        var updatedRowsCount = await connection.ExecuteAsync(query, new
+        {
+            CustomerId = customerId
+        }, transaction);
+
+        return updatedRowsCount > 0;
+    }
+
+    public static async Task<bool> SetCardAsPrimaryAsync(IDbConnection connection,
+        int cardId,
+        int customerId,
+        IDbTransaction? transaction = null)
+    {
+        // First, set all customer's cards as non-primary
+        await SetAllCardsNonPrimaryAsync(connection, customerId, transaction);
+
+        // Then set the specified card as primary
+        const string query = @"UPDATE [dbo].[Card]
+                             SET [IsPrimary] = 1
+                             WHERE [Id] = @CardId 
+                             AND [Customer] = @CustomerId
+                             AND [IsActive] = 1";
+
+        var updatedRowsCount = await connection.ExecuteAsync(query, new
+        {
+            CardId = cardId,
+            CustomerId = customerId
+        }, transaction);
+
+        return updatedRowsCount > 0;
+    }
+
+    public static async Task<IEnumerable<Card>> GetCardsByCustomerAsync(IDbConnection connection, int customerId)
+    {
+        const string query = @"SELECT 
+                            [Id], 
+                            [HolderName], 
+                            [Number], 
+                            [SecurityCode], 
+                            [ExpireDate], 
+                            [Customer], 
+                            [IsActive],
+                            [IsPrimary]
+                            FROM [dbo].[Card]
+                            WHERE [Customer] = @CustomerId AND [IsActive] = 1
+                            ORDER BY [IsPrimary] DESC, [Id] DESC";
+
+        return await connection.QueryAsync<Card>(query, new
+        {
+            CustomerId = customerId
         });
     }
 }
@@ -116,4 +184,5 @@ public class Card
     public DateTime ExpireDate { get; set; }
     public int Customer { get; set; }
     public bool IsActive { get; set; }
+    public bool IsPrimary { get; set; }
 }

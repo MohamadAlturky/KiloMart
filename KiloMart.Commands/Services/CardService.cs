@@ -12,6 +12,7 @@ public class CardInsertModel
     public string Number { get; set; } = null!;
     public string SecurityCode { get; set; } = null!;
     public DateTime ExpireDate { get; set; }
+    public bool IsPrimary { get; set; } = false;
 
     public (bool Success, string[] Errors) Validate()
     {
@@ -42,6 +43,7 @@ public class CardUpdateModel
     public string? SecurityCode { get; set; }
     public DateTime? ExpireDate { get; set; }
     public bool? IsActive { get; set; }
+    public bool? IsPrimary { get; set; }
 
     public (bool Success, string[] Errors) Validate()
     {
@@ -66,16 +68,25 @@ public static class CardService
         {
             return Result<Card>.Fail(errors);
         }
-
+        var connection = dbFactory.CreateDbConnection();
+        connection.Open();
+        using var transaction = connection.BeginTransaction();
         try
         {
-            var connection = dbFactory.CreateDbConnection();
-            connection.Open();
+
+            if (model.IsPrimary)
+            {
+                await Db.SetAllCardsNonPrimaryAsync(connection, userPayLoad.Party, transaction);
+            }
             var id = await Db.InsertCardAsync(connection,
             model.HolderName, model.Number,
              model.SecurityCode,
              model.ExpireDate,
-              userPayLoad.Party);
+              userPayLoad.Party,
+              model.IsPrimary,
+              transaction);
+
+            transaction.Commit();
             var card = new Card
             {
                 Id = id,
@@ -84,15 +95,16 @@ public static class CardService
                 SecurityCode = model.SecurityCode,
                 ExpireDate = model.ExpireDate,
                 Customer = userPayLoad.Party,
-                IsActive = true
+                IsActive = true,
+                IsPrimary = model.IsPrimary
             };
 
             return Result<Card>.Ok(card);
         }
         catch (Exception e)
         {
+            transaction.Rollback();
             return Result<Card>.Fail([e.Message]);
-
         }
     }
 
@@ -106,12 +118,13 @@ public static class CardService
         {
             return Result<Card>.Fail(errors);
         }
-
+        var connection = dbFactory.CreateDbConnection();
+        connection.Open();
+        using var transaction = connection.BeginTransaction();
         try
         {
-            var connection = dbFactory.CreateDbConnection();
-            connection.Open();
-            var existingModel = await Db.GetCardByIdAsync(model.Id, connection);
+
+            var existingModel = await Db.GetCardByIdAsync(model.Id, connection, transaction);
 
             if (existingModel is null)
             {
@@ -120,6 +133,10 @@ public static class CardService
             if (existingModel.Customer != userPayLoad.Party)
             {
                 return Result<Card>.Fail(["Un Authorized"]);
+            }
+            if (model.IsPrimary.HasValue && model.IsPrimary.Value == true)
+            {
+                await Db.SetAllCardsNonPrimaryAsync(connection, userPayLoad.Party, transaction);
             }
             existingModel.ExpireDate = model.ExpireDate ??
                                             existingModel.ExpireDate;
@@ -139,15 +156,19 @@ public static class CardService
                 existingModel.SecurityCode,
                 existingModel.ExpireDate,
                 existingModel.Customer,
-                existingModel.IsActive);
+                existingModel.IsActive,
+                existingModel.IsPrimary,
+                transaction);
+
+            transaction.Commit();
 
             return Result<Card>.Ok(existingModel);
 
         }
         catch (Exception e)
         {
+            transaction.Rollback();
             return Result<Card>.Fail([e.Message]);
-
         }
     }
 }

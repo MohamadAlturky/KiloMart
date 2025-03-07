@@ -58,6 +58,40 @@ public class CardUpdateModel
 
 public static class CardService
 {
+    public static async Task<Result<bool>> SetCardAsPrimary(
+        IDbFactory dbFactory,
+        UserPayLoad userPayLoad,
+        int cardId)
+    {
+        var connection = dbFactory.CreateDbConnection();
+        connection.Open();
+        using var transaction = connection.BeginTransaction();
+        try
+        {
+            var card = await Db.GetCardByIdAsync(cardId, connection, transaction);
+            
+            if (card == null)
+                return Result<bool>.Fail(["Card not found"]);
+                
+            if (card.Customer != userPayLoad.Party)
+                return Result<bool>.Fail(["You don't have permission to modify this card"]);
+            
+            await Db.SetAllCardsNonPrimaryAsync(connection, userPayLoad.Party, transaction);
+
+            var success = await Db.SetCardAsPrimaryAsync(connection, cardId, userPayLoad.Party, transaction);
+            
+            if (!success)
+                return Result<bool>.Fail(["Failed to set card as primary"]);
+
+            transaction.Commit();
+            return Result<bool>.Ok(true);
+        }
+        catch (Exception e)
+        {
+            transaction.Rollback();
+            return Result<bool>.Fail([e.Message]);
+        }
+    }
     public static async Task<Result<Card>> Insert(
         IDbFactory dbFactory,
         UserPayLoad userPayLoad,
@@ -148,6 +182,8 @@ public static class CardService
                                             existingModel.IsActive;
             existingModel.SecurityCode = model.SecurityCode ??
                                             existingModel.SecurityCode;
+            existingModel.IsPrimary = model.IsPrimary ??
+                                            existingModel.IsPrimary;
 
             await Db.UpdateCardAsync(connection,
                 existingModel.Id,

@@ -129,6 +129,7 @@ public static class AcceptOrderService
             if (driverFreeFee is not null)
             {
                 totalPrice -= deliveryFee;
+                deliveryFee = 0;
             }
             if (totalPrice < systemSettings.MinOrderValue)
             {
@@ -138,7 +139,14 @@ public static class AcceptOrderService
 
             if (discountCode is not null)
             {
-                totalPrice *= discountCode.Value;
+                if (discountCode.DiscountType == ((byte)DiscountType.FIXED))
+                {
+                    totalPrice -= discountCode.Value;
+                }
+                else
+                {
+                    totalPrice = totalPrice * (100 - discountCode.Value) / 100;
+                }
             }
 
             // await Db.InsertSystemActivityAsync(
@@ -279,3 +287,8 @@ public class AcceptOrderResponseModel
 
 
 
+public enum DiscountType
+{
+    FIXED = 1,
+    PERCENTAGE = 2
+}

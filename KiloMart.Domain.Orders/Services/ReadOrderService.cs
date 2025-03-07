@@ -298,12 +298,12 @@ public static class ReadOrderService
      public static async Task<Result<List<AggregatedOrder>>> GetMineByStatusesForProviderAsync(
             byte language,
             List<byte> statuses,
-            IUserContext userContext,
+            int providerId,
             IDbFactory dbFactory)
     {
         try
         {
-            var partyId = userContext.Get().Party;
+            var partyId = providerId;
 
             using var connection = dbFactory.CreateDbConnection();
             connection.Open();

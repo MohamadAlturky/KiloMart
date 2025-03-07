@@ -169,7 +169,7 @@ public class ProviderActivitiesContoller : AppController
         var statusesArray = statuses.Split(',').Select(byte.Parse).ToList();
         var result = await ReadOrderService.GetMineByStatusesForProviderAsync(language,
             statusesArray,
-            _userContext,
+            _userContext.Get().Party,
             _dbFactory);
 
         return result.Success ? Success(result.Data) : Fail(result.Errors);

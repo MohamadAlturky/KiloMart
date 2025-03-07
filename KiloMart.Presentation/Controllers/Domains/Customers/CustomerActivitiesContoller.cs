@@ -568,6 +568,17 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
         return result.Errors.Contains("Not Found") ? DataNotFound() : Fail(result.Errors);
     }
 
+    [HttpPut("card/set-primary/{id}")]
+    [Guard([Roles.Customer])]
+    public async Task<IActionResult> SetPrimary(int id)
+    {
+        var result = await CardService.SetCardAsPrimary(_dbFactory, _userContext.Get(), id);
+        if (result.Success)
+            return Success(result.Data);
+
+        return Fail(result.Errors);
+    }
+
     [HttpGet("card/mine")]
     [Guard([Roles.Customer])]
     public async Task<IActionResult> GetMine()

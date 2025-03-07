@@ -8,7 +8,7 @@ public partial class Query
     public static async Task<CardApiResponse[]> GetCustomerCards(IDbConnection connection, int partyId)
     {
         var cards = await connection.QueryAsync<CardApiResponse>(
-            "SELECT [Id], [HolderName], [Number], [SecurityCode], [ExpireDate], [Customer] FROM Card WHERE Customer = @partyId AND IsActive = 1;",
+            "SELECT [Id], [HolderName], [Number], [SecurityCode], [ExpireDate], [Customer], [IsPrimary] FROM Card WHERE Customer = @partyId AND IsActive = 1;",
             new { partyId });
         return cards.ToArray();
     }
@@ -28,7 +28,8 @@ public partial class Query
                 [c].[ExpireDate], 
                 [p].[Id] as [CustomerId],
                 [p].[DisplayName] as [CustomerName],
-                [c].[IsActive]
+                [c].[IsActive],
+                [c].[IsPrimary]
 		FROM Card [c]
 		INNER JOIN Party [p] 
 			ON [c].[Customer] = [p].[Id]
@@ -54,6 +55,7 @@ public class CardApiResponseWithCustomerName
     public int CustomerId { get; set; }
     public string CustomerName { get; set; } = null!;
     public bool IsActive { get; set; }
+    public bool IsPrimary { get; set; }
 }
 public class CardApiResponse
 {
@@ -63,4 +65,5 @@ public class CardApiResponse
     public string SecurityCode { get; set; } = string.Empty;
     public DateTime ExpireDate { get; set; }
     public int Customer { get; set; }
+    public bool IsPrimary { get; set; }
 }

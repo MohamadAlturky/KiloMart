@@ -35,14 +35,15 @@ public static class ChangeOrderPaymentTypeService
             OrderDetailsDto? order = await OrderRepository.GetOrderDetailsFirstOrDefaultAsync(
                 connection,
                 whereClause,
-                parameters);
+                parameters,
+                transaction);
 
             if (order is null)
             {
                 return Result<UpdateOrderPaymentResponseModel>.Fail(["Order Not Found"]);
             }
 
-            if (order.Customer != userPayLoad.Party)
+            if (order.Customer != userPayLoad.Party || order.Delivery != userPayLoad.Party)
             {
                 return Result<UpdateOrderPaymentResponseModel>.Fail(["Order is not for this customer"]);
             }

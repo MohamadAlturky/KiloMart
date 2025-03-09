@@ -2,8 +2,8 @@ namespace EdfaPayApi.Core.Models;
 
 public class PaymentRequest
 {
-       public string MerchantPassword { get; set; }
-    public string MerchantKey { get; set; }
+    //    public string MerchantPassword { get; set; }
+    // public string MerchantKey { get; set; }
     public string PayerCountry { get; set; } = "SA";
     public string PayerAddress { get; set; } = "adnanh@expresspay.sa";
     public string Action { get; set; } = "SALE";
@@ -34,8 +34,8 @@ public class PaymentRequest
 
 public class PaymentRequestMini
 {
-    public string MerchantPassword { get; set; }
-    public string MerchantKey { get; set; }
+    // public string MerchantPassword { get; set; }
+    // public string MerchantKey { get; set; }
     public string CardExpYear { get; set; }
     public string CardExpMonth { get; set; }
     public string OrderId { get; set; } 
@@ -59,8 +59,8 @@ public static class PaymentRequestExtensions
             CardNumber = mini.CardNumber,
             OrderAmount = mini.OrderAmount,
             CardExpMonth = mini.CardExpMonth,
-            MerchantPassword = mini.MerchantPassword,
-            MerchantKey = mini.MerchantKey
+            // MerchantPassword = mini.MerchantPassword,
+            // MerchantKey = mini.MerchantKey
         };
     }
 
@@ -75,8 +75,8 @@ public static class PaymentRequestExtensions
             CardNumber = request.CardNumber,
             OrderAmount = request.OrderAmount,
             CardExpMonth = request.CardExpMonth,
-            MerchantPassword = request.MerchantPassword,
-            MerchantKey = request.MerchantKey
+            // MerchantPassword = request.MerchantPassword,
+            // MerchantKey = request.MerchantKey
         };
     }
 }

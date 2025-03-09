@@ -247,6 +247,26 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory,
         }
         return Fail(result.Errors);
     }
+    [HttpPost("orders/change-payment-type")]
+    [Guard([Roles.Delivery])]
+    public async Task<IActionResult> UpdateOrderPaymentType(
+           [FromBody] UpdateOrderPaymentRequestModel model)
+    {
+        if (model is null)
+        {
+            return ValidationError(new List<string> { "Invalid request model." });
+        }
+
+        var userPayload = _userContext.Get();
+
+        var result = await ChangeOrderPaymentTypeService.UpdateOrderPaymentType(model, userPayload, _dbFactory);
+
+        if (result.Success)
+        {
+            return Success(result.Data);
+        }
+        return Fail(result.Errors);
+    }
     // [HttpPost("orders/receive-money")]
     // [Guard([Roles.Delivery])]
     // public async Task<IActionResult> ReceiveMoney([FromBody] long orderId)

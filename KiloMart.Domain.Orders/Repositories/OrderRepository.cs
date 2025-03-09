@@ -127,7 +127,8 @@ public static partial class OrderRepository
 
     public static async Task<OrderDetailsDto?> GetOrderDetailsFirstOrDefaultAsync(IDbConnection connection,
      string whereClause,
-     object parameters)
+     object parameters,
+     IDbTransaction? transaction = null)
     {
         var sql = $@"
             SELECT 
@@ -181,7 +182,7 @@ public static partial class OrderRepository
             ORDER BY 
                 o.[Id];";
 
-        return await connection.QueryFirstOrDefaultAsync<OrderDetailsDto>(sql, parameters);
+        return await connection.QueryFirstOrDefaultAsync<OrderDetailsDto>(sql, parameters, transaction);
     }
     public static async Task<IEnumerable<OrderDetailsDto>> GetOrderDetailsByProductIdAsync(IDbConnection connection, int productId)
     {

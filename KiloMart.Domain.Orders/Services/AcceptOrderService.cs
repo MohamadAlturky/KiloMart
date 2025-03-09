@@ -1,3 +1,5 @@
+using EdfaPayApi.Core.Interfaces;
+using EdfaPayApi.Core.Models;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.Core.Models;
@@ -7,6 +9,8 @@ using KiloMart.Domain.Delivery.Activity;
 using KiloMart.Domain.Orders.Common;
 using KiloMart.Domain.Orders.DataAccess;
 using KiloMart.Domain.Orders.Repositories;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 
 namespace KiloMart.Domain.Orders.Services;
 
@@ -16,6 +20,8 @@ public static class AcceptOrderService
     public static async Task<Result<AcceptOrderResponseModel>> ProviderAccept(
         long orderId,
         UserPayLoad userPayLoad,
+        IPaymentService paymentService,
+        IConfiguration configuration,
         IDbFactory dbFactory)
     {
         int providerId = userPayLoad.Party;
@@ -178,6 +184,71 @@ public static class AcceptOrderService
                 transaction);
 
             transaction.Commit();
+
+            try
+            {
+                if (order.PaymentType == ((byte)PaymentType.Elcetronic))
+                {
+                    using var newConnection = dbFactory.CreateDbConnection();
+                    newConnection.Open();
+                    var customerOrderInformation = await OrdersDb.GetOrderCustomerInfoByOrderIdAsync(orderId, newConnection);
+                    if (customerOrderInformation is null)
+                    {
+                        throw new Exception("Customer Order Information Not Found");
+                    }
+                    var card = await Db.GetIsPrimaryCardsByCustomerAsync(newConnection, customerOrderInformation.Customer);
+                    if (card is null)
+                    {
+                        throw new Exception("Card Not Found");
+                    }
+                    var requestMini = new PaymentRequestMini()
+                    {
+                        CardNumber = card.Number,
+                        CardExpYear = card.ExpireDate.Year.ToString(),
+                        CardExpMonth = card.ExpireDate.Month.ToString(),
+                        CardCvv2 = card.SecurityCode,
+                        OrderAmount = totalPrice,
+                        OrderDescription = $"Order {orderId}",
+                        OrderId = orderId.ToString()
+                    };
+                    var request = requestMini.ToPaymentRequest();
+                    // Generate hash
+                    request.Hash = paymentService.GenerateHash(
+                        request.PayerEmail,
+                        request.CardNumber,
+                        configuration["PaymentGateway:MerchantPassword"]!
+                    );
+
+                    var responseData = await paymentService.ProcessPaymentAsync(request);
+                    if (responseData.status == "SUCCESS")
+                    {
+                        await OrdersDb.UpdateOrderIsPaidAsync(newConnection,
+                            order.Id,
+                            true);
+                    }
+                    if (responseData.status == "REDIRECT")
+                    {
+                        var obj = new
+                        {
+                            orderId,
+                            responseData.redirect_url,
+                            responseData.redirect_method,
+                            responseData.redirect_params
+                        };
+                        await Db.InsertNotificationAsync(newConnection,
+                            "Please Pay the Order",
+                            $"Order {orderId} need to be paid, please pay it to continue using the payment url",
+                            SaudiDateTimeHelper.GetCurrentTime(),
+                            customerOrderInformation.Customer,
+                            JsonConvert.SerializeObject(obj),
+                            transaction);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return Result<AcceptOrderResponseModel>.Fail([ex.Message]);
+            }
             return Result<AcceptOrderResponseModel>.Ok(response);
         }
         catch (Exception ex)

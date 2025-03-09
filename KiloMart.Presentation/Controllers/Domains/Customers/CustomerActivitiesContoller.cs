@@ -436,7 +436,11 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
         }
 
         // Return success with the price summary
-        return Success(new { priceSummary, systemSettings.DeliveryOrderFee });
+        return Success(new { 
+            priceSummary, 
+            deliveryOrderFee = systemSettings.DeliveryOrderFee, 
+            systemOrderFee = systemSettings.SystemOrderFee 
+        });
     }
 
     // [HttpGet("cart/mine")]

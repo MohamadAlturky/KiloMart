@@ -5,6 +5,7 @@ using EdfaPayApi.Core.Models;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Database;
+using KiloMart.Domain.Orders.DataAccess;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KiloMart.Presentation.Controllers.Profiles;
@@ -36,7 +37,7 @@ public class PaymentsController : AppController
         request.Hash = _paymentService.GenerateHash(
             request.PayerEmail,
             request.CardNumber,
-            request.MerchantPassword
+            _configuration["PaymentGateway:MerchantPassword"]
         );
 
         var response = await _paymentService.ProcessPaymentAsync(request);
@@ -76,6 +77,19 @@ public class PaymentsController : AppController
             }
         );
 
+        if (response.Status == "SUCCESS")
+        {
+            try
+            {
+                await OrdersDb.UpdateOrderIsPaidAsync(connection,
+                    long.Parse(response.OrderId!),
+                    true);
+            }
+            catch(Exception)
+            {
+
+            }
+        }
         return Ok();
     }
     // [HttpPost("payments")]

@@ -1,3 +1,4 @@
+using EdfaPayApi.Core.Interfaces;
 using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Admin;
@@ -24,12 +25,18 @@ public class ProviderActivitiesContoller : AppController
 {
     public ProviderActivitiesContoller(IDbFactory dbFactory,
      IUserContext userContext,
-     IWebHostEnvironment environment)
+     IWebHostEnvironment environment,
+     IConfiguration configuration,
+     IPaymentService paymentService)
      : base(dbFactory, userContext)
     {
         _environment = environment;
+        _configuration = configuration;
+        _paymentService = paymentService;
     }
     private readonly IWebHostEnvironment _environment;
+    private readonly IConfiguration _configuration;
+    private readonly IPaymentService _paymentService;
 
     #region product request
 
@@ -204,7 +211,7 @@ public class ProviderActivitiesContoller : AppController
     [Guard([Roles.Provider])]
     public async Task<IActionResult> AcceptOrder([FromBody] AcceptOrderDto acceptOrderDto)
     {
-        var result = await AcceptOrderService.ProviderAccept(acceptOrderDto.OrderId, _userContext.Get(), _dbFactory);
+        var result = await AcceptOrderService.ProviderAccept(acceptOrderDto.OrderId, _userContext.Get(), _paymentService, _configuration, _dbFactory);
         return result.Success ? Success(result.Data) : Fail(result.Errors);
     }
     [HttpPost("orders/cancel")]

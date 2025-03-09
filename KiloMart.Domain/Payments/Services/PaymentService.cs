@@ -19,16 +19,16 @@ public class PaymentService : IPaymentService
     public PaymentService(HttpClient httpClient, IConfiguration configuration, IDbFactory dbFactory)
     {
         _httpClient = httpClient;
-        //_merchantPassword = configuration["PaymentGateway:MerchantPassword"];
-        // _clientKey = configuration["PaymentGateway:MerchantKey"];
+        _merchantPassword = configuration["PaymentGateway:MerchantPassword"]??throw new Exception("Merchant Password is not set");
+        _clientKey = configuration["PaymentGateway:MerchantKey"]??throw new Exception("Merchant Key is not set");
         _httpClient.BaseAddress = new Uri("https://api.edfapay.com/");
         _dbFactory = dbFactory;
     }
 
     public async Task<PaymentResponse> ProcessPaymentAsync(PaymentRequest request)
     {
-        _merchantPassword = request.MerchantPassword;
-        _clientKey = request.MerchantKey;
+        // _merchantPassword = request.MerchantPassword;
+        // _clientKey = request.MerchantKey;
         var content = new FormUrlEncodedContent(new Dictionary<string, string>
         {
             ["payer_country"] = request.PayerCountry,

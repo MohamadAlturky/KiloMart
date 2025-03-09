@@ -173,6 +173,25 @@ public static partial class Db
             CustomerId = customerId
         });
     }
+    public static async Task<Card?> GetIsPrimaryCardsByCustomerAsync(IDbConnection connection, int customerId)
+    {
+        const string query = @"SELECT 
+                            [Id], 
+                            [HolderName], 
+                            [Number], 
+                            [SecurityCode], 
+                            [ExpireDate], 
+                            [Customer], 
+                            [IsActive],
+                            [IsPrimary]
+                            FROM [dbo].[Card]
+                            WHERE [Customer] = @CustomerId AND [IsActive] = 1 AND [IsPrimary] = 1";
+
+        return await connection.QueryFirstOrDefaultAsync<Card>(query, new
+        {
+            CustomerId = customerId
+        });
+    }
 }
 
 public class Card

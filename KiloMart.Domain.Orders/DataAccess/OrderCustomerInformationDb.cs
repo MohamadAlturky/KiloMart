@@ -86,6 +86,21 @@ public static partial class OrdersDb
             Id = id
         });
     }
+    public static async Task<OrderCustomerInformation?> GetOrderCustomerInfoByOrderIdAsync(long orderId, IDbConnection connection)
+    {
+        const string query = @"SELECT 
+                            [Id], 
+                            [Order], 
+                            [Customer], 
+                            [Location]
+                            FROM [dbo].[OrderCustomerInformation]
+                            WHERE [Order] = @OrderId";
+
+        return await connection.QueryFirstOrDefaultAsync<OrderCustomerInformation>(query, new
+        {
+            OrderId = orderId
+        });
+    }
 }
 
 public class OrderCustomerInformation

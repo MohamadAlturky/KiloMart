@@ -61,7 +61,6 @@ public class GuardAttribute : Attribute, IAuthorizationFilter
 
         using var connection = new SqlConnection(CONNECTION_STRING);
         connection.Open();
-
         var query = @"SELECT 
                         [Id], 
                         [Token], 
@@ -77,6 +76,38 @@ public class GuardAttribute : Attribute, IAuthorizationFilter
         });
 
         if (session is null)
+        {
+            context.Result = new UnauthorizedResult();
+            return;
+        }
+        var membershipUserQuery = @"
+                    SELECT 
+                    [Id]
+                    ,[Email]
+                    ,[EmailConfirmed]
+                    ,[PasswordHash]
+                    ,[Role]
+                    ,[Party]
+                    ,[IsActive]
+                    ,[Language]
+                    ,[IsDeleted]
+                FROM [dbo].[MembershipUser]
+                WHERE [Id] = @Id";
+        var membershipUser = connection.QueryFirstOrDefault<MembershipUser>(membershipUserQuery, new
+        {
+            Id = userPayLoad.Id
+        });
+        if (membershipUser is null)
+        {
+            context.Result = new UnauthorizedResult();
+            return;
+        }
+        if (membershipUser.IsActive == false)
+        {
+            context.Result = new UnauthorizedResult();
+            return;
+        }
+        if (membershipUser.IsDeleted == true)
         {
             context.Result = new UnauthorizedResult();
             return;

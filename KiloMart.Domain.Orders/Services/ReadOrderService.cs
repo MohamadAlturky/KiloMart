@@ -295,11 +295,11 @@ public static class ReadOrderService
             return Result<List<AggregatedOrder>>.Fail([e.Message]);
         }
     }
-     public static async Task<Result<List<AggregatedOrder>>> GetMineByStatusesForProviderAsync(
-            byte language,
-            List<byte> statuses,
-            int providerId,
-            IDbFactory dbFactory)
+    public static async Task<Result<List<AggregatedOrder>>> GetMineByStatusesForProviderAsync(
+           byte language,
+           List<byte> statuses,
+           int providerId,
+           IDbFactory dbFactory)
     {
         try
         {
@@ -550,6 +550,84 @@ public static class ReadOrderService
             var orders = await OrderRepository.GetOrderDetailsForProviderAsync(connection,
                 whereClause,
                 parameters);
+
+            if (orders is null)
+            {
+                return Result<List<AggregatedOrder>>.Ok([]);
+            }
+            if (!orders.Any())
+            {
+                return Result<List<AggregatedOrder>>.Ok([]);
+            }
+            var ordersIds = orders.Select(e => e.Id).ToList();
+
+            // Get the orders products
+            var ordersProducts = await OrderRepository.GetOrderProductsByIdsAsync(connection, ordersIds, language);
+
+            // Get the orders products offers
+            var ordersOffersProducts = await OrderRepository.GetOrderProductOffersByIdsAsync(connection, ordersIds, language);
+
+            List<AggregatedOrder> aggregatedOrders = OrderAggregator.Aggregate(
+                orders.AsList(),
+                ordersProducts.AsList(),
+                ordersOffersProducts.AsList());
+
+            if (settings.CancelOrderWhenNoProviderHasAllProducts)
+            {
+                List<AggregatedOrder> final = [];
+                var ordersWithAvailableStock = await Db.GetOrdersWithAvailableStockAsync(connection, providerId, (byte)OrderStatus.ORDER_PLACED);
+                foreach (var order in aggregatedOrders)
+                {
+                    if (ordersWithAvailableStock.Any(e => e.Order == order.OrderDetails.Id))
+                    {
+                        final.Add(order);
+                    }
+                }
+                return Result<List<AggregatedOrder>>.Ok(final);
+
+            }
+            else
+            {
+                return Result<List<AggregatedOrder>>.Ok(aggregatedOrders);
+
+            }
+        }
+        catch (Exception e)
+        {
+            return Result<List<AggregatedOrder>>.Fail([e.Message]);
+        }
+    }
+    public static async Task<Result<List<AggregatedOrder>>> GetRequestedOrdersForProviderLatest(
+        byte language,
+        int providerId,
+        IDbFactory dbFactory)
+    {
+        try
+        {
+            byte status = (byte)OrderStatus.ORDER_PLACED;
+            using var connection = dbFactory.CreateDbConnection();
+            connection.Open();
+            var location = await Db.GetLocationByPartyAsync(providerId, connection);
+            if (location is null)
+            {
+                return Result<List<AggregatedOrder>>.Fail(["You Have To Add Your Location First"]);
+            }
+            var settings = await Db.GetSystemSettingsByIdAsync(0, connection);
+            if (settings is null)
+            {
+                return Result<List<AggregatedOrder>>.Fail(["Settings not found"]);
+            }
+            //var whereClause = "WHERE OrderStatus = @status AND dbo.GetDistanceBetweenPoints(cl.[Latitude], cl.[Longitude], @Latitude, @Longitude) <= @DistanceInKm";
+            // var parameters = new { status, Latitude = location.Latitude, Longitude = location.Longitude, DistanceInKm = settings.CircleRaduis };
+
+            // Get the orders
+            var orders = await OrderRepository.GetOrderDetailsForProviderLatestAsync(connection,
+                location.Latitude,
+                location.Longitude,
+                settings.TimeInMinutesToMakeTheCircleBigger,
+                settings.DistanceToAdd,
+                settings.MaxDistanceToAdd,
+                settings.CircleRaduis);
 
             if (orders is null)
             {

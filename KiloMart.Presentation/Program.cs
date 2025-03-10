@@ -15,6 +15,7 @@ using KiloMart.DataAccess.EFCore.Data;
 using Microsoft.EntityFrameworkCore;
 using EdfaPayApi.Core.Interfaces;
 using EdfaPayApi.Infrastructure.Services;
+using KiloMart.Presentation.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddMemoryCache();
@@ -121,6 +122,7 @@ GuardAttribute.AUDIENCE = jwtAudience;
 GuardAttribute.CONNECTION_STRING = connectionString;
 
 builder.Services.AddTransient<ExceptionHandlingMiddleware>();
+builder.Services.AddHostedService<OrderCleanupService>();
 
 var app = builder.Build();
 app.UseMiddleware<ExceptionHandlingMiddleware>();

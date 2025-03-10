@@ -39,6 +39,11 @@ public class ProviderActivitiesContoller : AppController
     private readonly IPaymentService _paymentService;
 
     #region product request
+    [HttpGet("test")]
+    public IActionResult FFF()
+    {
+        return Ok("done");
+    }
 
     [HttpPost("provider/product-request/add")]
     [Guard([Roles.Provider])]
@@ -185,7 +190,7 @@ public class ProviderActivitiesContoller : AppController
     [Guard([Roles.Provider])]
     public async Task<IActionResult> GetMineByStatus([FromQuery] byte language)
     {
-        var result = await ReadOrderService.GetRequestedOrdersForProvider(language,
+        var result = await ReadOrderService.GetRequestedOrdersForProviderLatest(language,
             _userContext.Get().Party,
             _dbFactory);
 

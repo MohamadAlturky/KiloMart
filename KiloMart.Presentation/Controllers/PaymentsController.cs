@@ -6,6 +6,7 @@ using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Database;
 using KiloMart.Domain.Orders.DataAccess;
+using KiloMart.Presentation.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KiloMart.Presentation.Controllers.Profiles;
@@ -27,6 +28,13 @@ public class PaymentsController : AppController
     {
         _paymentService = paymentService;
         _configuration = configuration;
+    }
+    [HttpGet("test-delete-orders")]
+    public async Task<IActionResult> TestDeleteOrders()
+    {
+        var orderDeleteService = new OrderDeleteService(_dbFactory);
+        await orderDeleteService.Delete();
+        return Ok();
     }
 
     [HttpPost("sale")]

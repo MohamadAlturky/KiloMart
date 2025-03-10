@@ -50,7 +50,7 @@ public static partial class Db
         return updatedRowsCount > 0;
     }
 
-    public static async Task<SystemSettings?> GetSystemSettingsByIdAsync(int id, IDbConnection connection)
+    public static async Task<SystemSettings?> GetSystemSettingsByIdAsync(int id, IDbConnection connection, IDbTransaction? transaction = null)
     {
         const string query = @"SELECT 
                             [Id], 
@@ -70,7 +70,7 @@ public static partial class Db
         return await connection.QueryFirstOrDefaultAsync<SystemSettings>(query, new
         {
             Id = id
-        });
+        }, transaction);
     }
 }
 

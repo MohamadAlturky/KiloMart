@@ -30,6 +30,14 @@ public class OrderController(IDbFactory dbFactory, IUserContext userContext)
         var activities = await OrderRepository.GetOrderActivitiesAsync(connection,orderId);
         var products = await OrderRepository.GetOrderProductOffersAsync(connection,orderId,language);
         var requestedProducts = await OrderRepository.GetOrderProductsAsync(connection,orderId,language);
+        foreach (var item in requestedProducts)
+        {
+            var product = products.FirstOrDefault(p => p.ProductId == item.ProductId);
+            if (product is not null)
+            {
+                item.ActualUnitPrice = product.UnitPrice;
+            }
+        }
         return Success(new 
         {
             order,

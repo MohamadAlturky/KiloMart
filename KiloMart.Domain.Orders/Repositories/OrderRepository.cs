@@ -47,7 +47,10 @@ public static partial class OrderRepository
                                 
                 mc.DisplayName CustomerDisplayName,
                 mp.DisplayName ProviderDisplayName,
-                md.DisplayName DeliveryDisplayName
+                md.DisplayName DeliveryDisplayName,
+                mmc.Email CustomerPhoneNumber,
+                mmd.Email DeliveryPhoneNumber,
+                mmp.Email ProviderPhoneNumber
             FROM 
                 dbo.[Order] o
             LEFT JOIN 
@@ -59,6 +62,9 @@ public static partial class OrderRepository
             LEFT JOIN dbo.Party mc ON oci.Customer = mc.Id
             LEFT JOIN dbo.Party mp ON opi.Provider = mp.Id
             LEFT JOIN dbo.Party md ON odi.Delivery = md.Id
+            LEFT JOIN dbo.MembershipUser mmc ON mmc.Party = oci.Customer
+            LEFT JOIN dbo.MembershipUser mmp ON mmp.Party = opi.[Provider]
+            LEFT JOIN dbo.MembershipUser mmd ON mmd.Party = odi.Delivery
             LEFT JOIN 
                 dbo.[Location] cl ON cl.Id = oci.[Location]
             LEFT JOIN 
@@ -72,7 +78,7 @@ public static partial class OrderRepository
                 END
             ORDER BY 
                 o.[Id] DESC;";
-                
+
         var parameters = new
         {
             Latitude = latitude,
@@ -121,7 +127,10 @@ public static partial class OrderRepository
                                
                 mc.DisplayName CustomerDisplayName,
 				mp.DisplayName ProviderDisplayName,
-				md.DisplayName DeliveryDisplayName
+				md.DisplayName DeliveryDisplayName,
+                mmc.Email CustomerPhoneNumber,
+                mmd.Email DeliveryPhoneNumber,
+                mmp.Email ProviderPhoneNumber
             FROM 
                 dbo.[Order] o
             LEFT JOIN 
@@ -133,6 +142,9 @@ public static partial class OrderRepository
 			LEFT JOIN dbo.Party mc ON oci.Customer = mc.Id
 			LEFT JOIN dbo.Party mp ON opi.Provider = mp.Id
 			LEFT JOIN dbo.Party md ON odi.Delivery = md.Id
+            LEFT JOIN dbo.MembershipUser mmc ON mmc.Party = oci.Customer
+            LEFT JOIN dbo.MembershipUser mmp ON mmp.Party = opi.[Provider]
+            LEFT JOIN dbo.MembershipUser mmd ON mmd.Party = odi.Delivery
             LEFT JOIN 
                 dbo.[Location] cl ON cl.Id = oci.[Location]
             LEFT JOIN 
@@ -180,7 +192,10 @@ public static partial class OrderRepository
                                
                 mc.DisplayName CustomerDisplayName,
 				mp.DisplayName ProviderDisplayName,
-				md.DisplayName DeliveryDisplayName
+				md.DisplayName DeliveryDisplayName,
+                mmc.Email CustomerPhoneNumber,
+                mmd.Email DeliveryPhoneNumber,
+                mmp.Email ProviderPhoneNumber
             FROM 
                 dbo.[Order] o
             LEFT JOIN 
@@ -192,6 +207,9 @@ public static partial class OrderRepository
 			LEFT JOIN dbo.Party mc ON oci.Customer = mc.Id
 			LEFT JOIN dbo.Party mp ON opi.Provider = mp.Id
 			LEFT JOIN dbo.Party md ON odi.Delivery = md.Id
+            LEFT JOIN dbo.MembershipUser mmc ON mmc.Party = oci.Customer
+            LEFT JOIN dbo.MembershipUser mmp ON mmp.Party = opi.[Provider]
+            LEFT JOIN dbo.MembershipUser mmd ON mmd.Party = odi.Delivery
             LEFT JOIN 
                 dbo.[Location] cl ON cl.Id = oci.[Location]
             LEFT JOIN 
@@ -240,7 +258,10 @@ public static partial class OrderRepository
 
                 mc.DisplayName CustomerDisplayName,
 				mp.DisplayName ProviderDisplayName,
-				md.DisplayName DeliveryDisplayName
+				md.DisplayName DeliveryDisplayName,
+                mmc.Email CustomerPhoneNumber,
+                mmd.Email DeliveryPhoneNumber,
+                mmp.Email ProviderPhoneNumber
             FROM 
                 dbo.[Order] o
             LEFT JOIN 
@@ -252,6 +273,9 @@ public static partial class OrderRepository
 			LEFT JOIN dbo.Party mc ON oci.Customer = mc.Id
 			LEFT JOIN dbo.Party mp ON opi.Provider = mp.Id
 			LEFT JOIN dbo.Party md ON odi.Delivery = md.Id
+            LEFT JOIN dbo.MembershipUser mmc ON mmc.Party = oci.Customer
+            LEFT JOIN dbo.MembershipUser mmp ON mmp.Party = opi.[Provider]
+            LEFT JOIN dbo.MembershipUser mmd ON mmd.Party = odi.Delivery
             LEFT JOIN 
                 dbo.[Location] cl ON cl.Id = oci.[Location]
             LEFT JOIN 
@@ -296,7 +320,10 @@ public static partial class OrderRepository
 
             mc.DisplayName CustomerDisplayName,
             mp.DisplayName ProviderDisplayName,
-            md.DisplayName DeliveryDisplayName
+            md.DisplayName DeliveryDisplayName,
+            mmc.Email CustomerPhoneNumber,
+            mmd.Email DeliveryPhoneNumber,
+            mmp.Email ProviderPhoneNumber
         FROM 
             dbo.[Order] o
         LEFT JOIN 
@@ -315,6 +342,9 @@ public static partial class OrderRepository
             dbo.[Location] cl ON cl.Id = oci.[Location]
         LEFT JOIN 
             dbo.[Location] pl ON pl.Id = opi.[Location]
+        LEFT JOIN dbo.MembershipUser mmc ON mmc.Party = oci.Customer
+        LEFT JOIN dbo.MembershipUser mmp ON mmp.Party = opi.[Provider]
+        LEFT JOIN dbo.MembershipUser mmd ON mmd.Party = odi.Delivery
         INNER JOIN 
             dbo.[OrderProduct] op ON o.Id = op.[Order]
         WHERE 
@@ -347,7 +377,10 @@ public static partial class OrderRepository
             pl.[Longitude],
             mc.DisplayName,
             mp.DisplayName,
-            md.DisplayName
+            md.DisplayName,
+            mmc.Email,
+            mmd.Email,
+            mmp.Email
         ORDER BY 
             o.[Id];";
 
@@ -388,7 +421,10 @@ public static partial class OrderRepository
 
             mc.DisplayName CustomerDisplayName,
             mp.DisplayName ProviderDisplayName,
-            md.DisplayName DeliveryDisplayName
+            md.DisplayName DeliveryDisplayName,
+            mmc.Email CustomerPhoneNumber,
+            mmd.Email DeliveryPhoneNumber,
+            mmp.Email ProviderPhoneNumber
         FROM 
             dbo.[Order] o
         LEFT JOIN 
@@ -403,6 +439,9 @@ public static partial class OrderRepository
             dbo.Party mp ON opi.Provider = mp.Id
         LEFT JOIN 
             dbo.Party md ON odi.Delivery = md.Id
+        LEFT JOIN dbo.MembershipUser mmc ON mmc.Party = oci.Customer
+        LEFT JOIN dbo.MembershipUser mmp ON mmp.Party = opi.[Provider]
+        LEFT JOIN dbo.MembershipUser mmd ON mmd.Party = odi.Delivery
         LEFT JOIN 
             dbo.[Location] cl ON cl.Id = oci.[Location]
         LEFT JOIN 
@@ -439,7 +478,10 @@ public static partial class OrderRepository
             pl.[Longitude],
             mc.DisplayName,
             mp.DisplayName,
-            md.DisplayName
+            md.DisplayName,
+            mmc.Email,
+            mmd.Email,
+            mmp.Email
         ORDER BY 
             o.[Id];";
 
@@ -482,6 +524,10 @@ public class OrderDetailsDto
     public string? CustomerDisplayName { get; set; }
     public string? ProviderDisplayName { get; set; }
     public string? DeliveryDisplayName { get; set; }
+
+    public string? CustomerPhoneNumber { get; set; }
+    public string? DeliveryPhoneNumber { get; set; }
+    public string? ProviderPhoneNumber { get; set; }
 }
 #endregion
 

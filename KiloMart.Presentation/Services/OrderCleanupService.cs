@@ -3,6 +3,7 @@ using Dapper;
 using KiloMart.DataAccess.Database;
 using KiloMart.Domain.Orders.Common;
 using KiloMart.Domain.DateServices;
+using KiloMart.Domain.Orders.DataAccess;
 
 namespace KiloMart.Presentation.Services;
 
@@ -28,7 +29,7 @@ public class OrderCleanupService : IHostedService, IDisposable
         using var scope = _serviceProvider.CreateScope();
         var dbFactory = scope.ServiceProvider.GetRequiredService<IDbFactory>();
         OrderDeleteService orderDeleteService = new(dbFactory);
-        await orderDeleteService.Delete();
+        await orderDeleteService.Cancel();
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
@@ -46,7 +47,7 @@ public class OrderCleanupService : IHostedService, IDisposable
 
 public class OrderToDelete
 {
-    public int Id { get; set; }
+    public long Id { get; set; }
 }
 
 public class OrderDeleteService
@@ -57,7 +58,7 @@ public class OrderDeleteService
     {
         _dbFactory = dbFactory;
     }
-    public async Task Delete()
+    public async Task Cancel()
     {
 
         using var connection = _dbFactory.CreateDbConnection();
@@ -79,26 +80,40 @@ public class OrderDeleteService
         var ordersToDelete = await connection.QueryAsync<OrderToDelete>
         (selectQuery, new { threshold, status = OrderStatus.ORDER_PLACED }, transaction);
         var orderIds = ordersToDelete.Select(o => o.Id).ToList();
-        System.Console.WriteLine(orderIds.Count);
+        // System.Console.WriteLine(orderIds.Count);
+        // System.Console.WriteLine("print order ids");
+        foreach (var id in orderIds)
+        {
+            // System.Console.WriteLine(id);
+        }
         if (!orderIds.Any()) return;
 
         // Delete related records first (respecting foreign key constraints)
-        var deleteQueries = new[]
+        // var deleteQueries = new[]
+        // {
+        //     "DELETE FROM [dbo].[OrderActivity] WHERE [Order] IN @ids",
+        //     "DELETE FROM [dbo].[OrderProductOffer] WHERE [Order] IN @ids",
+        //     "DELETE FROM [dbo].[OrderProduct] WHERE [Order] IN @ids",
+        //     "DELETE FROM [dbo].[OrderDeliveryInformation] WHERE [Order] IN @ids",
+        //     "DELETE FROM [dbo].[OrderCustomerInformation] WHERE [Order] IN @ids",
+        //     "DELETE FROM [dbo].[OrderProviderInformation] WHERE [Order] IN @ids",
+        //     "DELETE FROM [dbo].[OrderDiscountCode] WHERE [Order] IN @ids",
+        //     "DELETE FROM [dbo].[Order] WHERE Id IN @ids"
+        // };
+        var query =
+            "UPDATE [dbo].[Order] SET OrderStatus = @status WHERE Id IN @ids"
+        ;
+        await connection.ExecuteAsync(query, new { ids = orderIds, status = OrderStatus.CANCELED }, transaction);
+        foreach (var id in orderIds)
         {
-            "DELETE FROM [dbo].[OrderActivity] WHERE [Order] IN @ids",
-            "DELETE FROM [dbo].[OrderProductOffer] WHERE [Order] IN @ids",
-            "DELETE FROM [dbo].[OrderProduct] WHERE [Order] IN @ids",
-            "DELETE FROM [dbo].[OrderDeliveryInformation] WHERE [Order] IN @ids",
-            "DELETE FROM [dbo].[OrderCustomerInformation] WHERE [Order] IN @ids",
-            "DELETE FROM [dbo].[OrderProviderInformation] WHERE [Order] IN @ids",
-            "DELETE FROM [dbo].[OrderDiscountCode] WHERE [Order] IN @ids",
-            "DELETE FROM [dbo].[Order] WHERE Id IN @ids"
-        };
-
-        foreach (var query in deleteQueries)
-        {
-            await connection.ExecuteAsync(query, new { ids = orderIds }, transaction);
+            await OrdersDb.InsertOrderActivityAsync(connection,
+                id,
+                SaudiDateTimeHelper.GetCurrentTime(),
+                (byte)OrderActivityType.CanceledByTheSystemBecauseNoProviderAcceptIt,
+                90,
+                transaction);
         }
+
         transaction.Commit();
     }
 }

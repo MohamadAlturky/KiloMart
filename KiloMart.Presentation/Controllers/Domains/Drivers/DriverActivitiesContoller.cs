@@ -316,7 +316,12 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory,
             SaudiDateTimeHelper.GetCurrentTime(),
             false,
             false,
-            false);
+            false,
+            request.AccountName,
+            request.AccountNumber,
+            request.Amount,
+            request.SwiftCode,
+            request.BankName);
 
         return Success(new { Id = id });
     }
@@ -350,7 +355,12 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory,
             withdraw.Date,
             withdraw.Done,
             withdraw.Accepted,
-            withdraw.Rejected);
+            withdraw.Rejected,
+            request.AccountName ?? withdraw.AccountName,
+            request.AccountNumber ?? withdraw.AccountNumber,
+            request.Amount ?? withdraw.Amount,
+            request.SwiftCode ?? withdraw.SwiftCode,
+            request.BankName ?? withdraw.BankName);
 
         return success ? Success() : Fail("Update failed.");
     }
@@ -516,19 +526,23 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory,
 // Request models for Insert and Update actions
 public class InsertWithdrawRequest
 {
-
-    public string BankAccountNumber { get; set; }
-
-    public string IbanNumber { get; set; }
-
+    public string BankAccountNumber { get; set; } = null!;
+    public string IbanNumber { get; set; } = null!;
+    public string AccountName { get; set; } = null!;
+    public string AccountNumber { get; set; } = null!;
+    public double Amount { get; set; }
+    public string SwiftCode { get; set; } = null!;
+    public string BankName { get; set; } = null!;
 }
 
 public class UpdateWithdrawRequest
 {
-
     public string? BankAccountNumber { get; set; }
-
     public string? IbanNumber { get; set; }
-
+    public string? AccountName { get; set; }
+    public string? AccountNumber { get; set; }
+    public double? Amount { get; set; }
+    public string? SwiftCode { get; set; }
+    public string? BankName { get; set; }
 }
 

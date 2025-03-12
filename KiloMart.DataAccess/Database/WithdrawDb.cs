@@ -13,11 +13,18 @@ public static partial class Db
         bool done,
         bool accepted,
         bool rejected,
+        string accountName,
+        string accountNumber,
+        double amount,
+        string swiftCode,
+        string bankName,
         IDbTransaction? transaction = null)
     {
         const string query = @"INSERT INTO [dbo].[Withdraw]
-                            ([Party], [BankAccountNumber], [IBanNumber], [Date], [Done],[Rejected],[Accepted])
-                            VALUES (@Party, @BankAccountNumber, @IBanNumber, @Date, @Done,@Rejected,@Accepted)
+                            ([Party], [BankAccountNumber], [IBanNumber], [Date], [Done],[Rejected],[Accepted], 
+                             [AccountName], [AccountNumber], [Amount], [SwiftCode], [BankName])
+                            VALUES (@Party, @BankAccountNumber, @IBanNumber, @Date, @Done,@Rejected,@Accepted,
+                                    @AccountName, @AccountNumber, @Amount, @SwiftCode, @BankName)
                             SELECT CAST(SCOPE_IDENTITY() AS BIGINT)";
 
         return await connection.ExecuteScalarAsync<long>(query, new
@@ -28,7 +35,12 @@ public static partial class Db
             Date = date,
             Done = done,
             Accepted = accepted,
-            Rejected = rejected
+            Rejected = rejected,
+            AccountName = accountName,
+            AccountNumber = accountNumber,
+            Amount = amount,
+            SwiftCode = swiftCode,
+            BankName = bankName
         }, transaction);
     }
 
@@ -39,8 +51,13 @@ public static partial class Db
         string ibanNumber,
         DateTime date,
         bool done,
-                bool accepted,
+        bool accepted,
         bool rejected,
+        string accountName,
+        string accountNumber,
+        double amount,
+        string swiftCode,
+        string bankName,
         IDbTransaction? transaction = null)
     {
         const string query = @"UPDATE [dbo].[Withdraw]
@@ -51,7 +68,12 @@ public static partial class Db
                                 [Date] = @Date,
                                 [Rejected] = @Rejected,
                                 [Accepted] = @Accepted,
-                                [Done] = @Done
+                                [Done] = @Done,
+                                [AccountName] = @AccountName,
+                                [AccountNumber] = @AccountNumber,
+                                [Amount] = @Amount,
+                                [SwiftCode] = @SwiftCode,
+                                [BankName] = @BankName
                                 WHERE [Id] = @Id";
 
         var updatedRowsCount = await connection.ExecuteAsync(query, new
@@ -63,7 +85,12 @@ public static partial class Db
             Date = date,
             Done = done,
             Accepted = accepted,
-            Rejected = rejected
+            Rejected = rejected,
+            AccountName = accountName,
+            AccountNumber = accountNumber,
+            Amount = amount,
+            SwiftCode = swiftCode,
+            BankName = bankName
         }, transaction);
 
         return updatedRowsCount > 0;
@@ -92,7 +119,12 @@ public static partial class Db
                             [Date], 
                             [Done],
                             [Accepted],
-                            [Rejected]
+                            [Rejected],
+                            [AccountName],
+                            [AccountNumber],
+                            [Amount],
+                            [SwiftCode],
+                            [BankName]
                             FROM [dbo].[Withdraw]
                             WHERE [Id] = @Id";
 
@@ -114,7 +146,12 @@ public static partial class Db
                             [Date], 
                             [Done],
                             [Accepted],
-                            [Rejected]
+                            [Rejected],
+                            [AccountName],
+                            [AccountNumber],
+                            [Amount],
+                            [SwiftCode],
+                            [BankName]
                             FROM [dbo].[Withdraw]
                             WHERE [Party] = @Party";
 
@@ -135,7 +172,12 @@ public static partial class Db
                             [Date], 
                             [Done],
                             [Accepted],
-                            [Rejected]
+                            [Rejected],
+                            [AccountName],
+                            [AccountNumber],
+                            [Amount],
+                            [SwiftCode],
+                            [BankName]
                             FROM [dbo].[Withdraw]
                             WHERE [Done] = @Done";
 
@@ -151,7 +193,12 @@ public static partial class Db
                             [Date], 
                             [Done],
                             [Accepted],
-                            [Rejected]
+                            [Rejected],
+                            [AccountName],
+                            [AccountNumber],
+                            [Amount],
+                            [SwiftCode],
+                            [BankName]
                             FROM [dbo].[Withdraw]
                             WHERE [Rejected] = @Rejected";
 
@@ -170,7 +217,12 @@ public static partial class Db
                             [Date], 
                             [Done],
                             [Accepted],
-                            [Rejected]
+                            [Rejected],
+                            [AccountName],
+                            [AccountNumber],
+                            [Amount],
+                            [SwiftCode],
+                            [BankName]
                             FROM [dbo].[Withdraw]
                             WHERE [Party] = @Party AND [Done] = @Done";
 
@@ -191,7 +243,12 @@ public static partial class Db
                                         [Date], 
                                         [Done],
                                         [Accepted],
-                                        [Rejected]
+                                        [Rejected],
+                                        [AccountName],
+                                        [AccountNumber],
+                                        [Amount],
+                                        [SwiftCode],
+                                        [BankName]
                                         FROM [dbo].[Withdraw]
                                         WHERE [Party] = @Party
                                         ORDER BY [Id]  DESC
@@ -226,7 +283,12 @@ public static partial class Db
                                         [Date], 
                                         [Done],
                                         [Accepted],
-                                        [Rejected]
+                                        [Rejected],
+                                        [AccountName],
+                                        [AccountNumber],
+                                        [Amount],
+                                        [SwiftCode],
+                                        [BankName]
                                         FROM [dbo].[Withdraw]
                                         WHERE [Done] = @Done
                                         ORDER BY [Id]  DESC
@@ -261,7 +323,12 @@ public static partial class Db
                                         [Date], 
                                         [Done],
                                         [Accepted],
-                                        [Rejected]
+                                        [Rejected],
+                                        [AccountName],
+                                        [AccountNumber],
+                                        [Amount],
+                                        [SwiftCode],
+                                        [BankName]
                                         FROM [dbo].[Withdraw]
                                         WHERE [Party] = @Party AND [Done] = @Done
                                         ORDER BY [Id] DESC
@@ -296,4 +363,9 @@ public class Withdraw
     public bool Done { get; set; }
     public bool Accepted { get; set; }
     public bool Rejected { get; set; }
+    public string AccountName { get; set; } = null!;
+    public string AccountNumber { get; set; } = null!;
+    public double Amount { get; set; }
+    public string SwiftCode { get; set; } = null!;
+    public string BankName { get; set; } = null!;
 }

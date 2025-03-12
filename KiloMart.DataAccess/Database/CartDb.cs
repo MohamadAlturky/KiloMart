@@ -6,7 +6,7 @@ namespace KiloMart.DataAccess.Database;
 /// <summary>
 /// Table Specification for Cart
 /// </summary>
-public static partial class Db
+public static partial class Db 
 {
     public static async Task<long> InsertCartAsync(IDbConnection connection,
         int product,

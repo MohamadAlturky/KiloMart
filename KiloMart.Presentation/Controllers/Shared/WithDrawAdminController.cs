@@ -120,7 +120,6 @@ public class WithDrawAdminController(IDbFactory dbFactory, IUserContext userCont
 
             try
             {
-
                 await Db.UpdateWithdrawAsync(connection,
                     withdraw.Id,
                     withdraw.Party,
@@ -130,6 +129,11 @@ public class WithDrawAdminController(IDbFactory dbFactory, IUserContext userCont
                     true,
                     true,
                     false,
+                    withdraw.AccountName,
+                    withdraw.AccountNumber,
+                    withdraw.Amount,
+                    withdraw.SwiftCode,
+                    withdraw.BankName,
                     transaction);
 
                 await Db.InsertDeliveryActivityAsync(connection,
@@ -171,6 +175,11 @@ public class WithDrawAdminController(IDbFactory dbFactory, IUserContext userCont
                         true,
                         true,
                         false,
+                        withdraw.AccountName,
+                        withdraw.AccountNumber,
+                        withdraw.Amount,
+                        withdraw.SwiftCode,
+                        withdraw.BankName,
                         transaction);
 
                 await Db.InsertProviderActivityAsync(connection,
@@ -230,6 +239,11 @@ public class WithDrawAdminController(IDbFactory dbFactory, IUserContext userCont
                 true,
                 false,
                 true,
+                withdraw.AccountName,
+                withdraw.AccountNumber,
+                withdraw.Amount,
+                withdraw.SwiftCode,
+                withdraw.BankName,
                 transaction);
 
 

@@ -87,7 +87,7 @@ public static partial class OrderRepository
             DistanceToAdd = distanceToAdd,
             MaxDistanceToAdd = maxDistanceToAdd,
             Radius = raduis,
-            status = OrderStatus.PREPARING
+            status = OrderStatus.ORDER_PLACED
         };
 
         return await connection.QueryAsync<OrderDetailsDto>(sql, parameters);

@@ -135,49 +135,94 @@ public class LocationController(IDbFactory dbFactory, IUserContext userContext)
 
         return Success(result.ToList());
     }
-    
+
     [HttpPost("create-with-full-details")]
     [Guard([Roles.Customer])]
     public async Task<IActionResult> Create(LocationInsertWithDetailsModel model)
     {
-        var result = await LocationService.Insert(_dbFactory, _userContext.Get(), new LocationInsertModel()
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+        using var transaction = connection.BeginTransaction();
+        var location = new Location
         {
             Latitude = model.Latitude,
             Longitude = model.Longitude,
-            Name = model.Name
-        });
+            Name = model.Name,
+            Party = _userContext.Get().Party,
+            IsActive = true
+        };
+        var locationId = await Db.InsertLocationAsync(
+            connection,
+            location.Longitude,
+            location.Latitude,
+            location.Name,
+            location.Party,
+            transaction);
+        location.Id = locationId;
 
-        if (result.Success)
+        var locationDetails = new LocationDetails
         {
-            var detailsResult = await LocationDetailsService.Insert(
-                _dbFactory,
-                _userContext.Get(),
-                new LocationDetailsInsertModel()
-                {
-                    ApartmentNumber = model.ApartmentNumber,
-                    BuildingNumber = model.BuildingNumber,
-                    BuildingType = model.BuildingType,
-                    FloorNumber = model.FloorNumber,
-                    Location = result.Data.Id,
-                    PhoneNumber = model.PhoneNumber,
-                    StreetNumber = model.StreetNumber
-                }
-            );
+            ApartmentNumber = model.ApartmentNumber,
+            BuildingNumber = model.BuildingNumber,
+            BuildingType = model.BuildingType,
+            FloorNumber = model.FloorNumber,
+            Location = locationId,
+            PhoneNumber = model.PhoneNumber,
+            StreetNumber = model.StreetNumber
+        };
+        var locationDetailsId = await Db.InsertLocationDetailsAsync(
+            connection,
+            locationDetails.BuildingType,
+            locationDetails.BuildingNumber,
+            locationDetails.FloorNumber,
+            locationDetails.ApartmentNumber,
+            locationDetails.StreetNumber,
+            locationDetails.PhoneNumber,
+            locationDetails.Location,
+            transaction
+        );
+        locationDetails.Id = locationDetailsId;
+        return Success(new { Location = location, Details = locationDetails });
 
-            if (detailsResult.Success)
-            {
-                return Success(new { Location = result.Data, Details = detailsResult.Data });
-            }
-            else
-            {
-                return Fail(result.Errors);
-            }
 
-        }
-        else
-        {
-            return Fail(result.Errors);
-        }
+        // var result = await LocationService.Insert(_dbFactory, _userContext.Get(), new LocationInsertModel()
+        // {
+        //     Latitude = model.Latitude,
+        //     Longitude = model.Longitude,
+        //     Name = model.Name
+        // });
+
+        // if (result.Success)
+        // {
+        //     var detailsResult = await LocationDetailsService.Insert(
+        //         _dbFactory,
+        //         _userContext.Get(),
+        //         new LocationDetailsInsertModel()
+        //         {
+        //             ApartmentNumber = model.ApartmentNumber,
+        //             BuildingNumber = model.BuildingNumber,
+        //             BuildingType = model.BuildingType,
+        //             FloorNumber = model.FloorNumber,
+        //             Location = result.Data.Id,
+        //             PhoneNumber = model.PhoneNumber,
+        //             StreetNumber = model.StreetNumber
+        //         }
+        //     );
+
+        //     if (detailsResult.Success)
+        //     {
+        //         return Success(new { Location = result.Data, Details = detailsResult.Data });
+        //     }
+        //     else
+        //     {
+        //         return Fail(result.Errors);
+        //     }
+
+        // }
+        // else
+        // {
+        //     return Fail(result.Errors);
+        // }
     }
 }
 

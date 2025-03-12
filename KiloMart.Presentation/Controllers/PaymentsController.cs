@@ -33,7 +33,7 @@ public class PaymentsController : AppController
     public async Task<IActionResult> TestDeleteOrders()
     {
         var orderDeleteService = new OrderDeleteService(_dbFactory);
-        await orderDeleteService.Delete();
+        await orderDeleteService.Cancel();
         return Ok();
     }
 

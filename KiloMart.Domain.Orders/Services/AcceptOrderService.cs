@@ -301,6 +301,10 @@ public static class AcceptOrderService
             {
                 return Result<AcceptOrderResponseModel>.Fail(["Order Status is not PREPARING"]);
             }
+            if (order.OrderStatus == ((byte)OrderStatus.SHIPPED))
+            {
+                return Result<AcceptOrderResponseModel>.Fail(["Order Status is Already Accepted"]);
+            }
 
             response.OrderDeliveryInformation = new OrderDeliveryInformation()
             {

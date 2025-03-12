@@ -43,10 +43,10 @@ public static class ChangeOrderPaymentTypeService
                 return Result<UpdateOrderPaymentResponseModel>.Fail(["Order Not Found"]);
             }
 
-            if (order.Customer != userPayLoad.Party || order.Delivery != userPayLoad.Party)
-            {
-                return Result<UpdateOrderPaymentResponseModel>.Fail(["Order is not for this customer"]);
-            }
+            // if (order.Customer != userPayLoad.Party || order.Delivery != userPayLoad.Party)
+            // {
+            //     return Result<UpdateOrderPaymentResponseModel>.Fail(["Order is not for this customer"]);
+            // }
             
             if(order.OrderStatus == (byte)OrderStatus.COMPLETED)
             {

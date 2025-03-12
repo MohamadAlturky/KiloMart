@@ -44,6 +44,11 @@ public enum OrderActivityType
     DeliveredByDelivery = 10,
 
     CompletedByDelivery = 11,
+
+    /// <summary>
+    /// System
+    /// </summary>
+    CanceledByTheSystemBecauseNoProviderAcceptIt = 12,
 }
 
 // INSERT INTO OrderActivityType([Id], [Name])

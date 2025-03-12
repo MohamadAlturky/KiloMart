@@ -230,36 +230,57 @@ public static class LocationService
                 transaction);
 
             var details = await Db.GetLocationDetailsByLocationIdAsync(
-                existingModel.Id, 
+                existingModel.Id,
                 connection,
                 transaction);
 
             if (details is null)
             {
-                transaction.Rollback();
-                return Result<LocationVw>.Fail(["Details Not Found"]);
+                details = new LocationDetails
+                {
+                    Location = existingModel.Id,
+                    ApartmentNumber = model.LocationDetailsApartmentNumber ?? "",
+                    BuildingNumber = model.LocationDetailsBuildingNumber ?? "",
+                    BuildingType = model.LocationDetailsBuildingType ?? "",
+                    FloorNumber = model.LocationDetailsFloorNumber ?? "",
+                    PhoneNumber = model.LocationDetailsPhoneNumber ?? "",
+                    StreetNumber = model.LocationDetailsStreetNumber ?? "",
+                };
+                await Db.InsertLocationDetailsAsync(
+                    connection,
+                    details.BuildingType,
+                    details.BuildingNumber,
+                    details.FloorNumber,
+                    details.ApartmentNumber,
+                    details.StreetNumber,
+                    details.PhoneNumber,
+                    details.Location,
+                    transaction
+                );
             }
-            details.StreetNumber = model.LocationDetailsStreetNumber ?? details.StreetNumber;
-            details.ApartmentNumber = model.LocationDetailsApartmentNumber ?? details.ApartmentNumber;
-            details.PhoneNumber = model.LocationDetailsPhoneNumber ?? details.PhoneNumber;
-            details.FloorNumber = model.LocationDetailsFloorNumber ?? details.FloorNumber;
-            details.BuildingNumber = model.LocationDetailsBuildingNumber ?? details.BuildingNumber;
-            details.BuildingType = model.LocationDetailsBuildingType ?? details.BuildingType;
+            else
+            {
+                details.StreetNumber = model.LocationDetailsStreetNumber ?? details.StreetNumber;
+                details.ApartmentNumber = model.LocationDetailsApartmentNumber ?? details.ApartmentNumber;
+                details.PhoneNumber = model.LocationDetailsPhoneNumber ?? details.PhoneNumber;
+                details.FloorNumber = model.LocationDetailsFloorNumber ?? details.FloorNumber;
+                details.BuildingNumber = model.LocationDetailsBuildingNumber ?? details.BuildingNumber;
+                details.BuildingType = model.LocationDetailsBuildingType ?? details.BuildingType;
 
-            await Db.UpdateLocationDetailsAsync(
-               connection,
-               details.Id,
-               details.BuildingType,
-               details.BuildingNumber,
-               details.FloorNumber,
-               details.ApartmentNumber,
-               details.StreetNumber,
-               details.PhoneNumber,
-               details.Location,
-               transaction);
-
+                await Db.UpdateLocationDetailsAsync(
+                   connection,
+                   details.Id,
+                   details.BuildingType,
+                   details.BuildingNumber,
+                   details.FloorNumber,
+                   details.ApartmentNumber,
+                   details.StreetNumber,
+                   details.PhoneNumber,
+                   details.Location,
+                   transaction);
+            }
             transaction.Commit();
-            
+
             return Result<LocationVw>.Ok(new LocationVw
             {
                 LocationId = existingModel.Id,

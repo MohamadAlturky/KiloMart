@@ -182,6 +182,7 @@ public class LocationController(IDbFactory dbFactory, IUserContext userContext)
             transaction
         );
         locationDetails.Id = locationDetailsId;
+        transaction.Commit();
         return Success(new { Location = location, Details = locationDetails });
 
 

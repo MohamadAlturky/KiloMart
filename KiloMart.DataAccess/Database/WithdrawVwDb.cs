@@ -19,6 +19,11 @@ SELECT
     wd.[Done],
     wd.[Accepted],
     wd.[Rejected],
+    wd.[AccountName],
+    wd.[AccountNumber],
+    wd.[Amount],
+    wd.[SwiftCode],
+    wd.[BankName],
     p.[Id] AS PartyId,
     p.[DisplayName] AS PartyDisplayName,
     p.[IsActive] AS PartyIsActive,
@@ -196,6 +201,11 @@ public class WithdrawDetailsVw
     public bool Done { get; set; }
     public bool Accepted { get; set; }
     public bool Rejected { get; set; }
+    public string AccountName { get; set; } = null!;
+    public string AccountNumber { get; set; } = null!;
+    public double Amount { get; set; }
+    public string SwiftCode { get; set; } = null!;
+    public string BankName { get; set; } = null!;
 
     // Joined Party columns:
     public int PartyId { get; set; }

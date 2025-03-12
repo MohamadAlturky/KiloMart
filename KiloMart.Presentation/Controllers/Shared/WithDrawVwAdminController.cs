@@ -133,6 +133,11 @@ public class WithDrawAdminVwController(IDbFactory dbFactory, IUserContext userCo
                     done: true,
                     accepted: true,
                     rejected: false,
+                    withdraw.AccountName,
+                    withdraw.AccountNumber,
+                    withdraw.Amount,
+                    withdraw.SwiftCode,
+                    withdraw.BankName,
                     transaction);
 
                 await Db.InsertDeliveryActivityAsync(connection,
@@ -174,6 +179,11 @@ public class WithDrawAdminVwController(IDbFactory dbFactory, IUserContext userCo
                     done: true,
                     accepted: true,
                     rejected: false,
+                    withdraw.AccountName,
+                    withdraw.AccountNumber,
+                    withdraw.Amount,
+                    withdraw.SwiftCode,
+                    withdraw.BankName,
                     transaction);
 
                 await Db.InsertProviderActivityAsync(connection,
@@ -234,6 +244,11 @@ public class WithDrawAdminVwController(IDbFactory dbFactory, IUserContext userCo
                 done: true,
                 accepted: false,
                 rejected: true,
+                withdraw.AccountName,
+                withdraw.AccountNumber,
+                withdraw.Amount,
+                withdraw.SwiftCode,
+                withdraw.BankName,
                 transaction);
 
             transaction.Commit();

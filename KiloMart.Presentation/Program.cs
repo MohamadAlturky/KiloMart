@@ -16,6 +16,7 @@ using Microsoft.EntityFrameworkCore;
 using EdfaPayApi.Core.Interfaces;
 using EdfaPayApi.Infrastructure.Services;
 using KiloMart.Presentation.Services;
+using KiloMart.Domain.OtpService;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddMemoryCache();
@@ -123,6 +124,9 @@ GuardAttribute.CONNECTION_STRING = connectionString;
 
 builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 builder.Services.AddHostedService<OrderCleanupService>();
+
+builder.Services.AddHttpClient<IOtpService, OtpService>();
+builder.Services.AddScoped<IOtpService, OtpService>();
 
 var app = builder.Build();
 app.UseMiddleware<ExceptionHandlingMiddleware>();

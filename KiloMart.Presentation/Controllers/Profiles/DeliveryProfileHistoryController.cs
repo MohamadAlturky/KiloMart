@@ -460,17 +460,17 @@ public class DeliveryProfileHistoryController(
             transaction.Rollback();
             return DataNotFound("profileHistory Not Found");
         }
-        if (profileHistory.IsAccepted == true)
-        {
-            transaction.Rollback();
-            return Fail("profileHistory Is Already Accepted");
-        }
+        // if (profileHistory.IsAccepted == true)
+        // {
+        //     transaction.Rollback();
+        //     return Fail("profileHistory Is Already Accepted");
+        // }
 
-        if (profileHistory.IsRejected == true)
-        {
-            transaction.Rollback();
-            return Fail("profileHistory Is Already Rejected");
-        }
+        // if (profileHistory.IsRejected == true)
+        // {
+        //     transaction.Rollback();
+        //     return Fail("profileHistory Is Already Rejected");
+        // }
 
         await Db.DeactivateDeliveryProfileHistoryByDeliveryIdAsync(
             connection,

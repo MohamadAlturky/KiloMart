@@ -5,6 +5,7 @@ using KiloMart.DataAccess.Database;
 using KiloMart.Domain.DateServices;
 using KiloMart.Domain.Login.Models;
 using KiloMart.Domain.Login.Services;
+using KiloMart.Domain.OtpService;
 using KiloMart.Domain.Register.Activate;
 using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Authentication.Services.Login;
@@ -17,6 +18,7 @@ namespace KiloMart.Presentation.Authorization;
 [Route("api/user")]
 public class UserCommandController(IConfiguration configuration,
     IDbFactory dbFactory,
+    IOtpService _otpService,
     IUserContext userContext) : AppController(dbFactory, userContext)
 {
     private readonly IConfiguration _configuration = configuration;
@@ -50,8 +52,12 @@ public class UserCommandController(IConfiguration configuration,
         var (success, errors) = request.Validate();
         if (!success)
             return BadRequest(errors);
-
-        var result = await VerifyUserEmailService.VerifyEmail(request.Email, request.VerificationToken, _dbFactory);
+        var otpResponse = await _otpService.VerifyOtp(request.Email, request.VerificationToken);
+        if (!otpResponse.Status)
+        {
+            return Fail(otpResponse.Errors);
+        }
+        var result = await VerifyUserEmailService.VerifyEmail(request.Email, _dbFactory);
         return result ? Success() : Fail();
     }
     #endregion

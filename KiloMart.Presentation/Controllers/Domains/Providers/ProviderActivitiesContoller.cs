@@ -603,7 +603,7 @@ public class ProviderActivitiesContoller : AppController
 
     [HttpPost("Withdraw/create")]
     [Guard([Roles.Provider])]
-    public async Task<IActionResult> InsertWithdrawAsync([FromBody] InsertWithdrawRequest request)
+    public async Task<IActionResult> InsertWithdrawAsyncsss([FromBody] InsertWithdrawRequestDto request)
     {
         int deliveryID = _userContext.Get().Party;
         using var connection = _dbFactory.CreateDbConnection();
@@ -629,7 +629,7 @@ public class ProviderActivitiesContoller : AppController
 
     [HttpPut("Withdraw/update/{id}")]
     [Guard([Roles.Provider])]
-    public async Task<IActionResult> UpdateWithdrawAsync(long id, [FromBody] UpdateWithdrawRequest request)
+    public async Task<IActionResult> UpdateWithdrawAsync(long id, [FromBody] UpdateWithdrawRequestDto request)
     {
         int deliveryID = _userContext.Get().Party;
         using var connection = _dbFactory.CreateDbConnection();
@@ -779,7 +779,7 @@ public class ProviderActivitiesContoller : AppController
     }
 
     // Add these request models at the end of the file or uncomment and update the existing ones
-    public class InsertWithdrawRequest
+    public class InsertWithdrawRequestDto
     {
         public string BankAccountNumber { get; set; } = null!;
         public string IbanNumber { get; set; } = null!;
@@ -790,7 +790,7 @@ public class ProviderActivitiesContoller : AppController
         public string BankName { get; set; } = null!;
     }
 
-    public class UpdateWithdrawRequest
+    public class UpdateWithdrawRequestDto
     {
         public string? BankAccountNumber { get; set; }
         public string? IbanNumber { get; set; }

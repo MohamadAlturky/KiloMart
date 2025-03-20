@@ -153,24 +153,24 @@ public static partial class Stats
 
 
     // Method to get the total count of active deliveries
-    public static async Task<int> GetActiveDeliveriesProfilesCountFilteredAsync(IDbConnection connection, string? searchTerm = null)
+    public static async Task<int> GetActiveDeliveriesProfilesCountFilteredAsync(IDbConnection connection, bool? isActive, string? searchTerm = null)
     {
         const string countQuery = @"
         SELECT COUNT(*) 
         FROM DeliveryProfileHistory pp
             INNER JOIN MembershipUser m ON m.Party = pp.DeliveryId
             INNER JOIN Party party ON party.Id = pp.DeliveryId
-        WHERE pp.IsActive = 1 AND (@SearchTerm IS NULL OR 
+        WHERE pp.IsActive = 1 AND (@IsActive IS NULL OR m.IsActive = @IsActive) AND (@SearchTerm IS NULL OR 
                  party.DisplayName LIKE '%' + @SearchTerm + '%' OR 
                  m.Email LIKE '%' + @SearchTerm + '%');
     ";
 
-        return await connection.ExecuteScalarAsync<int>(countQuery, new { SearchTerm = searchTerm });
+        return await connection.ExecuteScalarAsync<int>(countQuery, new { SearchTerm = searchTerm, IsActive = isActive });
     }
 
     // Method to get paginated delivery data
     public static async Task<IEnumerable<DeliveryDataDto>> GetPaginatedDeliveriesDataFilteredAsync
-    (IDbConnection connection, int page, int pageSize, string? searchTerm = null)
+    (IDbConnection connection, int page, int pageSize, bool? isActive, string? searchTerm = null)
     {
         const string dataQuery = @"
         SELECT 
@@ -209,7 +209,7 @@ public static partial class Stats
         LEFT JOIN dbo.OrderDeliveryInformation o ON o.Delivery = pp.DeliveryId
         LEFT JOIN dbo.DeliveryActivity pa ON pa.Delivery = pp.DeliveryId AND pa.Type = 1
         LEFT JOIN dbo.DeliveryActivity paall ON paall.Delivery = pp.DeliveryId AND paall.Type = 2
-        WHERE pp.IsActive = 1 AND (@SearchTerm IS NULL OR 
+        WHERE pp.IsActive = 1 AND (@IsActive IS NULL OR m.IsActive = @IsActive) AND (@SearchTerm IS NULL OR 
                  party.DisplayName LIKE '%' + @SearchTerm + '%' OR 
                  m.Email LIKE '%' + @SearchTerm + '%')
         GROUP BY 
@@ -246,14 +246,22 @@ public static partial class Stats
         FETCH NEXT @PageSize ROWS ONLY;
     ";
 
-        return await connection.QueryAsync<DeliveryDataDto>(dataQuery, new { Page = page, PageSize = pageSize, SearchTerm = searchTerm });
+        return await connection.QueryAsync<DeliveryDataDto>(dataQuery, new { 
+            Page = page, 
+            PageSize = pageSize, 
+            SearchTerm = searchTerm, 
+            IsActive = isActive });
     }
 
     // Combined method to get paginated deliveries result with total count
-    public static async Task<PaginatedDeliveriesResult> GetPaginatedDeliveriesFilteredAsync(IDbConnection connection, int page, int pageSize, string? searchTerm = null)
+    public static async Task<PaginatedDeliveriesResult> GetPaginatedDeliveriesFilteredAsync(IDbConnection connection, 
+        int page, 
+        int pageSize,
+        bool? isActive, 
+        string? searchTerm = null)
     {
-        var totalCount = await GetActiveDeliveriesProfilesCountFilteredAsync(connection, searchTerm);
-        var data = await GetPaginatedDeliveriesDataFilteredAsync(connection, page, pageSize, searchTerm);
+        var totalCount = await GetActiveDeliveriesProfilesCountFilteredAsync(connection, isActive, searchTerm);
+        var data = await GetPaginatedDeliveriesDataFilteredAsync(connection, page, pageSize, isActive, searchTerm);
 
         return new PaginatedDeliveriesResult
         {

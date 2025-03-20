@@ -2,6 +2,7 @@ using System.Data;
 using Dapper;
 using KiloMart.Core.Contracts;
 using KiloMart.Domain.DateServices;
+using KiloMart.Domain.OtpService;
 using KiloMart.Domain.Register.Utils;
 using Microsoft.Extensions.Configuration;
 
@@ -15,6 +16,7 @@ public abstract class BaseRegisterService
     public async Task<RegisterResult> Register(
         IDbFactory dbFactory,
         IConfiguration configuration,
+        IOtpService otpService,
         string email,
         string password,
         string displayName,
@@ -36,6 +38,11 @@ public abstract class BaseRegisterService
             await CreatePartyType(connection, partyId, transaction);
             var membershipUserId = await CreateMembershipUser(connection, email, password, UserRole, partyId, language, transaction);
             var verificationToken = await GenerateVerificationToken(membershipUserId, connection, transaction);
+            var otpResponse = await otpService.SendOtp(email);
+            if (!otpResponse.Success)
+            {
+                return new RegisterResult { IsSuccess = false, ErrorMessage = "Failed to send OTP" };
+            }
             transaction.Commit();
             return new RegisterResult { IsSuccess = true, UserId = membershipUserId, PartyId = partyId, VerificationToken = verificationToken };
         }

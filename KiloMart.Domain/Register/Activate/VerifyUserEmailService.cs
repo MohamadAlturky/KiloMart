@@ -13,8 +13,7 @@ public class VerifyUserEmailService
 {
 
     // activate user
-    public static async Task<bool> VerifyEmail(string email,
-    string verificationToken, IDbFactory dbFactory)
+    public static async Task<bool> VerifyEmail(string email, IDbFactory dbFactory)
     {
         using var connection = dbFactory.CreateDbConnection();
         connection.Open();
@@ -27,9 +26,8 @@ public class VerifyUserEmailService
             UserIdRoleDto? dto = await connection.QueryFirstOrDefaultAsync<UserIdRoleDto?>(
                 @"SELECT MU.Id As Id, MU.Role As Role
                   FROM MembershipUser MU
-                  JOIN VerificationToken VT ON VT.MembershipUser = MU.Id
-                  WHERE MU.Email = @Email AND VT.Value = @Token",
-                new { Email = email, Token = verificationToken },
+                  WHERE MU.Email = @Email",
+                new { Email = email },
                 transaction
             );
 

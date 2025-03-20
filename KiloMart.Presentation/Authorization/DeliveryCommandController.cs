@@ -4,6 +4,7 @@ using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Database;
 using KiloMart.Domain.Deliveries.Profile;
 using KiloMart.Domain.Documents;
+using KiloMart.Domain.OtpService;
 using KiloMart.Domain.Register.Delivery.Models;
 using KiloMart.Domain.Register.Delivery.Services;
 using KiloMart.Domain.Register.Utils;
@@ -21,14 +22,17 @@ public class DeliveryCommandController : AppController
 {
     private readonly IConfiguration _configuration;
     private readonly IWebHostEnvironment environment;
+    private readonly IOtpService _otpService;
     public DeliveryCommandController(
         IDbFactory dbFactory,
         IConfiguration configuration,
         IUserContext userContext, 
-        IWebHostEnvironment environment) : base(dbFactory, userContext)
+        IWebHostEnvironment environment,
+        IOtpService otpService) : base(dbFactory, userContext)
     {
         _configuration = configuration;
         this.environment = environment;
+        _otpService = otpService;
     }
 
     [HttpPost("register")]
@@ -44,6 +48,7 @@ public class DeliveryCommandController : AppController
         var result = await new RegisterDeliveryService().Register(
             _dbFactory,
             _configuration,
+            _otpService,
             dto.Email,
             dto.Password,
             dto.DisplayName,

@@ -419,16 +419,16 @@ public class ProviderProfileHistoryController : AppController
             transaction.Rollback();
             return DataNotFound("Profile History Not Found");
         }
-        if (profileHistory.IsAccepted == true)
-        {
-            transaction.Rollback();
-            return Fail("Profile History Is Already Accepted");
-        }
-        if (profileHistory.IsRejected == true)
-        {
-            transaction.Rollback();
-            return Fail("Profile History Is Already Rejected");
-        }
+        // if (profileHistory.IsAccepted == true)
+        // {
+        //     transaction.Rollback();
+        //     return Fail("Profile History Is Already Accepted");
+        // }
+        // if (profileHistory.IsRejected == true)
+        // {
+        //     transaction.Rollback();
+        //     return Fail("Profile History Is Already Rejected");
+        // }
 
         await Db.DeactivateProviderProfileHistoryByProviderIdAsync(
             connection,

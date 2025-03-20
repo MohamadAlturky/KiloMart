@@ -1,7 +1,5 @@
 using Dapper;
 using System.Data;
-using Dapper;
-using System.Data;
 
 namespace KiloMart.DataAccess.Database
 {
@@ -258,6 +256,11 @@ public class WithdrawDetailsDto
     public bool Done { get; set; }
     public bool Accepted { get; set; }
     public bool Rejected { get; set; }
+    public string AccountName { get; set; } = null!;
+    public string AccountNumber { get; set; } = null!;
+    public double Amount { get; set; }
+    public string SwiftCode { get; set; } = null!;
+    public string BankName { get; set; } = null!;
     public string PartyDisplayName { get; set; }
     public bool PartyIsActive { get; set; }
     public decimal? ActiveBalanceReceives { get; set; }
@@ -283,6 +286,11 @@ public class WithdrawDetailsDto
         PartyIsActive = source.PartyIsActive;
         ProviderId = source.ProviderId;
         DeliveryId = source.DeliveryId;
+        AccountName = source.AccountName;
+        AccountNumber = source.AccountNumber;
+        Amount = source.Amount;
+        SwiftCode = source.SwiftCode;
+        BankName = source.BankName;
         // Determine whether this record represents a Provider or Delivery.
         // In this example, if ProviderActiveBalanceReceives has a value,
         // we assume the party is a provider; otherwise, if DeliveryActiveBalanceReceives has a value,

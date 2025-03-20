@@ -503,14 +503,15 @@ public class AdminPanelController : AppController
     [HttpGet("providers/paginated-by-search-term")]
     public async Task<IActionResult> GetPaginatedProvidersByTermAsync(
         [FromQuery] string? term,
+        [FromQuery] bool? isActive,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10)
     {
         using var connection = _dbFactory.CreateDbConnection();
 
         // Fetch paginated providers data
-        var result = await Stats.GetPaginatedProvidersDataAsync(connection, page, pageSize, term);
-        var count = await Stats.GetActiveFilteredProvidersProfilesCountAsync(connection, term);
+        var result = await Stats.GetPaginatedProvidersDataAsync(connection, page, pageSize, isActive, term);
+        var count = await Stats.GetActiveFilteredProvidersProfilesCountAsync(connection, isActive, term);
 
         return Success(new
         {
@@ -926,12 +927,15 @@ public class AdminPanelController : AppController
     }
     [HttpGet("deliveries/paginated-by-term")]
     public async Task<IActionResult> GetPaginatedDeliveriesAsync(
-            [FromQuery] int page = 1, [FromQuery] int pageSize = 10, string? searchTerm = null)
+            [FromQuery] bool? isActive,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? searchTerm = null)
     {
         using var connection = _dbFactory.CreateDbConnection();
 
         // Fetch paginated providers data
-        var result = await Stats.GetPaginatedDeliveriesFilteredAsync(connection, page, pageSize, searchTerm);
+        var result = await Stats.GetPaginatedDeliveriesFilteredAsync(connection, page, pageSize, isActive, searchTerm);
 
         return Success(new
         {

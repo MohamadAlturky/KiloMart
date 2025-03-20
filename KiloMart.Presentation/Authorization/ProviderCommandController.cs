@@ -3,6 +3,7 @@ using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Database;
 using KiloMart.Domain.Documents;
+using KiloMart.Domain.OtpService;
 using KiloMart.Domain.Providers.Profile;
 using KiloMart.Domain.Register.Provider.Models;
 using KiloMart.Domain.Register.Provider.Services;
@@ -19,9 +20,11 @@ using Microsoft.AspNetCore.Mvc;
 public class ProviderCommandController(IConfiguration configuration,
  IDbFactory dbFactory,
   IUserContext userContext,
-  IWebHostEnvironment environment) : AppController(dbFactory, userContext)
+  IWebHostEnvironment environment,
+  IOtpService otpService) : AppController(dbFactory, userContext)
 {
     private readonly IConfiguration _configuration = configuration;
+    private readonly IOtpService _otpService = otpService;
 
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterProviderDto dto)
@@ -36,6 +39,7 @@ public class ProviderCommandController(IConfiguration configuration,
         var result = await new RegisterProviderService().Register(
             _dbFactory,
             _configuration,
+            _otpService,
             dto.Email,
             dto.Password,
             dto.DisplayName,

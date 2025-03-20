@@ -23,7 +23,7 @@ public class ExceptionHandlingMiddleware : IMiddleware
                 Message = "un expected error occured try again or contact the backend team.",
                 Errors = new
                 {
-                    ExceptionMessage = ex.Message,
+                    ExceptionMessage = GetFullExceptionMessage(ex),
                     ExceptionStackTrace = ex.StackTrace,
                 }
             };
@@ -35,5 +35,20 @@ public class ExceptionHandlingMiddleware : IMiddleware
             // Write the response as JSON
             await context.Response.WriteAsync(JsonSerializer.Serialize(response));
         }
+    }
+    private static string GetFullExceptionMessage(Exception? exception)
+    {
+        if (exception == null) return "";
+        
+        var messages = new List<string> { exception.Message };
+        var innerException = exception.InnerException;
+        
+        while (innerException != null)
+        {
+            messages.Add(innerException.Message);
+            innerException = innerException.InnerException;
+        }
+        
+        return string.Join("\n -> ", messages);
     }
 }

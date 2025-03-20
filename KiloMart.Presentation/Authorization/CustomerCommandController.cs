@@ -3,6 +3,7 @@ using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Database;
 using KiloMart.Domain.Customers.Profile;
+using KiloMart.Domain.OtpService;
 using KiloMart.Domain.Register.Customer.Models;
 using KiloMart.Domain.Register.Customer.Services;
 using KiloMart.Domain.Register.Utils;
@@ -18,11 +19,14 @@ using Microsoft.AspNetCore.Mvc;
 public class CustomerCommandController : AppController
 {
     private readonly IConfiguration _configuration;
+    private readonly IOtpService _otpService;
     public CustomerCommandController(IDbFactory dbFactory,
     IConfiguration configuration,
-    IUserContext userContext) : base(dbFactory, userContext)
+    IUserContext userContext,
+    IOtpService otpService) : base(dbFactory, userContext)
     {
         _configuration = configuration;
+        _otpService = otpService;
     }
     #region register
     [HttpPost("register")]
@@ -36,6 +40,7 @@ public class CustomerCommandController : AppController
         }
         var result = await new RegisterCustomerService().Register(_dbFactory,
                             _configuration,
+                            _otpService,
                             dto.Email,
                             dto.Password,
                             dto.DisplayName,
@@ -71,11 +76,11 @@ public class CustomerCommandController : AppController
         {
             return Fail("User Not Found");
         }
-        if(user.PasswordHash != HashHandler.GetHash(request.Password))
+        if (user.PasswordHash != HashHandler.GetHash(request.Password))
         {
             return Fail("Invalid Phone Number Or Password");
         }
-        
+
         var result = await CustomerProfileService.InsertAsync(_dbFactory,
         new CreateCustomerProfileRequest
         {
@@ -129,10 +134,10 @@ public class CustomerCommandController : AppController
         var user = await Db.GetMembershipUserByIdAsync(connection, _userContext.Get().Id);
         var party = await Db.GetPartyByIdAsync(_userContext.Get().Party, connection);
         return Success(
-            new 
+            new
             {
                 profile = result,
-                userInfo = new 
+                userInfo = new
                 {
                     user?.Id,
                     user?.Email,

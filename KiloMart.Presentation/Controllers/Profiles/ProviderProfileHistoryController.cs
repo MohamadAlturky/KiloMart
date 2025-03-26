@@ -452,30 +452,81 @@ public class ProviderProfileHistoryController : AppController
             transaction);
 
 
-        await Db.DeactivateLocationByPartyAsync(
-            connection,
+        // await Db.DeactivateLocationByPartyAsync(
+        //     connection,
+        //     profileHistory.ProviderId,
+        //     transaction);
+
+        var location = await Db.GetLocationByPartyAsync(
             profileHistory.ProviderId,
-            transaction);
-
-        var locationId = await Db.InsertLocationAsync(
-             connection,
-             profileHistory.Longitude,
-             profileHistory.Latitude,
-             profileHistory.LocationName,
-             profileHistory.ProviderId,
-             transaction);
-
-        await Db.InsertLocationDetailsAsync(
             connection,
-            profileHistory.BuildingType,
-            profileHistory.BuildingNumber,
-            profileHistory.FloorNumber,
-            profileHistory.ApartmentNumber,
-            profileHistory.StreetNumber,
-            profileHistory.PhoneNumber,
-            locationId,
             transaction);
 
+        if (location is null)
+        {
+            var locationId = await Db.InsertLocationAsync(
+                connection,
+                profileHistory.Longitude,
+                profileHistory.Latitude,
+                profileHistory.LocationName,
+                profileHistory.ProviderId,
+                transaction);
+
+            await Db.InsertLocationDetailsAsync(
+                connection,
+                profileHistory.BuildingType,
+                profileHistory.BuildingNumber,
+                profileHistory.FloorNumber,
+                profileHistory.ApartmentNumber,
+                profileHistory.StreetNumber,
+                profileHistory.PhoneNumber,
+                locationId,
+                transaction);
+        }
+        else
+        {
+            await Db.UpdateLocationAsync(
+                connection,
+                location.Id,
+                profileHistory.Longitude,
+                profileHistory.Latitude,
+                profileHistory.LocationName,
+                profileHistory.ProviderId,
+                true,
+                transaction);
+
+            var locationDetails = await Db.GetLocationDetailsByLocationIdAsync(
+                location.Id,
+                connection,
+                transaction);
+            if (locationDetails is null)
+            {
+            await Db.InsertLocationDetailsAsync(
+                connection,
+                profileHistory.BuildingType,
+                profileHistory.BuildingNumber,
+                profileHistory.FloorNumber,
+                profileHistory.ApartmentNumber,
+                profileHistory.StreetNumber,
+                profileHistory.PhoneNumber,
+                location.Id,
+                transaction);
+            }
+            else
+            {
+                await Db.UpdateLocationDetailsAsync(
+                    connection,
+                    locationDetails.Id,
+                    profileHistory.BuildingType ?? locationDetails.BuildingType,
+                    profileHistory.BuildingNumber ?? locationDetails.BuildingNumber,
+                    profileHistory.FloorNumber ?? locationDetails.FloorNumber,
+                    profileHistory.ApartmentNumber ?? locationDetails.ApartmentNumber,
+                    profileHistory.StreetNumber ?? locationDetails.StreetNumber,
+                    profileHistory.PhoneNumber ?? locationDetails.PhoneNumber,
+                    location.Id,
+                    transaction);
+            }
+        }
         transaction.Commit();
         return Success(profileHistory);
     }

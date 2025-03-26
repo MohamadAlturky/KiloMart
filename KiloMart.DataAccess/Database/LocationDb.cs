@@ -67,6 +67,19 @@ public static partial class Db
 
         return updatedRowsCount > 0;
     }
+    public static async Task<bool> DeleteLocationByPartyAsync(IDbConnection connection,
+        int party,
+        IDbTransaction? transaction = null)
+    {
+        const string query = @"DELETE FROM [dbo].[Location]
+                                WHERE [Party] = @Party";
+
+        var deletedRowsCount = await connection.ExecuteAsync(query, new
+        {
+            Party = party
+        }, transaction);
+        return deletedRowsCount > 0;
+    }
 
     public static async Task<bool> DeactivateLocationByPartyAsync(IDbConnection connection,
         int party,
@@ -118,7 +131,8 @@ public static partial class Db
             Id = id
         }, transaction);
     }
-    public static async Task<Location?> GetLocationByPartyAsync(int party, IDbConnection connection)
+    public static async Task<Location?> GetLocationByPartyAsync(int party, IDbConnection connection,
+        IDbTransaction? transaction = null)
     {
         const string query = @"SELECT 
                             [Id], 
@@ -133,7 +147,7 @@ public static partial class Db
         return await connection.QueryFirstOrDefaultAsync<Location>(query, new
         {
             Party = party
-        });
+        }, transaction);
     }
 }
 

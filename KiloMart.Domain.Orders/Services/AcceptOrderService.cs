@@ -67,6 +67,10 @@ public static class AcceptOrderService
             {
                 return Result<AcceptOrderResponseModel>.Fail(["Order Not Found"]);
             }
+            if (order.OrderStatus != ((byte)OrderStatus.ORDER_PLACED))
+            {
+                return Result<AcceptOrderResponseModel>.Fail(["Some Provider Already Accepted This Order"]);
+            }
 
             var products = await OrdersDb.GetOrderProductByOrderIdAsync(orderId, readConnection);
 
@@ -127,7 +131,7 @@ public static class AcceptOrderService
                     * (item.DealOffPercentage ?? 100) / 100;
                 }
             }
-            decimal itemsPrice = response.OrderOffers.Sum(o => o.UnitPrice * o.Quantity);
+            decimal itemsPrice = itemsPriceAfterOffPercentage;//response.OrderOffers.Sum(o => o.UnitPrice * o.Quantity);
             decimal systemFee = systemSettings.SystemOrderFee;
             decimal deliveryFee = systemSettings.DeliveryOrderFee;
             decimal totalPrice = systemFee + deliveryFee + itemsPriceAfterOffPercentage;

@@ -2,7 +2,7 @@ namespace KiloMart.Domain.OtpService;
 
 public interface IOtpService
 {
-    Task<OtpSendResponse> SendOtp(string phoneNumber, int numberOfDigits = 6, string method = "whatsapp");
+    Task<OtpSendResponse> SendOtp(string phoneNumber, int numberOfDigits = 5, string method = "whatsapp");
     Task<OtpVerifyResponse> VerifyOtp(string phoneNumber, string otpCode);
 }
 

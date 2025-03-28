@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using KiloMart.Core.Settings;
 using Microsoft.AspNetCore.SignalR;
 using KiloMart.Presentation.RealTime;
 using KiloMart.Core.Contracts;

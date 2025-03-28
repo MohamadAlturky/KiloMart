@@ -208,6 +208,7 @@ using KiloMart.Domain.DateServices;
 using KiloMart.Domain.Login.Handlers;
 using KiloMart.Domain.Login.Models;
 using KiloMart.Domain.Register.Utils;
+using Microsoft.Extensions.Configuration;
 
 namespace KiloMart.Domain.Login.Services;
 

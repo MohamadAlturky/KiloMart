@@ -3,9 +3,13 @@ using KiloMart.Core.Contracts;
 using KiloMart.Core.Models;
 using KiloMart.DataAccess.Database;
 using KiloMart.Domain.DateServices;
+using KiloMart.Domain.Notifications;
 using KiloMart.Domain.Orders.Common;
 using KiloMart.Domain.Orders.DataAccess;
+using KiloMart.Presentation.RealTime;
 using KiloMart.Requests.Queries;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.Identity.Client;
 
 namespace KiloMart.Domain.Orders.Services;
 
@@ -14,7 +18,8 @@ public class RequestOrderService
     public static async Task<Result<CreateOrderResponseModel>> Insert(
         CreateOrderRequestModel model,
         UserPayLoad userPayLoad,
-        IDbFactory dbFactory)
+        IDbFactory dbFactory,
+        IHubContext<NotificationHub> hubContext)
     {
         var (success, errors) = model.Validate();
         if (!success)
@@ -34,12 +39,15 @@ public class RequestOrderService
         {
             return Result<CreateOrderResponseModel>.Fail(["Location is not for this customer"]);
         }
+        var settings = await Db.GetSystemSettingsByIdAsync(0, readConnection);
+        if (settings is null)
+        {
+            return Result<CreateOrderResponseModel>.Fail(["Settings Not Found"]);
+        }
 
         using var connection = dbFactory.CreateDbConnection();
         connection.Open();
         using var transaction = connection.BeginTransaction();
-
-
 
         try
         {
@@ -158,6 +166,20 @@ public class RequestOrderService
             //     location.Longitude);
 
             // response.ProductOfferCounts = productOfferCounts;
+
+            var providerCircles = await ProviderCircleDb.GetProviderCirclesAsync(connection,
+                settings,
+                location.Latitude,
+                location.Longitude,
+                transaction);
+            foreach (var providerCircle in providerCircles)
+            {
+                await NotificationsService.SendNotification(connection,
+                    "New Order",
+                    "Id # " + response.Order.Id,
+                    providerCircle.Id,
+                    hubContext);
+            }
             transaction.Commit();
             return Result<CreateOrderResponseModel>.Ok(response);
         }

@@ -2,6 +2,7 @@ using System.Data;
 using Dapper;
 using KiloMart.Core.Contracts;
 using KiloMart.Core.Models;
+using KiloMart.Domain.DateServices;
 using KiloMart.Domain.Orders.Common;
 
 namespace KiloMart.Domain.Orders.Services;
@@ -132,7 +133,7 @@ public static class GetReadyToDeliverService
                     GETDATE() AS NOW,
 
                     -- Time differences
-                    DATEDIFF(MINUTE, o.[Date], GETDATE()) AS DifferenceInMinutes
+                    DATEDIFF(MINUTE, o.[Date], @ParamDate) AS DifferenceInMinutes
                 FROM 
                     dbo.[Order] o
                 LEFT JOIN 
@@ -164,7 +165,8 @@ public static class GetReadyToDeliverService
             DistanceToAdd = distanceToAdd,
             MaxDistanceToAdd = maxDistanceToAdd,
             Radius = raduis,
-            status = OrderStatus.PREPARING
+            status = OrderStatus.PREPARING,
+            ParamDate = SaudiDateTimeHelper.GetCurrentTime()
         };
 
         IEnumerable<ReadyToDeliverOrder> orders = await connection.QueryAsync<ReadyToDeliverOrder>(sql, parameters);

@@ -4,9 +4,12 @@ using KiloMart.Core.Models;
 using KiloMart.DataAccess.Database;
 using KiloMart.Domain.DateServices;
 using KiloMart.Domain.Delivery.Activity;
+using KiloMart.Domain.Notifications;
 using KiloMart.Domain.Orders.Common;
 using KiloMart.Domain.Orders.DataAccess;
 using KiloMart.Domain.Orders.Repositories;
+using KiloMart.Presentation.RealTime;
+using Microsoft.AspNetCore.SignalR;
 
 namespace KiloMart.Domain.Orders.Services;
 
@@ -15,7 +18,8 @@ public class CompleteOrderService
     public static async Task<Result<CompleteOrderResponseModel>> CompleteOrder(
         CompleteOrderRequestModel model,
         UserPayLoad userPayLoad,
-        IDbFactory dbFactory)
+        IDbFactory dbFactory,
+        IHubContext<NotificationHub> hubContext)
     {
         // Validate the incoming request model
         var (success, errors) = model.Validate();
@@ -128,8 +132,23 @@ public class CompleteOrderService
                 activity.OperatedBy,
                 transaction);
 
+            if (order.Customer.HasValue)
+            {
+                await NotificationsService.SendNotification(connection,
+                    "Order Completed",
+                    "Order # " + order.Id + " has been completed",
+                    order.Customer.Value,
+                    hubContext);
+            }
+            if (order.Provider.HasValue)
+            {
+                await NotificationsService.SendNotification(connection,
+                    "Order Completed",
+                    "Order # " + order.Id + " has been completed",
+                    order.Provider.Value,
+                    hubContext);
+            }
             transaction.Commit();
-
             return Result<CompleteOrderResponseModel>.Ok(new CompleteOrderResponseModel
             {
                 OrderId = order.Id,

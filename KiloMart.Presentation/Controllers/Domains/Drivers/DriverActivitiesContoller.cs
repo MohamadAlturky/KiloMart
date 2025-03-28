@@ -10,8 +10,10 @@ using KiloMart.Domain.Orders.Repositories;
 using KiloMart.Domain.Orders.Services;
 using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Authorization;
+using KiloMart.Presentation.RealTime;
 using KiloMart.Presentation.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace KiloMart.Presentation.Controllers.Domains.Drivers;
 
@@ -19,10 +21,13 @@ namespace KiloMart.Presentation.Controllers.Domains.Drivers;
 [Route("api/drivers")]
 public partial class DriverActivitiesContoller(IDbFactory dbFactory,
  IUserContext userContext,
-  IWebHostEnvironment environment)
+  IWebHostEnvironment environment,
+  IHubContext<NotificationHub> hubContext)
  : AppController(dbFactory, userContext)
 {
     private readonly IWebHostEnvironment _environment = environment;
+    private readonly IHubContext<NotificationHub> _hubContext = hubContext;
+
 
     #region Orders reading
 
@@ -215,7 +220,7 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory,
     [Guard([Roles.Delivery])]
     public async Task<IActionResult> AcceptOrder([FromBody] long orderId)
     {
-        var result = await AcceptOrderService.DeliveryAccept(orderId, _userContext.Get(), _dbFactory);
+        var result = await AcceptOrderService.DeliveryAccept(orderId, _userContext.Get(), _dbFactory, _hubContext);
         return result.Success ? Success(result.Data) : Fail(result.Errors);
     }
     [HttpPost("orders/complete")]
@@ -225,7 +230,7 @@ public partial class DriverActivitiesContoller(IDbFactory dbFactory,
         var result = await CompleteOrderService.CompleteOrder(new CompleteOrderRequestModel
         {
             OrderId = orderId
-        }, _userContext.Get(), _dbFactory);
+        }, _userContext.Get(), _dbFactory,_hubContext);
         return result.Success ? Success(result.Data) : Fail(result.Errors);
     }
     [HttpPost("orders/cancel")]

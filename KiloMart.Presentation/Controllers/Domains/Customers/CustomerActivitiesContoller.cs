@@ -7,17 +7,19 @@ using KiloMart.Domain.Orders.Queries;
 using KiloMart.Domain.Orders.Services;
 using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Authorization;
+using KiloMart.Presentation.RealTime;
 using KiloMart.Requests.Queries;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace KiloMart.Presentation.Controllers.Domains.Customers;
 
 [ApiController]
 [Route("api/customers")]
 public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
- IUserContext userContext) : AppController(dbFactory, userContext)
+ IUserContext userContext,
+ IHubContext<NotificationHub> _hubContext) : AppController(dbFactory, userContext)
 {
-
     #region Get best deals
     // [HttpGet("get-best-deals-by-off-percentage")]
     // public async Task<IActionResult> GetBestDealsByOffPercentage([FromQuery] byte language)
@@ -655,7 +657,7 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
 
         var userPayload = _userContext.Get();
 
-        var result = await RequestOrderService.Insert(model, userPayload, _dbFactory);
+        var result = await RequestOrderService.Insert(model, userPayload, _dbFactory, _hubContext);
 
         if (result.Success)
         {

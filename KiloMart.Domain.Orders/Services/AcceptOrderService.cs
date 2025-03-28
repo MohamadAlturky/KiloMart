@@ -6,9 +6,12 @@ using KiloMart.Core.Models;
 using KiloMart.DataAccess.Database;
 using KiloMart.Domain.DateServices;
 using KiloMart.Domain.Delivery.Activity;
+using KiloMart.Domain.Notifications;
 using KiloMart.Domain.Orders.Common;
 using KiloMart.Domain.Orders.DataAccess;
 using KiloMart.Domain.Orders.Repositories;
+using KiloMart.Presentation.RealTime;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
@@ -22,7 +25,8 @@ public static class AcceptOrderService
         UserPayLoad userPayLoad,
         IPaymentService paymentService,
         IConfiguration configuration,
-        IDbFactory dbFactory)
+        IDbFactory dbFactory,
+        IHubContext<NotificationHub> hubContext)
     {
         int providerId = userPayLoad.Party;
         var response = new AcceptOrderResponseModel()
@@ -62,7 +66,6 @@ public static class AcceptOrderService
         {
             Order? order = await OrdersDb.GetOrderByIdAsync(orderId, readConnection);
             DriverFreeFee? driverFreeFee = await Db.GetActiveDriverFreeFeesAsync(readConnection);
-
             if (order is null)
             {
                 return Result<AcceptOrderResponseModel>.Fail(["Order Not Found"]);
@@ -70,6 +73,11 @@ public static class AcceptOrderService
             if (order.OrderStatus != ((byte)OrderStatus.ORDER_PLACED))
             {
                 return Result<AcceptOrderResponseModel>.Fail(["Some Provider Already Accepted This Order"]);
+            }
+            var orderCustomer = await OrdersDb.GetOrderCustomerInfoByOrderIdAsync(orderId, readConnection);
+            if (orderCustomer is null)
+            {
+                return Result<AcceptOrderResponseModel>.Fail(["Order Customer Not Found"]);
             }
 
             var products = await OrdersDb.GetOrderProductByOrderIdAsync(orderId, readConnection);
@@ -187,8 +195,22 @@ public static class AcceptOrderService
                 providerId,
                 transaction);
 
-            transaction.Commit();
+            var deliveryProviderCircles = await ProviderCircleDb.GetDeliveryProviderCirclesAsync(connection, transaction);
+            foreach (var deliveryProviderCircle in deliveryProviderCircles)
+            {
+                await NotificationsService.SendNotification(connection,
+                    "New Order",
+                    "Id # " + orderId,
+                    deliveryProviderCircle.Id,
+                    hubContext);
+            }
+            await NotificationsService.SendNotification(connection,
+                "Provider Accepted Order",
+                "Provider # " + providerId + " accepted order # " + orderId,
+                orderCustomer.Customer,
+                hubContext);
 
+            transaction.Commit();
             try
             {
                 if (order.PaymentType == ((byte)PaymentType.Elcetronic))
@@ -246,6 +268,11 @@ public static class AcceptOrderService
                             customerOrderInformation.Customer,
                             JsonConvert.SerializeObject(obj),
                             transaction);
+                        await NotificationsService.SendNotification(newConnection,
+                            "Please Pay the Order",
+                            JsonConvert.SerializeObject(obj),
+                            customerOrderInformation.Customer,
+                            hubContext);
                     }
                 }
             }
@@ -265,7 +292,8 @@ public static class AcceptOrderService
     public static async Task<Result<AcceptOrderResponseModel>> DeliveryAccept(
        long orderId,
        UserPayLoad userPayLoad,
-       IDbFactory dbFactory)
+       IDbFactory dbFactory,
+       IHubContext<NotificationHub> hubContext)
     {
         int deliveryId = userPayLoad.Party;
         var response = new AcceptOrderResponseModel()
@@ -344,6 +372,23 @@ public static class AcceptOrderService
                 order.IsPaid,
                 order.SpecialRequest,
                 transaction);
+            if (order.Customer.HasValue)
+            {
+
+            await NotificationsService.SendNotification(connection,
+                "Delivery Accepted Order",
+                "Delivery # " + deliveryId + " accepted order # " + orderId,
+                order.Customer.Value,
+                hubContext);
+            }
+            if (order.Provider.HasValue)
+            {
+                await NotificationsService.SendNotification(connection,
+                    "Delivery Accepted Order",
+                    "Delivery # " + deliveryId + " accepted order # " + orderId,
+                    order.Provider.Value,
+                    hubContext);
+            }
 
             transaction.Commit();
             return Result<AcceptOrderResponseModel>.Ok(response);

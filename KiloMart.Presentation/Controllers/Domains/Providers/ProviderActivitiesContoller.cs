@@ -13,9 +13,11 @@ using KiloMart.Domain.Register.Utils;
 using KiloMart.Presentation.Authorization;
 using KiloMart.Presentation.Controllers.Domains.Drivers;
 using KiloMart.Presentation.Models.Commands.ProductRequests;
+using KiloMart.Presentation.RealTime;
 using KiloMart.Presentation.Services;
 using KiloMart.Requests.Queries;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace KiloMart.Presentation.Controllers.Domains.Providers;
 
@@ -27,14 +29,17 @@ public class ProviderActivitiesContoller : AppController
      IUserContext userContext,
      IWebHostEnvironment environment,
      IConfiguration configuration,
-     IPaymentService paymentService)
+     IPaymentService paymentService,
+     IHubContext<NotificationHub> hubContext)
      : base(dbFactory, userContext)
     {
         _environment = environment;
         _configuration = configuration;
         _paymentService = paymentService;
+        _hubContext = hubContext;
     }
     private readonly IWebHostEnvironment _environment;
+    private readonly IHubContext<NotificationHub> _hubContext;
     private readonly IConfiguration _configuration;
     private readonly IPaymentService _paymentService;
 
@@ -216,7 +221,7 @@ public class ProviderActivitiesContoller : AppController
     [Guard([Roles.Provider])]
     public async Task<IActionResult> AcceptOrder([FromBody] AcceptOrderDto acceptOrderDto)
     {
-        var result = await AcceptOrderService.ProviderAccept(acceptOrderDto.OrderId, _userContext.Get(), _paymentService, _configuration, _dbFactory);
+        var result = await AcceptOrderService.ProviderAccept(acceptOrderDto.OrderId, _userContext.Get(), _paymentService, _configuration, _dbFactory, _hubContext);
         return result.Success ? Success(result.Data) : Fail(result.Errors);
     }
     [HttpPost("orders/cancel")]

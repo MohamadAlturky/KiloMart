@@ -122,6 +122,10 @@ GuardAttribute.ISSUER = jwtIssuer;
 GuardAttribute.AUDIENCE = jwtAudience;
 GuardAttribute.CONNECTION_STRING = connectionString;
 
+Settings.SECRET_KEY = jwtKey;
+Settings.ISSUER = jwtIssuer;
+Settings.AUDIENCE = jwtAudience;
+
 builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 builder.Services.AddHostedService<OrderCleanupService>();
 

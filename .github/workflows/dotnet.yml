@@ -1,44 +1,44 @@
-name: Build Project
+# name: Build Project
 
-on:
-  push:
-    branches:
-      - dev
+# on:
+#   push:
+#     branches:
+#       - dev
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    container:
-      image: mcr.microsoft.com/dotnet/sdk:8.0
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+#     container:
+#       image: mcr.microsoft.com/dotnet/sdk:8.0
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v2
 
-      - name: Restore dependencies
-        run: |
-          ls
-          echo "Restoring dependencies..."
-          dotnet restore
+#       - name: Restore dependencies
+#         run: |
+#           ls
+#           echo "Restoring dependencies..."
+#           dotnet restore
 
-      - name: Build the project
-        run: |
-          echo "Building the project..."
-          dotnet build -c Release
+#       - name: Build the project
+#         run: |
+#           echo "Building the project..."
+#           dotnet build -c Release
 
-      - name: Publish the solution
-        run: |
-          echo "Publishing the solution..." 
-          dotnet publish KiloMart.Presentation/KiloMart.Presentation.csproj -c Release -o publish
+#       - name: Publish the solution
+#         run: |
+#           echo "Publishing the solution..." 
+#           dotnet publish KiloMart.Presentation/KiloMart.Presentation.csproj -c Release -o publish
 
-      - name: Check build directory contents
-        run: |
-          echo "Checking build directory contents..."
-          ls -R publish/  
+#       - name: Check build directory contents
+#         run: |
+#           echo "Checking build directory contents..."
+#           ls -R publish/  
 
-      - name: Upload files
-        run: |
-          echo "Uploading files..."
-          find publish/ -type f -exec curl -u kilomart-001:ramadan09514@1 -T {} ftp://kilomart-001-site1.ptempurl.com/kilomartapi/ \;
+#       - name: Upload files
+#         run: |
+#           echo "Uploading files..."
+#           find publish/ -type f -exec curl -u kilomart-001:ramadan09514@1 -T {} ftp://kilomart-001-site1.ptempurl.com/kilomartapi/ \;
 
 

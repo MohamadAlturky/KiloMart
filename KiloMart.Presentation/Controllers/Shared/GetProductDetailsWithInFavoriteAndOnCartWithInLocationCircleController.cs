@@ -33,7 +33,7 @@ public class GetProductDetailsWithInFavoriteAndOnCartWithInLocationCircleControl
             return Fail("system settings not found");
         }
 
-        decimal distanceInKm = settings.RaduisForGetProducts;
+        decimal distanceInKm = settings.RaduisForGetProducts + settings.MaxDistanceToAdd;
 
         var result = await Db.GetBestDealsWithInFavoriteAndOnCartWithInLocationCircle(
             language,
@@ -67,7 +67,7 @@ public class GetProductDetailsWithInFavoriteAndOnCartWithInLocationCircleControl
             return Fail("system settings not found");
         }
 
-        decimal distanceInKm = settings.RaduisForGetProducts;
+        decimal distanceInKm = settings.RaduisForGetProducts + settings.MaxDistanceToAdd;
 
         var result = await Db.GetTopSellingProductDetailsWithInLocationCircleAsync(
             language,
@@ -103,7 +103,7 @@ public class GetProductDetailsWithInFavoriteAndOnCartWithInLocationCircleControl
             return Fail("system settings not found");
         }
 
-        decimal distanceInKm = settings.RaduisForGetProducts;
+        decimal distanceInKm = settings.RaduisForGetProducts + settings.MaxDistanceToAdd;
 
         var result = await Db.GetProductDetailsWithPricingWithInFavoriteAndOnCartWithInLocationCircleAsync(
             language,
@@ -148,7 +148,7 @@ public class GetProductDetailsWithInFavoriteAndOnCartWithInLocationCircleControl
             return Fail("system settings not found");
         }
 
-        decimal distanceInKm = settings.RaduisForGetProducts;
+        decimal distanceInKm = settings.RaduisForGetProducts + settings.MaxDistanceToAdd;
 
         var result = await Db.GetProductDetailsWithPricingByCategoryWithInFavoriteAndOnCartWithInLocationCircleAsync(
             language,
@@ -192,7 +192,7 @@ public class GetProductDetailsWithInFavoriteAndOnCartWithInLocationCircleControl
             return Fail("system settings not found");
         }
 
-        decimal distanceInKm = settings.RaduisForGetProducts;
+        decimal distanceInKm = settings.RaduisForGetProducts + settings.MaxDistanceToAdd;
 
 
         var result = await Db.SearchProductDetailsForCustomerWithInLocationCircleAsync(

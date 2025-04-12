@@ -43,7 +43,7 @@ public class GetProductDetailsWithInFavoriteAndOnCartWithInLocationCircleByLocat
             }
         }
 
-        decimal distanceInKm = settings.RaduisForGetProducts;
+        decimal distanceInKm = settings.RaduisForGetProducts + settings.MaxDistanceToAdd;
 
         var result = await Db.GetBestDealsWithInFavoriteAndOnCartWithInLocationCircle(
             language,
@@ -88,7 +88,7 @@ public class GetProductDetailsWithInFavoriteAndOnCartWithInLocationCircleByLocat
             }
         }
 
-        decimal distanceInKm = settings.RaduisForGetProducts;
+        decimal distanceInKm = settings.RaduisForGetProducts + settings.DistanceToAdd;
 
         var result = await Db.GetTopSellingProductDetailsWithInLocationCircleAsync(
             language,
@@ -134,7 +134,7 @@ public class GetProductDetailsWithInFavoriteAndOnCartWithInLocationCircleByLocat
             }
         }
 
-        decimal distanceInKm = settings.RaduisForGetProducts;
+        decimal distanceInKm = settings.RaduisForGetProducts + settings.DistanceToAdd;
 
         var result = await Db.GetProductDetailsWithPricingWithInFavoriteAndOnCartWithInLocationCircleAsync(
             language,
@@ -189,7 +189,7 @@ public class GetProductDetailsWithInFavoriteAndOnCartWithInLocationCircleByLocat
                 latitude = location.Latitude;
             }
         }
-        decimal distanceInKm = settings.RaduisForGetProducts;
+        decimal distanceInKm = settings.RaduisForGetProducts + settings.DistanceToAdd;
 
         var result = await Db.GetProductDetailsWithPricingByCategoryWithInFavoriteAndOnCartWithInLocationCircleAsync(
             language,
@@ -231,7 +231,7 @@ public class GetProductDetailsWithInFavoriteAndOnCartWithInLocationCircleByLocat
         {
             return Fail("system settings not found");
         }
-        
+
         decimal? longitude = null;
         decimal? latitude = null;
         if (locationId.HasValue)
@@ -243,7 +243,7 @@ public class GetProductDetailsWithInFavoriteAndOnCartWithInLocationCircleByLocat
                 latitude = location.Latitude;
             }
         }
-        decimal distanceInKm = settings.RaduisForGetProducts;
+        decimal distanceInKm = settings.RaduisForGetProducts + settings.DistanceToAdd;
 
 
         var result = await Db.SearchProductDetailsForCustomerWithInLocationCircleAsync(

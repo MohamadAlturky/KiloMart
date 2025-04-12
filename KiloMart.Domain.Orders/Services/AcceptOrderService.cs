@@ -202,13 +202,15 @@ public static class AcceptOrderService
                     "New Order",
                     "Id # " + orderId,
                     deliveryProviderCircle.Id,
-                    hubContext);
+                    hubContext,
+                    transaction);
             }
             await NotificationsService.SendNotification(connection,
                 "Provider Accepted Order",
                 "Provider # " + providerId + " accepted order # " + orderId,
                 orderCustomer.Customer,
-                hubContext);
+                hubContext,
+                transaction);
 
             transaction.Commit();
             try
@@ -272,7 +274,8 @@ public static class AcceptOrderService
                             "Please Pay the Order",
                             JsonConvert.SerializeObject(obj),
                             customerOrderInformation.Customer,
-                            hubContext);
+                            hubContext,
+                            transaction);
                     }
                 }
             }
@@ -379,7 +382,8 @@ public static class AcceptOrderService
                 "Delivery Accepted Order",
                 "Delivery # " + deliveryId + " accepted order # " + orderId,
                 order.Customer.Value,
-                hubContext);
+                hubContext,
+                transaction);
             }
             if (order.Provider.HasValue)
             {
@@ -387,7 +391,8 @@ public static class AcceptOrderService
                     "Delivery Accepted Order",
                     "Delivery # " + deliveryId + " accepted order # " + orderId,
                     order.Provider.Value,
-                    hubContext);
+                    hubContext,
+                    transaction);
             }
 
             transaction.Commit();

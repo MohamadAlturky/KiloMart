@@ -130,7 +130,7 @@ public static class GetReadyToDeliverService
 						dbo.GetDistanceBetweenPoints(pl.[Latitude], pl.[Longitude], @Latitude, @Longitude) ProviderDistanceInKilometers,
 
                     oa.[Date] AS DateWhenProviderAcceptIt,
-                    GETDATE() AS NOW,
+                    @ParamDate AS NOW,
 
                     -- Time differences
                     DATEDIFF(MINUTE, o.[Date], @ParamDate) AS DifferenceInMinutes

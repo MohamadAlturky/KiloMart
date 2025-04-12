@@ -9,7 +9,10 @@ using KiloMart.Domain.Orders.Helpers;
 using KiloMart.Domain.Orders.Repositories;
 using KiloMart.Domain.Orders.Services;
 using KiloMart.Domain.ProductRequests.Add;
+using KiloMart.Domain.Register.Delivery.Services;
 using KiloMart.Domain.Register.Provider.Services;
+using KiloMart.Domain.Register.Utils;
+using KiloMart.Presentation.Authorization;
 using KiloMart.Presentation.Services;
 using KiloMart.Presentation.Tracking;
 using KiloMart.Requests.Queries;
@@ -33,6 +36,7 @@ public class AdminPanelController : AppController
     }
     #region some stats
     [HttpGet("order-count")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetOrderCount()
     {
 
@@ -60,6 +64,7 @@ public class AdminPanelController : AppController
 
 
     [HttpGet("users-count")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetUsersCount()
     {
 
@@ -87,6 +92,7 @@ public class AdminPanelController : AppController
 
     }
     [HttpGet("offers-count")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetOffersCount()
     {
 
@@ -100,6 +106,7 @@ public class AdminPanelController : AppController
         });
     }
     [HttpGet("order-users-offers-count")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetStatsSummary()
     {
 
@@ -148,6 +155,7 @@ public class AdminPanelController : AppController
 
 
     [HttpGet("payment-yearly-stats-by-year")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetOrderSummaryAsync(
         [FromQuery] int year
     )
@@ -180,6 +188,7 @@ public class AdminPanelController : AppController
     }
 
     [HttpGet("orders-count-summary")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetOrdersCountSummaryAsync()
     {
         using var connection = _dbFactory.CreateDbConnection();
@@ -204,6 +213,7 @@ public class AdminPanelController : AppController
         return Success(orderSummary);
     }
     [HttpGet("payment-yearly-stats-by-month")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetOrderSummaryMonthlyAsync(
         [FromQuery] int year,
         [FromQuery] int month
@@ -293,6 +303,7 @@ public class AdminPanelController : AppController
     }
 
     [HttpGet("orders-count-yearly-stats-summary")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetOrderCountSummaryAsync(
         [FromQuery] int year
     )
@@ -369,6 +380,7 @@ public class AdminPanelController : AppController
     }
 
     [HttpGet("orders-count-monthly-stats-summary")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetOrderMonthlyCountSummaryAsync(
             [FromQuery] int year,
             [FromQuery] int month
@@ -434,6 +446,7 @@ public class AdminPanelController : AppController
 
     #region provider
     [HttpGet("providers-summary")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetProvidersSummaryAsync()
     {
         using var connection = _dbFactory.CreateDbConnection();
@@ -453,6 +466,7 @@ public class AdminPanelController : AppController
         return Success(providersSummary); // Return a successful response with the summary
     }
     [HttpGet("providers/paginated")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetPaginatedProvidersAsync(
         [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
@@ -501,6 +515,7 @@ public class AdminPanelController : AppController
         }); // Return a successful response with the paginated data
     }
     [HttpGet("providers/paginated-by-search-term")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetPaginatedProvidersByTermAsync(
         [FromQuery] string? term,
         [FromQuery] bool? isActive,
@@ -552,6 +567,7 @@ public class AdminPanelController : AppController
     }
 
     [HttpPost("create-provider-directly")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> Insert(AdminInsertProviderModel request)
     {
         using var connection = _dbFactory.CreateDbConnection();
@@ -704,6 +720,7 @@ public class AdminPanelController : AppController
 
 
     [HttpGet("provider-by-id")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetProviderById(
         [FromQuery] int providerId
     )
@@ -711,7 +728,7 @@ public class AdminPanelController : AppController
         using var connection = _dbFactory.CreateDbConnection();
         var user = await Db.GetMembershipUserByPartyAsync(connection, providerId);
         var party = await Db.GetPartyByIdAsync(providerId, connection);
-        var profile = await Db.GetActiveProviderProfileHistoryAsync(connection, providerId);
+        var profile = await Db.GetActiveProviderProfileHistoryAsync (connection, providerId);
         var statistics = await Stats.GetProviderStatisticsAsync(connection, providerId);
 
 
@@ -746,6 +763,7 @@ public class AdminPanelController : AppController
         });
     }
     [HttpGet("provider-orders-by-id")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetProviderOrdersById(
        [FromQuery] int providerId,
        [FromQuery] byte language
@@ -820,6 +838,7 @@ public class AdminPanelController : AppController
     }
 
     [HttpGet("products-for-provider")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetMineByCategory(
            [FromQuery] byte language,
            [FromQuery] int providerId,
@@ -851,6 +870,7 @@ public class AdminPanelController : AppController
 
     #region delivery
     [HttpGet("delivery-statistics")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetDeliveryStatistics()
     {
         using var connection = _dbFactory.CreateDbConnection();
@@ -875,6 +895,7 @@ public class AdminPanelController : AppController
 
 
     [HttpGet("deliveries/paginated")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetPaginatedDeliveriesAsync(
             [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
@@ -926,6 +947,7 @@ public class AdminPanelController : AppController
         }); // Return a successful response with the paginated data
     }
     [HttpGet("deliveries/paginated-by-term")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetPaginatedDeliveriesAsync(
             [FromQuery] bool? isActive,
             [FromQuery] int page = 1,
@@ -982,6 +1004,7 @@ public class AdminPanelController : AppController
     }
 
     [HttpPost("create-delivery-directly")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> InsertDelivery(AdminInsertDeliveryModel request)
     {
         using var connection = _dbFactory.CreateDbConnection();
@@ -989,7 +1012,7 @@ public class AdminPanelController : AppController
         using var transaction = connection.BeginTransaction();
 
         #region 
-        var result = await new RegisterProviderService().RegisterDirectly(
+        var result = await new RegisterDeliveryService().RegisterDirectly(
             connection,
             transaction,
             request.Email,
@@ -1153,6 +1176,7 @@ public class AdminPanelController : AppController
         }
     }
     [HttpGet("delivery-by-id")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetDeliveryById(
         [FromQuery] int deliveryId
     )
@@ -1160,7 +1184,7 @@ public class AdminPanelController : AppController
         using var connection = _dbFactory.CreateDbConnection();
         var user = await Db.GetMembershipUserByPartyAsync(connection, deliveryId);
         var party = await Db.GetPartyByIdAsync(deliveryId, connection);
-        var profile = await Db.GetDeliveryActiveProfileHistoryAsync(connection, deliveryId);
+        var profile = await Db.GetDeliveryActiveProfileHistoryAsync (connection, deliveryId);
         var statistics = await Stats.GetDeliveryStatisticsAsync(connection, deliveryId);
 
 
@@ -1205,6 +1229,7 @@ public class AdminPanelController : AppController
         });
     }
     [HttpGet("delivery-orders-by-id")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetDeliveryOrdersById(
        [FromQuery] int deliveryId,
        [FromQuery] byte language
@@ -1272,6 +1297,7 @@ public class AdminPanelController : AppController
     #region customer
 
     [HttpGet("customers-summary")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetCustomersSummaryAsync()
     {
         using var connection = _dbFactory.CreateDbConnection();
@@ -1293,6 +1319,7 @@ public class AdminPanelController : AppController
 
 
     [HttpGet("customer-by-id")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetCustomerById(
        [FromQuery] int customerId
    )
@@ -1325,6 +1352,7 @@ public class AdminPanelController : AppController
         });
     }
     [HttpGet("customers-orders-by-id")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetCustomersrOrdersById(
        [FromQuery] int customerId,
        [FromQuery] byte language
@@ -1388,6 +1416,7 @@ public class AdminPanelController : AppController
     }
 
     [HttpGet("customers/paginated")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetPaginatedCustomersFilteredAsync(
        [FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? term = null)
     {
@@ -1419,6 +1448,7 @@ public class AdminPanelController : AppController
     #endregion
 
     [HttpGet("product/orders-by-id")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetProductOrdersById(
       [FromQuery] int productId,
       [FromQuery] byte language)
@@ -1502,6 +1532,7 @@ public class AdminPanelController : AppController
          ).ToList());
     }
     [HttpGet("product/offers-by-id")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetProductOffers(
      [FromQuery] int productId)
     {
@@ -1512,6 +1543,7 @@ public class AdminPanelController : AppController
     }
 
     [HttpGet("product-full-details")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetProductDetails(
        [FromQuery] byte languageId,
        [FromQuery] int? categoryId,
@@ -1554,6 +1586,7 @@ public class AdminPanelController : AppController
 
 
     [HttpGet("offers-details-by-id")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetProductDetailsWithOffers([FromQuery] byte languageId,
     [FromQuery] long offerId)
     {
@@ -1567,6 +1600,7 @@ public class AdminPanelController : AppController
 
 
     [HttpGet("product-offer/orders-by-id")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> GetProductOffersOrdersById(
      [FromQuery] long offerId,
      [FromQuery] byte language)
@@ -1651,6 +1685,7 @@ public class AdminPanelController : AppController
     }
 
     [HttpGet("product-requests")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> ProductsRequests(
         [FromQuery] int pageNumber,
         [FromQuery] int pageSize,
@@ -1666,6 +1701,7 @@ public class AdminPanelController : AppController
     }
 
     [HttpPut("product-requests/reject")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> RejectProductsRequest(
             [FromQuery] int requestId)
     {
@@ -1694,6 +1730,7 @@ public class AdminPanelController : AppController
     }
 
     [HttpDelete("product-requests/delete")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> DeleteProductsRequest(
            [FromQuery] int requestId)
     {
@@ -1712,6 +1749,7 @@ public class AdminPanelController : AppController
 
 
     [HttpGet("provider-get-all-orders")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> ProviderOrders(
         [FromQuery] int? providerId,
         [FromQuery] byte language)
@@ -1797,6 +1835,7 @@ public class AdminPanelController : AppController
 
 
     [HttpGet("provider-get-all-active-orders")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> ProviderActiveOrders(
         [FromQuery] int? providerId,
         [FromQuery] byte language)
@@ -1883,6 +1922,7 @@ public class AdminPanelController : AppController
 
 
     [HttpGet("product-details-by-id")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> ProductDetails(
           [FromQuery] int productId,
           [FromQuery] byte language)
@@ -1899,6 +1939,7 @@ public class AdminPanelController : AppController
         });
     }
     [HttpGet("get-all-productOffers-paginated")]
+    [Guard([Roles.Admin])]
     public async Task<IActionResult> ProductOffersPaginated(
         [FromQuery] int pageNumber,
         [FromQuery] int pageSize,

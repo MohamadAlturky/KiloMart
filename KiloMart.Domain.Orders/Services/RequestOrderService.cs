@@ -178,7 +178,8 @@ public class RequestOrderService
                     "New Order",
                     "Id # " + response.Order.Id,
                     providerCircle.Id,
-                    hubContext);
+                    hubContext,
+                    transaction);
             }
             transaction.Commit();
             return Result<CreateOrderResponseModel>.Ok(response);

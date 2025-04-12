@@ -138,7 +138,8 @@ public class CompleteOrderService
                     "Order Completed",
                     "Order # " + order.Id + " has been completed",
                     order.Customer.Value,
-                    hubContext);
+                    hubContext,
+                    transaction);
             }
             if (order.Provider.HasValue)
             {
@@ -146,7 +147,8 @@ public class CompleteOrderService
                     "Order Completed",
                     "Order # " + order.Id + " has been completed",
                     order.Provider.Value,
-                    hubContext);
+                    hubContext,
+                    transaction);
             }
             transaction.Commit();
             return Result<CompleteOrderResponseModel>.Ok(new CompleteOrderResponseModel

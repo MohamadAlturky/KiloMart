@@ -14,7 +14,8 @@ public static class NotificationsService
         string title,
         string message,
         int userId,
-        IHubContext<NotificationHub> hubContext)
+        IHubContext<NotificationHub> hubContext,
+        IDbTransaction transaction)
     {
         await Db.InsertNotificationAsync(
             connection,
@@ -22,7 +23,8 @@ public static class NotificationsService
             message,
             SaudiDateTimeHelper.GetCurrentTime(),
             userId,
-            "");
+            "",
+            transaction);
         foreach (var connectionId in NotificationHub._connections.GetConnections(userId))
         {
             await hubContext.Clients.Client(connectionId).SendAsync("ReceiveNotification",

@@ -12,13 +12,14 @@ public class GetProductDetailsController(IDbFactory dbFactory, IUserContext user
 {
     [HttpGet("list")]
     public async Task<IActionResult> GetProductDetailsList(
-        [FromQuery] byte language
+        [FromQuery] byte language,
+        [FromQuery] bool? isActive = true
     )
     {
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
 
-        var result = await Db.GetProductDetailsAsync(language, connection);
+        var result = await Db.GetProductDetailsAsync(language, isActive, connection);
 
         return Success(result);
     }

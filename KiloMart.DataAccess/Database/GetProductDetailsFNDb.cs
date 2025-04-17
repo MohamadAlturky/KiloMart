@@ -64,7 +64,9 @@ public static partial class Db
         return result.ToList();
     }
 
-    public static async Task<IEnumerable<ProductDetail>> GetProductDetailsAsync(byte language, IDbConnection connection)
+    public static async Task<IEnumerable<ProductDetail>> GetProductDetailsAsync(byte language,
+    bool? IsActive, 
+    IDbConnection connection)
     {
         const string query = @"
         SELECT 
@@ -82,11 +84,13 @@ public static partial class Db
             [DealStartDate],
             [DealIsActive],
             [DealOffPercentage]
-        FROM dbo.GetProductDetailsFN(@Language)";
+        FROM dbo.GetProductDetailsFN(@Language)
+        WHERE (@IsActive Is NOT NULL AND ProductIsActive = @IsActive) OR @IsActive Is NULL";
 
         return await connection.QueryAsync<ProductDetail>(query, new
         {
-            Language = language
+            Language = language,
+            IsActive = IsActive
         });
     }
 

@@ -1935,7 +1935,7 @@ public class AdminPanelController : AppController
         return Ok(new
         {
             OrderCount = productDetails.OrderCount,
-            ProductDetail = productDetails.ProductDetail
+            ProductDetail = productDetails.ProductDetail??productDetails.justProductDetail
         });
     }
     [HttpGet("get-all-productOffers-paginated")]

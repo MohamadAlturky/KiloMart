@@ -5,8 +5,29 @@ namespace KiloMart.DataAccess.Admin;
 
 public static partial class Stats
 {
-    public static async Task<(ProductDetail ProductDetail, int OrderCount)> GetProductDetailsAndOrderCountAsync(int productId, byte language, IDbConnection connection)
+    public static async Task<(ProductDetail ProductDetail, ProductDetail justProductDetail, int OrderCount)> GetProductDetailsAndOrderCountAsync(int productId, byte language, IDbConnection connection)
     {
+        const string justProductDetailQuery = @"
+        SELECT TOP(1)
+                pd.[ProductId],
+                pd.[ProductImageUrl],
+                pd.[ProductIsActive],
+                pd.[ProductMeasurementUnit],
+                pd.[ProductDescription],
+                pd.[ProductName],
+                pd.[ProductCategoryId],
+                pd.[ProductCategoryIsActive],
+                pd.[ProductCategoryName],
+                pd.[DealId],
+                pd.[DealEndDate],
+                pd.[DealStartDate],
+                pd.[DealIsActive],
+                pd.[DealOffPercentage]
+            FROM 
+                dbo.GetProductDetailsFN(@Language) pd
+                where
+                pd.[ProductId] = @Product";
+
         const string productDetailQuery = @"
         SELECT TOP(1)
                 pd.[ProductId],
@@ -53,13 +74,17 @@ public static partial class Stats
             Product = productId,
             Language = language
         });
-
+        var justProductDetail = await connection.QueryFirstOrDefaultAsync<ProductDetail>(justProductDetailQuery, new
+        {
+            Product = productId,
+            Language = language
+        });
         var orderCount = await connection.QueryFirstOrDefaultAsync<OrderCountData>(orderCountQuery, new
         {
             Product = productId
         });
 
-        return (productDetail, orderCount?.OrderCount ?? 0);
+        return (productDetail, justProductDetail,orderCount?.OrderCount ?? 0);
     }
 
 
@@ -219,8 +244,8 @@ public class ProductDetail
     public DateTime DealStartDate { get; set; }
     public bool DealIsActive { get; set; }
     public decimal DealOffPercentage { get; set; }
-    public decimal MaxPrice { get; set; }
-    public decimal MinPrice { get; set; }
+    public decimal MaxPrice { get; set; } = 0;
+    public decimal MinPrice { get; set; } = 0;
 }
 
 public class OrderCountData

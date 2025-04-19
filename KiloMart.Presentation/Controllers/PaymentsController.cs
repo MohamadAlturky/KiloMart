@@ -1,4 +1,6 @@
 using System;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json.Serialization;
 using EdfaPayApi.Core.Interfaces;
 using EdfaPayApi.Core.Models;
@@ -52,11 +54,76 @@ public class PaymentsController : AppController
         return Ok(response);
     }
 
+    public string GenerateHash(string email, string cardNumber, string merchantPassword)
+    {
+        var reversedEmail = new string(email.Reverse().ToArray());
+        var cardPart = cardNumber[..6] + cardNumber[^4..];
+        var reversedCardPart = new string(cardPart.Reverse().ToArray());
+
+        var finalString = (reversedEmail + merchantPassword + reversedCardPart).ToUpper();
+
+        using var md5 = MD5.Create();
+        var inputBytes = Encoding.ASCII.GetBytes(finalString);
+        var hashBytes = md5.ComputeHash(inputBytes);
+
+        return Convert.ToHexString(hashBytes).ToLower();
+    }
+    private string CalculateHash(string email, string password, string transId, string cardNumber)
+    {
+        // Reverse the email and convert to uppercase
+        string reversedEmail = new string(email.Reverse().ToArray()).ToUpper();
+
+        // Substring of card number: first 6 digits and last 4 digits
+        string cardFirstSix = cardNumber.Substring(0, 6);
+        string cardLastFour = cardNumber.Substring(cardNumber.Length - 4);
+
+        // Concatenate components as per the formula
+        string hashInput = reversedEmail + password + transId + cardFirstSix + cardLastFour;
+
+        using var md5 = MD5.Create();
+        var inputBytes = Encoding.ASCII.GetBytes(hashInput);
+        var hashBytes = md5.ComputeHash(inputBytes);
+
+        return Convert.ToHexString(hashBytes).ToLower();
+
+        // // Calculate MD5 hash
+        // using (MD5 md5 = MD5.Create())
+        // {
+        //     byte[] inputBytes = Encoding.ASCII.GetBytes(hashInput);
+        //     byte[] hashBytes = md5.ComputeHash(inputBytes);
+
+        //     // Convert byte array to hexadecimal string
+        //     StringBuilder sb = new StringBuilder();
+        //     for (int i = 0; i < hashBytes.Length; i++)
+        //     {
+        //         sb.Append(hashBytes[i].ToString("X2"));
+        //     }
+        //     return sb.ToString();
+        // }
+    }
+
     [HttpPost("payments")]
     public async Task<IActionResult> Pay([FromForm] UnifiedPaymentTransactionResponse response)
     {
         var connection = _dbFactory.CreateDbConnection();
         connection.Open();
+        // Calculate hash
+        var _merchantPassword = _configuration["PaymentGateway:MerchantPassword"] ?? throw new Exception("Merchant Password is not set");
+        var _clientKey = _configuration["PaymentGateway:MerchantKey"] ?? throw new Exception("Merchant Key is not set");
+
+        string calculatedHash = CalculateHash(
+            "adnanh@expresspay.sa",
+            _merchantPassword,
+            response.TransactionId,
+            response.Card
+        );
+
+        // Validate the received hash with the calculated hash
+        if (!string.Equals(calculatedHash, response.Hash, StringComparison.OrdinalIgnoreCase))
+        {
+            // Hash validation failed
+            return BadRequest("Hash validation failed.");
+        }
 
         var id = await Db.InsertPaymentTransactionAsync(
             connection,
@@ -93,7 +160,7 @@ public class PaymentsController : AppController
                     long.Parse(response.OrderId!),
                     true);
             }
-            catch(Exception)
+            catch (Exception)
             {
 
             }

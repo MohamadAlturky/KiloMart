@@ -496,7 +496,7 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
             return Fail("system settings not found");
         }
 
-        decimal distanceInKm = settings.RaduisForGetProducts;
+        decimal distanceInKm = settings.CircleRaduis + settings.MaxDistanceToAdd;
 
         var result = await Db.GetCartsByCustomerWithProductsInfoAndPricingWithLocationAsync(
             _userContext.Get().Party,
@@ -537,7 +537,7 @@ public partial class CustomerActivitiesContoller(IDbFactory dbFactory,
             }
         }
 
-        decimal distanceInKm = settings.RaduisForGetProducts;
+        decimal distanceInKm = settings.CircleRaduis + settings.MaxDistanceToAdd;
 
         var result = await Db.GetCartsByCustomerWithProductsInfoAndPricingWithLocationAsync(
             _userContext.Get().Party,

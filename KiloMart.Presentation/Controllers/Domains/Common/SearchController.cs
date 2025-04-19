@@ -129,7 +129,7 @@ public partial class SearchController(
             return Fail("system settings not found");
         }
 
-        decimal distanceInKm = settings.RaduisForGetProducts;
+        decimal distanceInKm = settings.CircleRaduis+ settings.MaxDistanceToAdd;
 
         var partyId = _userContext.Get().Party;
 
@@ -200,7 +200,7 @@ public partial class SearchController(
             }
         }
 
-        decimal distanceInKm = settings.RaduisForGetProducts;
+        decimal distanceInKm = settings.CircleRaduis+ settings.MaxDistanceToAdd;
 
         var partyId = _userContext.Get().Party;
 

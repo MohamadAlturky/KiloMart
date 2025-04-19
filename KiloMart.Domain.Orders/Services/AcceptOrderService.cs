@@ -5,7 +5,6 @@ using KiloMart.Core.Contracts;
 using KiloMart.Core.Models;
 using KiloMart.DataAccess.Database;
 using KiloMart.Domain.DateServices;
-using KiloMart.Domain.Delivery.Activity;
 using KiloMart.Domain.Notifications;
 using KiloMart.Domain.Orders.Common;
 using KiloMart.Domain.Orders.DataAccess;
@@ -73,6 +72,10 @@ public static class AcceptOrderService
             if (order.OrderStatus != ((byte)OrderStatus.ORDER_PLACED))
             {
                 return Result<AcceptOrderResponseModel>.Fail(["Some Provider Already Accepted This Order"]);
+            }
+            if (order.OrderStatus == ((byte)OrderStatus.PREPARING))
+            {
+                return Result<AcceptOrderResponseModel>.Fail(["Order is Already Accepted"]);
             }
             var orderCustomer = await OrdersDb.GetOrderCustomerInfoByOrderIdAsync(orderId, readConnection);
             if (orderCustomer is null)
@@ -378,12 +381,12 @@ public static class AcceptOrderService
             if (order.Customer.HasValue)
             {
 
-            await NotificationsService.SendNotification(connection,
-                "Delivery Accepted Order",
-                "Delivery # " + deliveryId + " accepted order # " + orderId,
-                order.Customer.Value,
-                hubContext,
-                transaction);
+                await NotificationsService.SendNotification(connection,
+                    "Delivery Accepted Order",
+                    "Delivery # " + deliveryId + " accepted order # " + orderId,
+                    order.Customer.Value,
+                    hubContext,
+                    transaction);
             }
             if (order.Provider.HasValue)
             {

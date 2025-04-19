@@ -167,7 +167,7 @@ public class AppSettingsController : AppController
             request.MinOrderValue ?? settings.MinOrderValue,
             request.DistanceToAdd ?? settings.DistanceToAdd,
             request.MaxDistanceToAdd ?? settings.MaxDistanceToAdd,
-            request.RaduisForGetProducts ?? settings.RaduisForGetProducts);
+            request.RaduisForGetProducts ?? settings.CircleRaduis);
 
         if (!updated)
         {

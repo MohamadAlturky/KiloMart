@@ -57,6 +57,7 @@ public partial class Query
         byte language, 
         int pageNumber, 
         int pageSize, 
+        bool? isActive  = null,
         int? categoryId = null)
     {
         var query = @"
@@ -91,6 +92,7 @@ public partial class Query
                     pd.ProductId = po.Product AND po.Provider = @provider AND po.IsActive = 1
             WHERE 
                     (@categoryId IS NULL OR pd.ProductCategoryId = @categoryId)
+                    AND (@isActive IS NULL OR pd.ProductIsActive = @isActive)
             ORDER BY 
                     pd.ProductId
             OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;";
@@ -99,7 +101,7 @@ public partial class Query
 
         var productDetails = await connection.QueryAsync<ProductWithOffersDetailsResponse>(
            query,
-           new { provider, language, categoryId, Offset = offset, PageSize = pageSize });
+           new { provider, language, categoryId, Offset = offset, PageSize = pageSize, isActive = isActive });
 
        return productDetails.ToArray();
     }
@@ -108,6 +110,7 @@ public partial class Query
         IDbConnection connection, 
         int provider, 
         byte language, 
+        bool? isActive = null,
         int? categoryId = null)
     {
         var query = @"
@@ -119,12 +122,13 @@ public partial class Query
                 dbo.[ProductOffer] po ON 
                     pd.ProductId = po.Product AND po.Provider = @provider AND po.IsActive = 1
             WHERE 
-                (@categoryId IS NULL OR pd.ProductCategoryId = @categoryId);";
+                (@categoryId IS NULL OR pd.ProductCategoryId = @categoryId)
+                    AND (@isActive IS NULL OR pd.ProductIsActive = @isActive);";
 
 
         var count = await connection.QueryFirstOrDefaultAsync<long>(
            query,
-           new { provider, language, categoryId});
+           new { provider, language, categoryId, isActive = isActive});
 
        return count;
     }
@@ -198,7 +202,8 @@ public partial class Query
         byte language, 
         int pageNumber, 
         int pageSize, 
-        int? categoryId = null)
+        int? categoryId = null,
+        bool? isActive = null)
     {
         var query = @"
             SELECT 
@@ -232,6 +237,7 @@ public partial class Query
                    pd.ProductId = po.Product AND po.Provider = @provider AND po.IsActive = 1
             WHERE 
                     (@categoryId IS NULL OR pd.ProductCategoryId = @categoryId)
+                    AND (@isActive IS NULL OR pd.ProductIsActive = @isActive)
             ORDER BY 
                     pd.ProductId
             OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;";
@@ -240,7 +246,7 @@ public partial class Query
 
         var productDetails = await connection.QueryAsync<ProductWithOffersDetailsResponse>(
            query,
-           new { provider, language, categoryId, Offset = offset, PageSize = pageSize });
+           new { provider, language, categoryId, Offset = offset, PageSize = pageSize, isActive });
 
        return productDetails.ToArray();
     }
@@ -249,7 +255,8 @@ public partial class Query
         IDbConnection connection, 
         int provider, 
         byte language, 
-        int? categoryId = null)
+        int? categoryId = null,
+        bool? isActive = null)
     {
         var query = @"
             SELECT 
@@ -260,11 +267,12 @@ public partial class Query
                dbo.[ProductOffer] po ON 
                    pd.ProductId = po.Product AND po.Provider = @provider AND po.IsActive = 1
             WHERE 
-               (@categoryId IS NULL OR pd.ProductCategoryId = @categoryId);";
+               (@categoryId IS NULL OR pd.ProductCategoryId = @categoryId)
+                    AND (@isActive IS NULL OR pd.ProductIsActive = @isActive);";
 
         var count = await connection.QueryFirstOrDefaultAsync<long>(
            query,
-           new { provider, language, categoryId });
+           new { provider, language, categoryId,isActive });
 
        return count;
     }

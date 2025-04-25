@@ -127,7 +127,7 @@ public static class GetReadyToDeliverService
 
                     -- Haversine formula for Customer Location distance
                     dbo.GetDistanceBetweenPoints(cl.[Latitude], cl.[Longitude], @Latitude, @Longitude) CustomerDistanceInKilometers,
-						dbo.GetDistanceBetweenPoints(pl.[Latitude], pl.[Longitude], @Latitude, @Longitude) ProviderDistanceInKilometers,
+					dbo.GetDistanceBetweenPoints(pl.[Latitude], pl.[Longitude], @Latitude, @Longitude) ProviderDistanceInKilometers,
 
                     oa.[Date] AS DateWhenProviderAcceptIt,
                     @ParamDate AS NOW,
@@ -148,7 +148,7 @@ public static class GetReadyToDeliverService
                     dbo.[Location] pl ON pl.Id = opi.[Location]
                 INNER JOIN dbo.[OrderActivity] oa ON oa.[Order] = o.Id AND oa.OrderActivityType = 5
             ) p
-            WHERE OrderStatus = @status AND CustomerDistanceInKilometers <= @Radius +
+            WHERE OrderStatus = @status AND ProviderDistanceInKilometers <= @Radius +
             CASE
                 WHEN FLOOR(p.DifferenceInMinutes / @TimeToMakeTheRaduisBigger) * @DistanceToAdd < @MaxDistanceToAdd
                 THEN FLOOR(p.DifferenceInMinutes / @TimeToMakeTheRaduisBigger) * @DistanceToAdd

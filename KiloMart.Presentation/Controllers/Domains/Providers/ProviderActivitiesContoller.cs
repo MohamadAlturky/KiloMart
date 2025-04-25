@@ -543,6 +543,7 @@ public class ProviderActivitiesContoller : AppController
     public async Task<IActionResult> GetByCategory(
            [FromQuery] byte language,
            [FromQuery] int? categoryId = null,
+        //    [FromQuery] bool? isActive = null,
            [FromQuery] int pageNumber = 1,
            [FromQuery] int pageSize = 10)
     {
@@ -552,10 +553,12 @@ public class ProviderActivitiesContoller : AppController
         connection.Open();
 
         // Get paginated products
-        var products = await Query.GetPaginatedProducts(connection, providerId, language, pageNumber, pageSize, categoryId);
+        var products = await Query.GetPaginatedProducts(connection, providerId,
+        language, pageNumber, pageSize, true, categoryId);
 
         // Get total count of products for pagination
-        var totalCount = await Query.GetCountPaginatedProducts(connection, providerId, language, categoryId);
+        var totalCount = await Query.GetCountPaginatedProducts(connection, providerId,
+        language, true, categoryId);
 
         // Create a response object containing products and total count
         var response = new
@@ -576,6 +579,7 @@ public class ProviderActivitiesContoller : AppController
     [Guard([Roles.Provider])]
     public async Task<IActionResult> GetMineByCategory(
            [FromQuery] byte language,
+        //    [FromQuery] bool? isActive = null,
            [FromQuery] int? categoryId = null,
            [FromQuery] int pageNumber = 1,
            [FromQuery] int pageSize = 10)
@@ -586,10 +590,12 @@ public class ProviderActivitiesContoller : AppController
         connection.Open();
 
         // Get paginated products
-        var products = await Query.GetProviderPaginatedProducts(connection, providerId, language, pageNumber, pageSize, categoryId);
+        var products = await Query.GetProviderPaginatedProducts(connection, providerId, language, 
+        pageNumber, pageSize, categoryId, true);
 
         // Get total count of products for pagination
-        var totalCount = await Query.GetCountProviderPaginatedProducts(connection, providerId, language, categoryId);
+        var totalCount = await Query.GetCountProviderPaginatedProducts(connection, providerId,
+         language, categoryId,true);
 
         // Create a response object containing products and total count
         var response = new

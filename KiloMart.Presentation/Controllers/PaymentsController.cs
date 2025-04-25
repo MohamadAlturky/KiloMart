@@ -54,20 +54,20 @@ public class PaymentsController : AppController
         return Ok(response);
     }
 
-    public string GenerateHash(string email, string cardNumber, string merchantPassword)
-    {
-        var reversedEmail = new string(email.Reverse().ToArray());
-        var cardPart = cardNumber[..6] + cardNumber[^4..];
-        var reversedCardPart = new string(cardPart.Reverse().ToArray());
+    // public string GenerateHash(string email, string cardNumber, string merchantPassword)
+    // {
+    //     var reversedEmail = new string(email.Reverse().ToArray());
+    //     var cardPart = cardNumber[..6] + cardNumber[^4..];
+    //     var reversedCardPart = new string(cardPart.Reverse().ToArray());
 
-        var finalString = (reversedEmail + merchantPassword + reversedCardPart).ToUpper();
+    //     var finalString = (reversedEmail + merchantPassword + reversedCardPart).ToUpper();
 
-        using var md5 = MD5.Create();
-        var inputBytes = Encoding.ASCII.GetBytes(finalString);
-        var hashBytes = md5.ComputeHash(inputBytes);
+    //     using var md5 = MD5.Create();
+    //     var inputBytes = Encoding.ASCII.GetBytes(finalString);
+    //     var hashBytes = md5.ComputeHash(inputBytes);
 
-        return Convert.ToHexString(hashBytes).ToLower();
-    }
+    //     return Convert.ToHexString(hashBytes).ToLower();
+    // }
     private string CalculateHash(string email, string password, string transId, string cardNumber)
     {
         // Reverse the email and convert to uppercase

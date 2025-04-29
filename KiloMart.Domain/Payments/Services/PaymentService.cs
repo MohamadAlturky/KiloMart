@@ -132,7 +132,7 @@ public class PaymentService : IPaymentService
             //     }
             // }
         }
-
+        transaction.Commit();
         return paymentResponse;
     }
 

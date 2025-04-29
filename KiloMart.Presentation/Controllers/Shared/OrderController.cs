@@ -1,6 +1,10 @@
-﻿using KiloMart.Core.Authentication;
+﻿using Dapper;
+using KiloMart.Core.Authentication;
 using KiloMart.Core.Contracts;
+using KiloMart.DataAccess.Database;
+using KiloMart.Domain.Orders.Common;
 using KiloMart.Domain.Orders.Repositories;
+using KiloMart.Domain.Register.Utils;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KiloMart.Presentation.Controllers;
@@ -18,18 +22,18 @@ public class OrderController(IDbFactory dbFactory, IUserContext userContext)
     {
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();
-        
+
         var whereClause = "WHERE o.Id = @id";
         var parameters = new { id = orderId };
 
-        OrderDetailsDto? order = await OrderRepository.GetOrderDetailsFirstOrDefaultAsync(connection,whereClause,parameters);
+        OrderDetailsDto? order = await OrderRepository.GetOrderDetailsFirstOrDefaultAsync(connection, whereClause, parameters);
         if (order is null)
         {
             return DataNotFound("order not found");
         }
-        var activities = await OrderRepository.GetOrderActivitiesAsync(connection,orderId);
-        var products = await OrderRepository.GetOrderProductOffersAsync(connection,orderId,language);
-        var requestedProducts = await OrderRepository.GetOrderProductsAsync(connection,orderId,language);
+        var activities = await OrderRepository.GetOrderActivitiesAsync(connection, orderId);
+        var products = await OrderRepository.GetOrderProductOffersAsync(connection, orderId, language);
+        var requestedProducts = await OrderRepository.GetOrderProductsAsync(connection, orderId, language);
         foreach (var item in requestedProducts)
         {
             var product = products.FirstOrDefault(p => p.ProductId == item.ProductId);
@@ -38,7 +42,36 @@ public class OrderController(IDbFactory dbFactory, IUserContext userContext)
                 item.ActualUnitPrice = product.UnitPrice;
             }
         }
-        return Success(new 
+        if (_userContext.Get().Role == (byte)Roles.Provider 
+            && order.OrderStatus == (byte)OrderStatus.ORDER_PLACED)
+        {
+            var sql = @"
+            SELECT [Id]
+                    ,[Product]
+                    ,[Price]
+                    ,[OffPercentage]
+                    ,[FromDate]
+                    ,[ToDate]
+                    ,[Quantity]
+                    ,[Provider]
+                    ,[IsActive]
+                FROM [dbo].[ProductOffer]
+                WHERE
+                [Provider] = @providerId AND [IsActive] = 1";
+            var provideroffers = await connection.QueryAsync<ProductOffer>(sql, new { providerId = _userContext.Get().Party });
+            if (provideroffers is not null)
+            {
+                foreach (var item in requestedProducts)
+                {
+                    var product = provideroffers.FirstOrDefault(p => p.Product == item.ProductId);
+                    if (product is not null)
+                    {
+                        item.ActualUnitPrice = product.Price;
+                    }
+                }
+            }
+        }
+        return Success(new
         {
             order,
             activities,

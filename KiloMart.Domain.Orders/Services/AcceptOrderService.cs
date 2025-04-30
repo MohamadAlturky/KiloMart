@@ -236,7 +236,7 @@ public static class AcceptOrderService
                     {
                         CardNumber = card.Number,
                         CardExpYear = card.ExpireDate.Year.ToString(),
-                        CardExpMonth = card.ExpireDate.Month.ToString(),
+                        CardExpMonth = card.ExpireDate.Month.ToString("D2"),
                         CardCvv2 = card.SecurityCode,
                         OrderAmount = totalPrice,
                         OrderDescription = $"Order {orderId}",

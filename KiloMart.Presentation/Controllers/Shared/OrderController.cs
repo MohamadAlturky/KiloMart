@@ -14,7 +14,6 @@ namespace KiloMart.Presentation.Controllers;
 public class OrderController(IDbFactory dbFactory, IUserContext userContext)
     : AppController(dbFactory, userContext)
 {
-
     [HttpGet("details")]
     public async Task<IActionResult> Details(
         [FromQuery] long orderId,
@@ -26,11 +25,13 @@ public class OrderController(IDbFactory dbFactory, IUserContext userContext)
         var whereClause = "WHERE o.Id = @id";
         var parameters = new { id = orderId };
 
-        OrderDetailsDto? order = await OrderRepository.GetOrderDetailsFirstOrDefaultAsync(connection, whereClause, parameters);
+        OrderDetailsDto? order =
+            await OrderRepository.GetOrderDetailsFirstOrDefaultAsync(connection, whereClause, parameters);
         if (order is null)
         {
             return DataNotFound("order not found");
         }
+
         var activities = await OrderRepository.GetOrderActivitiesAsync(connection, orderId);
         var products = await OrderRepository.GetOrderProductOffersAsync(connection, orderId, language);
         var requestedProducts = await OrderRepository.GetOrderProductsAsync(connection, orderId, language);
@@ -42,9 +43,25 @@ public class OrderController(IDbFactory dbFactory, IUserContext userContext)
                 item.ActualUnitPrice = product.UnitPrice;
             }
         }
-        if (_userContext.Get().Role == (byte)Roles.Provider 
+
+        if (_userContext.Get().Role == (byte)Roles.Provider
             && order.OrderStatus == (byte)OrderStatus.ORDER_PLACED)
         {
+            var systemSettings = await Db.GetSystemSettingsByIdAsync(0, connection);
+            if (systemSettings is null)
+            {
+                return DataNotFound("system settings not found");
+            }
+
+            order.SystemFee = systemSettings.SystemOrderFee;
+            order.DeliveryFee = systemSettings.DeliveryOrderFee;
+            DriverFreeFee? driverFreeFee = await Db.GetActiveDriverFreeFeesAsync(connection);
+
+            if (driverFreeFee is not null)
+            {
+                order.DeliveryFee = 0;
+            }
+
             var sql = @"
             SELECT [Id]
                     ,[Product]
@@ -58,7 +75,9 @@ public class OrderController(IDbFactory dbFactory, IUserContext userContext)
                 FROM [dbo].[ProductOffer]
                 WHERE
                 [Provider] = @providerId AND [IsActive] = 1";
-            var provideroffers = await connection.QueryAsync<ProductOffer>(sql, new { providerId = _userContext.Get().Party });
+            var has = new List<OrderProductOfferDetailsDto>();
+            var provideroffers =
+                await connection.QueryAsync<ProductOffer>(sql, new { providerId = _userContext.Get().Party });
             if (provideroffers is not null)
             {
                 foreach (var item in requestedProducts)
@@ -67,10 +86,47 @@ public class OrderController(IDbFactory dbFactory, IUserContext userContext)
                     if (product is not null)
                     {
                         item.ActualUnitPrice = product.Price;
+                        has.Add(
+                            new OrderProductOfferDetailsDto
+                            {
+                                Id = 0,
+                                Order = item.ItemOrder,
+                                ProductOffer = product.Id,
+                                Quantity = item.ItemQuantity,
+                                UnitPrice = product.Price,
+                                ProductId = item.ProductId,
+                                ProductImageUrl = item.ProductImageUrl,
+                                ProductIsActive = item.ProductIsActive,
+                                ProductMeasurementUnit = item.ProductMeasurementUnit,
+                                ProductDescription = item.ProductDescription,
+                                ProductName = item.ProductName,
+                                ProductCategoryId = item.ProductCategoryId,
+                                ProductCategoryIsActive = item.ProductCategoryIsActive,
+                                ProductCategoryName = item.ProductCategoryName,
+                                DealId = item.DealId,
+                                DealEndDate = item.DealEndDate,
+                                DealStartDate = item.DealStartDate,
+                                DealIsActive = item.DealIsActive,
+                                DealOffPercentage = item.DealOffPercentage
+                            }
+                        );
                     }
+                    order.ItemsPrice = 0;
+                    order.TotalPrice = 0;
+                    var fees = order.SystemFee + order.DeliveryFee;
+                    products = has;
+                    if(requestedProducts.Any())
+                    {
+                        var total = requestedProducts.Sum(p => p.ItemQuantity
+                            * p.ActualUnitPrice
+                            * (p.DealOffPercentage ?? 100) / 100);
+                        order.ItemsPrice = total ?? order.TotalPrice;
+                    }
+                    order.TotalPrice = order.ItemsPrice + fees;
                 }
             }
         }
+
         return Success(new
         {
             order,
@@ -78,7 +134,6 @@ public class OrderController(IDbFactory dbFactory, IUserContext userContext)
             requestedProducts,
             products
         });
-
     }
     // [HttpGet]
     // public async Task<IActionResult> GetOrderById(

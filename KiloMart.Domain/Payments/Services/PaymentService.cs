@@ -50,7 +50,7 @@ public class PaymentService : IPaymentService
             ["order_description"] = request.OrderDescription,
             ["payer_email"] = request.PayerEmail,
             ["card_number"] = request.CardNumber,
-            ["term_url_3ds"] = request.TermUrl3ds,
+            ["term_url_3ds"] = request.TermUrl3ds + request.OrderId,
             ["hash"] = request.Hash,
             ["client_key"] = _clientKey,
             ["recurring_init"] = request.RecurringInit,
@@ -149,5 +149,77 @@ public class PaymentService : IPaymentService
         var hashBytes = md5.ComputeHash(inputBytes);
 
         return Convert.ToHexString(hashBytes).ToLower();
+    }
+
+    public async Task<Core.Interfaces.PaymentStatusEnum> GetPaymentStatusAsync(Core.Interfaces.PaymentRequestResponseDto? transactionData)
+    {
+        if(transactionData is null || transactionData.TransId is null)
+        {
+            return MapStatusToEnum("DECLINED");
+        }
+        var hash = GenerateTransactionStatusHash(transactionData.PayerEmail, transactionData.CardNumber, transactionData.TransId);
+
+        var content = new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["action"] = "GET_TRANS_STATUS",
+            ["client_key"] = _clientKey,
+            ["trans_id"] = transactionData.TransId,
+            ["hash"] = hash
+        });
+
+        var response = await _httpClient.PostAsync("payment/post", content);
+        var responseContent = await response.Content.ReadAsStringAsync();
+        var statusResponse = JsonSerializer.Deserialize<PaymentStatusResponse>(responseContent);
+        if (statusResponse == null)
+        {
+            throw new Exception("Failed to deserialize payment status response");
+        }
+
+        return MapStatusToEnum(statusResponse.status);
+    }
+
+    private string GenerateTransactionStatusHash(string email, string cardNumber, string transId)
+    {
+        var reversedEmail = new string(email.Reverse().ToArray());
+        var cardPart = cardNumber[..6] + cardNumber[^4..];
+        var reversedCardPart = new string(cardPart.Reverse().ToArray());
+
+        var finalString = (reversedEmail + _merchantPassword + transId + reversedCardPart).ToUpper();
+
+        using var md5 = MD5.Create();
+        var inputBytes = Encoding.ASCII.GetBytes(finalString);
+        var hashBytes = md5.ComputeHash(inputBytes);
+
+        return Convert.ToHexString(hashBytes).ToLower();
+    }
+
+    private Core.Interfaces.PaymentStatusEnum MapStatusToEnum(string status)
+    {
+        return status.ToUpper() switch
+        {
+            "3DS" => PaymentStatusEnum.ThreeDSecure,
+            "REDIRECT" => PaymentStatusEnum.Redirect,
+            "PENDING" => PaymentStatusEnum.Pending,
+            "PREPARE" => PaymentStatusEnum.Prepare,
+            "DECLINED" => PaymentStatusEnum.Declined,
+            "SETTLED" => PaymentStatusEnum.Settled,
+            "REVERSAL" => PaymentStatusEnum.Reversal,
+            "REFUND" => PaymentStatusEnum.Refund,
+            "CHARGEBACK" => PaymentStatusEnum.Chargeback,
+            _ => PaymentStatusEnum.Unknown
+        };
+    }
+
+
+
+    private class PaymentStatusResponse
+    {
+        public string action { get; set; }
+        public string result { get; set; }
+        public string status { get; set; }
+        public string order_id { get; set; }
+        public string trans_id { get; set; }
+        public string decline_reason { get; set; }
+        public string recurring_token { get; set; }
     }
 }

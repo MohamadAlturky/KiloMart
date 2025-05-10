@@ -2,6 +2,8 @@ using System;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
+using Dapper;
 using EdfaPayApi.Core.Interfaces;
 using EdfaPayApi.Core.Models;
 using KiloMart.Core.Authentication;
@@ -10,6 +12,7 @@ using KiloMart.DataAccess.Database;
 using KiloMart.Domain.Orders.DataAccess;
 using KiloMart.Presentation.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KiloMart.Presentation.Controllers.Profiles;
 
@@ -202,11 +205,235 @@ public class PaymentsController : AppController
 
     //     return Ok();
     // }
-
+  
     [HttpGet("success")]
-    public async Task<IActionResult> Success()
+    public async Task<IActionResult> Success([FromQuery] int order_id)
     {
-        return Ok();
+        using var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+        var sql = @"
+            SELECT 
+                prq.[Id] AS RequestId,
+                prq.[PayerCountry],
+                prq.[PayerAddress],
+                prq.[Action] AS RequestAction,
+                prq.[PayerZip],
+                prq.[PayerIp],
+                prq.[OrderCurrency],
+                prq.[PayerFirstName],
+                prq.[PayerCity],
+                prq.[Auth],
+                prq.[PayerLastName],
+                prq.[PayerPhone],
+                prq.[PayerEmail],
+                prq.[ReqToken],
+                prq.[RecurringInit],
+                prq.[TermUrl3ds],
+                prq.[CardExpYear],
+                prq.[CardExpMonth],
+                prq.[OrderId],
+                prq.[OrderIdInSystem],
+                prq.[CardCvv2],
+                prq.[OrderDescription],
+                prq.[CardNumber],
+                prq.[Hash],
+                prq.[OrderAmount],
+                prq.[CreatedAt],
+
+                -- prs.[Id] AS ResponseId,
+                -- prs.[PaymentRequestId],
+                -- prs.[Action] AS ResponseAction,
+                -- prs.[Result],
+                -- prs.[Status],
+                prs.[TransId]
+                --,
+                -- prs.[TransDate],
+                -- prs.[Amount],
+                -- prs.[Currency],
+                -- prs.[RedirectUrl],
+                -- prs.[RedirectParams],
+                -- prs.[RedirectMethod],
+                -- prs.[ErrorCode],
+                -- prs.[ErrorMessage],
+                -- prs.[Errors],
+                -- prs.[Body]
+
+            FROM [dbo].[PaymentRequests] prq
+            LEFT JOIN [dbo].[PaymentResponses] prs
+            ON prq.[Id] = prs.[PaymentRequestId]
+            WHERE prq.[OrderId] = @orderId
+        ";
+        PaymentStatusEnum paymentStatus = PaymentStatusEnum.Declined;
+        var PaymentRequestResponseDto = await connection.QueryFirstOrDefaultAsync<PaymentRequestResponseDto>(sql, new { orderId = order_id });
+        
+        if (PaymentRequestResponseDto is not null)
+        {
+            paymentStatus = await _paymentService.GetPaymentStatusAsync(PaymentRequestResponseDto);
+        }
+
+        string statusBadgeColor = paymentStatus switch
+        {
+            PaymentStatusEnum.Settled => "#E8F5E9;color: #2E7D32",
+            PaymentStatusEnum.Declined => "#FFEBEE;color: #C62828",
+            PaymentStatusEnum.Pending => "#FFF8E1;color: #F57F17",
+            PaymentStatusEnum.Redirect => "#E3F2FD;color: #1565C0",
+            PaymentStatusEnum.ThreeDSecure => "#E8EAF6;color: #3949AB",
+            PaymentStatusEnum.Prepare => "#E0F2F1;color: #00796B",
+            PaymentStatusEnum.Reversal => "#F3E5F5;color: #7B1FA2",
+            PaymentStatusEnum.Refund => "#FCE4EC;color: #C2185B",
+            PaymentStatusEnum.Chargeback => "#EFEBE9;color: #5D4037",
+            _ => "#ECEFF1;color: #546E7A" // Unknown or any other status
+        };
+
+        string statusText = paymentStatus.ToString();
+        string pageTitle = paymentStatus == PaymentStatusEnum.Settled ? "Payment Completed" : $"Payment {statusText}";
+        string successMessage = paymentStatus == PaymentStatusEnum.Settled
+            ? "Your payment has been completed successfully. Thank you for your purchase!"
+            : $"Your payment has a status of {statusText}. Please check your order details for more information.";
+
+        string html = $@"<!DOCTYPE html>
+<html lang=""en"">
+
+<head>
+    <meta charset=""UTF-8"">
+    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+    <title>{pageTitle} - KiloMart</title>
+    <style>
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }}
+
+        body {{
+            background-color: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }}
+
+        .success-container {{
+            background: white;
+            padding: 3rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            animation: fadeIn 0.5s ease-in-out;
+        }}
+
+        .success-icon {{
+            width: 80px;
+            height: 80px;
+            background-color: #4CAF50;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            animation: scaleIn 0.5s ease-out;
+        }}
+
+        .success-icon svg {{
+            width: 40px;
+            height: 40px;
+            fill: white;
+        }}
+
+        h1 {{
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-size: 2rem;
+        }}
+
+        p {{
+            color: #666;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }}
+
+        .button {{
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: background-color 0.3s ease;
+            margin-top: 1rem;
+        }}
+
+        .button:hover {{
+            background-color: #45a049;
+        }}
+
+        @keyframes fadeIn {{
+            from {{
+                opacity: 0;
+                transform: translateY(20px);
+            }}
+            to {{
+                opacity: 1;
+                transform: translateY(0);
+            }}
+        }}
+
+        @keyframes scaleIn {{
+            from {{
+                transform: scale(0);
+            }}
+            to {{
+                transform: scale(1);
+            }}
+        }}
+
+        .order-details {{
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #eee;
+        }}
+
+        .order-details p {{
+            margin-bottom: 0.5rem;
+        }}
+
+        .status-badge {{
+            display: inline-block;
+            padding: 6px 12px;
+            background-color: {statusBadgeColor.Split(';')[0]};
+            color: {statusBadgeColor.Split(';')[1]};
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin: 1rem 0;
+        }}
+    </style>
+</head>
+
+<body>
+    <div class=""success-container"">
+        <div class=""success-icon"">
+            <svg viewBox=""0 0 24 24"">
+                <path d=""M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z""/>
+            </svg>
+        </div>
+        <h1>{pageTitle}</h1>
+        <div class=""status-badge"">{statusText}</div>
+        <p>{successMessage}</p>
+        <div class=""order-details"">
+            <p>To view your order details:</p>
+            <p>1. Open the KiloMart app</p>
+            <p>2. Go to ""My Orders"" section</p>
+            <p>3. Find your order #{order_id} in the list</p>
+        </div>
+    </div>
+</body>
+
+</html>";
+
+        return Content(html, "text/html");
     }
 
 

@@ -110,23 +110,6 @@ public class PaymentsController : AppController
     {
         var connection = _dbFactory.CreateDbConnection();
         connection.Open();
-        // Calculate hash
-        var _merchantPassword = _configuration["PaymentGateway:MerchantPassword"] ?? throw new Exception("Merchant Password is not set");
-        var _clientKey = _configuration["PaymentGateway:MerchantKey"] ?? throw new Exception("Merchant Key is not set");
-
-        string calculatedHash = CalculateHash(
-            "adnanh@expresspay.sa",
-            _merchantPassword,
-            response.TransactionId,
-            response.Card
-        );
-
-        // Validate the received hash with the calculated hash
-        if (!string.Equals(calculatedHash, response.Hash, StringComparison.OrdinalIgnoreCase))
-        {
-            // Hash validation failed
-            return BadRequest("Hash validation failed.");
-        }
 
         var id = await Db.InsertPaymentTransactionAsync(
             connection,
@@ -154,6 +137,25 @@ public class PaymentsController : AppController
                 CreatedAt = DateTime.UtcNow
             }
         );
+
+
+        // Calculate hash
+        var _merchantPassword = _configuration["PaymentGateway:MerchantPassword"] ?? throw new Exception("Merchant Password is not set");
+        var _clientKey = _configuration["PaymentGateway:MerchantKey"] ?? throw new Exception("Merchant Key is not set");
+
+        string calculatedHash = CalculateHash(
+            "adnanh@expresspay.sa",
+            _merchantPassword,
+            response.TransactionId,
+            response.Card
+        );
+
+        // Validate the received hash with the calculated hash
+        if (!string.Equals(calculatedHash, response.Hash, StringComparison.OrdinalIgnoreCase))
+        {
+            // Hash validation failed
+            return BadRequest("Hash validation failed.");
+        }
 
         if (response.Status == "SUCCESS")
         {

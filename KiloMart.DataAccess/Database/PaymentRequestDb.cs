@@ -147,7 +147,7 @@ public class PaymentRequestTable
     public string PayerEmail { get; set; } = "adnanh@expresspay.sa";
     public string ReqToken { get; set; } = "N";
     public string RecurringInit { get; set; } = "N";
-    public string TermUrl3ds { get; set; } = "http://kilomart-001-site1.ptempurl.com/callbacks/success";
+    public string TermUrl3ds { get; set; } = "https://kilomart.net/callbacks/success";
     public string CardExpYear { get; set; }
     public string CardExpMonth { get; set; }
     public string OrderId { get; set; }

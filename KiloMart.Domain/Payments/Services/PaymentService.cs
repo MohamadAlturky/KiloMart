@@ -6,6 +6,7 @@ using EdfaPayApi.Core.Models;
 using KiloMart.Core.Contracts;
 using KiloMart.DataAccess.Database;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace EdfaPayApi.Infrastructure.Services;
 
@@ -15,7 +16,6 @@ public class PaymentService : IPaymentService
     private readonly IDbFactory _dbFactory;
     private string _merchantPassword;
     private string _clientKey;
-
     public PaymentService(HttpClient httpClient, IConfiguration configuration, IDbFactory dbFactory)
     {
         _httpClient = httpClient;

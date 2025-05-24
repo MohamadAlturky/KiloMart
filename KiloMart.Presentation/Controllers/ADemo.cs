@@ -16,7 +16,7 @@ public class AController(
     IUserContext userContext)
     : AppController(dbFactory, userContext)
 {
-    [HttpGet("get")]
+    [HttpGet("running")]
     public async Task<IActionResult> Get()
     {
         return Ok("The service is up and running");

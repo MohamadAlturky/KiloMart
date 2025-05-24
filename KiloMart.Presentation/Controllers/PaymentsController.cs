@@ -42,9 +42,41 @@ public class PaymentsController : AppController
         return Ok();
     }
 
-    [HttpPost("sale")]
-    public async Task<ActionResult<PaymentResponse>> ProcessPayment(PaymentRequestMini requestMini)
+    public class OrderIdRequest
     {
+        public long OrderId { get; set; }
+    }
+    [HttpPost("reinitialize-payment")]
+    public async Task<ActionResult<PaymentResponse>> ReinitializePayment([FromBody] OrderIdRequest orderId)
+    {
+        var connection = _dbFactory.CreateDbConnection();
+        connection.Open();
+        var order = await OrdersDb.GetOrderByIdAsync(orderId.OrderId,connection);
+        if (order is null)
+        {
+            return BadRequest("Order not found");
+        }
+        var orderCustomer = await OrdersDb.GetOrderCustomerInfoByOrderIdAsync(orderId.OrderId, connection);
+        if (orderCustomer is null)
+        {
+            return BadRequest("Order Customer Not Found");
+        }
+
+        var card = await Db.GetIsPrimaryCardsByCustomerAsync(connection, orderCustomer.Customer);
+        if (card is null)
+        {
+            return BadRequest("Card not found");
+        }
+        var requestMini = new PaymentRequestMini
+        {
+            CardNumber = card.Number,
+            CardExpMonth = card.ExpireDate.Month.ToString("D2"),
+            CardExpYear = card.ExpireDate.Year.ToString(),
+            OrderAmount = order.TotalPrice,
+            OrderDescription = $"Order {orderId.OrderId} by the api for reinitialize-payment the same order.",
+            OrderId = orderId.OrderId.ToString(),
+            CardCvv2 = card.SecurityCode
+        };
         var request = requestMini.ToPaymentRequest();
         // Generate hash
         request.Hash = _paymentService.GenerateHash(
@@ -57,53 +89,28 @@ public class PaymentsController : AppController
         return Ok(response);
     }
 
-    // public string GenerateHash(string email, string cardNumber, string merchantPassword)
-    // {
-    //     var reversedEmail = new string(email.Reverse().ToArray());
-    //     var cardPart = cardNumber[..6] + cardNumber[^4..];
-    //     var reversedCardPart = new string(cardPart.Reverse().ToArray());
-
-    //     var finalString = (reversedEmail + merchantPassword + reversedCardPart).ToUpper();
-
-    //     using var md5 = MD5.Create();
-    //     var inputBytes = Encoding.ASCII.GetBytes(finalString);
-    //     var hashBytes = md5.ComputeHash(inputBytes);
-
-    //     return Convert.ToHexString(hashBytes).ToLower();
-    // }
     private string CalculateHash(string email, string password, string transId, string cardNumber)
     {
         // Reverse the email and convert to uppercase
-        string reversedEmail = new string(email.Reverse().ToArray()).ToUpper();
+        string reversedEmail = new string(email.Reverse().ToArray());
 
-        // Substring of card number: first 6 digits and last 4 digits
+        // Get the first 6 and last 4 digits of the card number
         string cardFirstSix = cardNumber.Substring(0, 6);
         string cardLastFour = cardNumber.Substring(cardNumber.Length - 4);
 
-        // Concatenate components as per the formula
-        string hashInput = reversedEmail + password + transId + cardFirstSix + cardLastFour;
+        // Concatenate card parts and reverse them
+        string reversedCardParts = new string((cardFirstSix + cardLastFour).Reverse().ToArray());
+
+        // Concatenate everything
+        string hashInput = (reversedEmail + password + transId + reversedCardParts).ToUpper();
 
         using var md5 = MD5.Create();
         var inputBytes = Encoding.ASCII.GetBytes(hashInput);
         var hashBytes = md5.ComputeHash(inputBytes);
 
-        return Convert.ToHexString(hashBytes).ToLower();
-
-        // // Calculate MD5 hash
-        // using (MD5 md5 = MD5.Create())
-        // {
-        //     byte[] inputBytes = Encoding.ASCII.GetBytes(hashInput);
-        //     byte[] hashBytes = md5.ComputeHash(inputBytes);
-
-        //     // Convert byte array to hexadecimal string
-        //     StringBuilder sb = new StringBuilder();
-        //     for (int i = 0; i < hashBytes.Length; i++)
-        //     {
-        //         sb.Append(hashBytes[i].ToString("X2"));
-        //     }
-        //     return sb.ToString();
-        // }
+        return Convert.ToHexString(hashBytes).ToLower(); // ToLower to match expected hash format
     }
+
 
     [HttpPost("payments")]
     public async Task<IActionResult> Pay([FromForm] UnifiedPaymentTransactionResponse response)
@@ -157,7 +164,7 @@ public class PaymentsController : AppController
             return BadRequest("Hash validation failed.");
         }
 
-        if (response.Status == "SUCCESS")
+        if (response.Status == "SETTLED")
         {
             try
             {
@@ -209,7 +216,7 @@ public class PaymentsController : AppController
     // }
   
     [HttpGet("success")]
-    public async Task<IActionResult> Success([FromQuery] int order_id)
+    public async Task<IActionResult> Success([FromQuery] string order_id)
     {
         using var connection = _dbFactory.CreateDbConnection();
         connection.Open();

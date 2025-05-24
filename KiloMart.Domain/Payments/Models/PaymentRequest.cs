@@ -18,7 +18,7 @@ public class PaymentRequest
     public string PayerEmail { get; set; } = "adnanh@expresspay.sa";
     public string ReqToken { get; set; } = "N";
     public string RecurringInit { get; set; } = "N";
-    public string TermUrl3ds { get; set; } = "http://kilomart-001-site1.ptempurl.com/callbacks/success?order_id=";
+    public string TermUrl3ds { get; set; } = "https://kilomart.net/callbacks/success?order_id=";
     // public string ClientKey { get; set; }
     public string CardExpYear { get; set; }
     public string CardExpMonth { get; set; }
@@ -53,7 +53,8 @@ public static class PaymentRequestExtensions
         return new PaymentRequest
         {
             CardExpYear = mini.CardExpYear,
-            OrderId = mini.OrderId,
+            OrderId = Guid.NewGuid().ToString(),
+            OrderIdInSystem = long.Parse(mini.OrderId),
             CardCvv2 = mini.CardCvv2,
             OrderDescription = mini.OrderDescription,
             CardNumber = mini.CardNumber,

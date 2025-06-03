@@ -34,13 +34,13 @@ public class PaymentsController : AppController
         _paymentService = paymentService;
         _configuration = configuration;
     }
-    [HttpGet("test-delete-orders")]
-    public async Task<IActionResult> TestDeleteOrders()
-    {
-        var orderDeleteService = new OrderDeleteService(_dbFactory);
-        await orderDeleteService.Cancel();
-        return Ok();
-    }
+    // [HttpGet("test-delete-orders")]
+    // public async Task<IActionResult> TestDeleteOrders()
+    // {
+    //     var orderDeleteService = new OrderDeleteService(_dbFactory);
+    //     await orderDeleteService.Cancel();
+    //     return Ok();
+    // }
 
     public class OrderIdRequest
     {
@@ -279,6 +279,11 @@ public class PaymentsController : AppController
         {
             paymentStatus = await _paymentService.GetPaymentStatusAsync(PaymentRequestResponseDto);
         }
+        string orderIdToRepresent = order_id;
+        if (PaymentRequestResponseDto is not null)
+        {
+            orderIdToRepresent = PaymentRequestResponseDto.OrderIdInSystem;
+        }
 
         string statusBadgeColor = paymentStatus switch
         {
@@ -435,7 +440,7 @@ public class PaymentsController : AppController
             <p>To view your order details:</p>
             <p>1. Open the KiloMart app</p>
             <p>2. Go to ""My Orders"" section</p>
-            <p>3. Find your order #{order_id} in the list</p>
+            <p>3. Find your order #{orderIdToRepresent} in the list</p>
         </div>
     </div>
 </body>

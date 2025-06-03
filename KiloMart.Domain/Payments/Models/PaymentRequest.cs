@@ -18,7 +18,7 @@ public class PaymentRequest
     public string PayerEmail { get; set; } = "adnanh@expresspay.sa";
     public string ReqToken { get; set; } = "N";
     public string RecurringInit { get; set; } = "N";
-    public string TermUrl3ds { get; set; } = "https://kilomart.net/callbacks/success?order_id=";
+    public string TermUrl3ds { get; set; } = "https://kilomart.net/callbacks/success?order_id='";
     // public string ClientKey { get; set; }
     public string CardExpYear { get; set; }
     public string CardExpMonth { get; set; }
